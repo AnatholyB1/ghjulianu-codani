@@ -75,18 +75,6 @@ export default function DonPage() {
 
             <div style={{ height: '1px', background: 'var(--border)' }} />
 
-            <div>
-              <p style={{ fontSize: '0.6rem', letterSpacing: '0.18em', color: 'var(--muted)', marginBottom: '0.8rem' }}>
-                OU PAR VIREMENT — IBAN
-              </p>
-              <code style={{ fontSize: '0.75rem', color: 'var(--text)', opacity: 0.5, userSelect: 'all', letterSpacing: '0.04em' }}>
-                FR76 XXXX XXXX XXXX XXXX XXXX XXX
-              </code>
-              <p style={{ fontSize: '0.6rem', color: 'var(--muted)', marginTop: '0.4rem' }}>Remplacez l'IBAN par le vôtre dans le code.</p>
-            </div>
-
-            <div style={{ height: '1px', background: 'var(--border)' }} />
-
             <p style={{ fontSize: '0.75rem', color: 'var(--muted)', lineHeight: 1.7 }}>
               Besoin de photos ou d'un projet commun ?{' '}
               <Link href="/contact" style={{ color: 'var(--accent)', textDecoration: 'none', borderBottom: '1px solid var(--accent)', paddingBottom: '1px' }}>

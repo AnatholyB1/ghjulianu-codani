@@ -3,15 +3,29 @@
 import Image       from 'next/image';
 import Link        from 'next/link';
 import { notFound } from 'next/navigation';
-import { useState, use } from 'react';
+import { useState, use, useMemo } from 'react'; // useMemo kept for trackPhotos
 import ScrollReveal from '@/components/ScrollReveal';
 import Lightbox    from '@/components/Lightbox';
+import DragTrack, { TrackPhoto } from '@/components/DragTrack';
 import { albums }  from '@/data/albums';
 
 export default function AlbumPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug }  = use(params);
   const album     = albums.find((a) => a.slug === slug);
   const [lightbox, setLightbox] = useState<number | null>(null);
+
+  const trackPhotos: TrackPhoto[] = useMemo(
+    () => (album?.photos ?? []).map((p) => ({
+      src:    p.src,
+      width:  p.width,
+      height: p.height,
+      alt:    p.alt,
+      aspect: p.height > p.width ? '2/3' : p.width > p.height * 1.2 ? '4/3' : '3/2',
+    })),
+    [album],
+  );
+
+
 
   if (!album) notFound();
 
@@ -81,37 +95,20 @@ export default function AlbumPage({ params }: { params: Promise<{ slug: string }
         </div>
       </section>
 
-      {/* Masonry photo grid */}
-      <section
-        style={{
-          padding:      'clamp(2rem,4vw,4rem) clamp(1rem,3vw,3rem)',
-          columnCount:  3,
-          columnGap:    '5px',
-        }}
-        className="album-grid"
-      >
-        {album.photos.map((photo, i) => (
-          <ScrollReveal key={i} direction="up" delay={(i % 4) * 70}
-            style={{ breakInside: 'avoid', marginBottom: '5px', display: 'block' }}
-          >
-            <button
-              onClick={() => setLightbox(i)}
-              className="album-photo-btn"
-              style={{ display: 'block', width: '100%', border: 'none', background: 'none', padding: 0, cursor: 'zoom-in', overflow: 'hidden' }}
-            >
-              <Image
-                src={photo.src}
-                alt={photo.alt ?? `${album.title} — photo ${i + 1}`}
-                width={photo.width}
-                height={photo.height}
-                unoptimized
-                className="album-photo-img"
-                style={{ width: '100%', height: 'auto', display: 'block', filter: 'brightness(0.9)', transition: 'transform 0.55s cubic-bezier(0.22,1,0.36,1), filter 0.35s ease' }}
-              />
-            </button>
-          </ScrollReveal>
-        ))}
+      {/* ── Brick-wall drag track ── */}
+      <section style={{ padding: 'clamp(2rem,4vw,4rem) 0' }}>
+        <ScrollReveal direction="up" threshold={0.05}>
+          <DragTrack
+            photos={trackPhotos}
+            onClickPhoto={(idx) => setLightbox(idx)}
+          />
+        </ScrollReveal>
       </section>
+
+      {/* Drag hint */}
+      <p style={{ textAlign: 'center', fontSize: '0.58rem', letterSpacing: '0.18em', color: 'var(--muted)', opacity: 0.5, paddingBottom: '2rem' }}>
+        ← GLISSER →
+      </p>
 
       {/* Back link */}
       <div style={{ padding: '0 clamp(1rem,3vw,3rem) clamp(3rem,5vw,5rem)', borderTop: '1px solid var(--border)', paddingTop: '2rem', marginTop: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
@@ -122,15 +119,6 @@ export default function AlbumPage({ params }: { params: Promise<{ slug: string }
           COMMANDER DES PHOTOS
         </Link>
       </div>
-
-      <style>{`
-        .album-photo-btn:hover .album-photo-img {
-          transform: scale(1.04);
-          filter: brightness(1.05) !important;
-        }
-        @media (max-width: 900px) { .album-grid { column-count: 2 !important; } }
-        @media (max-width: 550px) { .album-grid { column-count: 1 !important; } }
-      `}</style>
 
       {lightbox !== null && (
         <Lightbox

@@ -2,14 +2,16 @@
 
 import Image from 'next/image';
 import Link  from 'next/link';
-import ScrollReveal from '@/components/ScrollReveal';
+import ScrollReveal    from '@/components/ScrollReveal';
+import IntroAnimation, { INTRO_CENTER_SRC, INTRO_LEFT_SRC, INTRO_RIGHT_SRC } from '@/components/IntroAnimation';
+import { useState, useEffect } from 'react';
 
 const SERVICES = [
   {
     key:   'perso',
     label: 'SHOOTING PERSONNEL',
     sub:   'Portraits, séances solo & collaborations artistiques.',
-    img:   'https://picsum.photos/seed/s1/900/600',
+    img:   INTRO_LEFT_SRC,
     href:  '/contact',
   },
   {
@@ -23,14 +25,35 @@ const SERVICES = [
     key:   'nightlife',
     label: 'ÉVÉNEMENTIEL NIGHTLIFE',
     sub:   "Soirées, clubs, festivals – capturer l'énergie brute de la nuit.",
-    img:   'https://picsum.photos/seed/s3/900/600',
+    img:   INTRO_RIGHT_SRC,
     href:  '/albums',
   },
 ];
 
 export default function HomePage() {
+  const [showIntro, setShowIntro]     = useState(false);
+  const [heroReady, setHeroReady]     = useState(false);
+
+  useEffect(() => {
+    const played = sessionStorage.getItem('intro-played');
+    if (!played) {
+      setShowIntro(true);
+    } else {
+      // Already played this session — show hero content immediately
+      setHeroReady(true);
+    }
+  }, []);
+
+  function handleIntroDone() {
+    sessionStorage.setItem('intro-played', '1');
+    setShowIntro(false);
+    // Small pause so the center strip fully exits before hero content appears
+    setTimeout(() => setHeroReady(true), 120);
+  }
+
   return (
     <>
+      {showIntro && <IntroAnimation onDone={handleIntroDone} />}
       {/* ── HERO ── */}
       <section
         style={{
@@ -43,7 +66,7 @@ export default function HomePage() {
         }}
       >
         <Image
-          src="https://picsum.photos/seed/hero1/1600/1000"
+          src={INTRO_CENTER_SRC}
           alt="Hero background"
           fill
           priority
@@ -62,7 +85,8 @@ export default function HomePage() {
               lineHeight:    0.92,
               letterSpacing: '-0.01em',
               color:         'var(--text)',
-              animation:     'fadeInUp 1s cubic-bezier(0.22,1,0.36,1) 0.1s both',
+              animation:     heroReady ? 'fadeInUp 0.9s cubic-bezier(0.16,1,0.3,1) 0.05s both' : 'none',
+              opacity:       heroReady ? undefined : 0,
             }}
           >
             Ghjulianu
@@ -72,14 +96,17 @@ export default function HomePage() {
 
           <p style={{
             marginTop: '1.5rem', fontSize: '0.7rem', letterSpacing: '0.22em',
-            color: 'var(--muted)', animation: 'fadeInUp 1s cubic-bezier(0.22,1,0.36,1) 0.35s both',
+            color: 'var(--muted)',
+            animation: heroReady ? 'fadeInUp 0.9s cubic-bezier(0.16,1,0.3,1) 0.22s both' : 'none',
+            opacity:   heroReady ? undefined : 0,
           }}>
             PHOTOGRAPHE — PARIS
           </p>
 
           <div style={{
             marginTop: '2.5rem', display: 'flex', gap: '1.2rem', flexWrap: 'wrap',
-            animation: 'fadeInUp 1s cubic-bezier(0.22,1,0.36,1) 0.55s both',
+            animation: heroReady ? 'fadeInUp 0.9s cubic-bezier(0.16,1,0.3,1) 0.4s both' : 'none',
+            opacity:   heroReady ? undefined : 0,
           }}>
             <Link href="/portfolio" style={ctaStyle('solid')}>VOIR LE PORTFOLIO</Link>
             <Link href="/contact"   style={ctaStyle('outline')}>ME CONTACTER</Link>
@@ -90,7 +117,8 @@ export default function HomePage() {
         <div style={{
           position: 'absolute', bottom: '2rem', right: '2.5rem', zIndex: 2,
           display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px',
-          animation: 'fadeIn 1.2s ease 1.2s both',
+          animation: heroReady ? 'fadeIn 1s ease 0.7s both' : 'none',
+          opacity:   heroReady ? undefined : 0,
         }}>
           <span style={{ fontSize: '0.58rem', letterSpacing: '0.18em', color: 'var(--muted)', writingMode: 'vertical-rl' }}>SCROLL</span>
           <div style={{ width: '1px', height: '48px', background: 'linear-gradient(to bottom,var(--muted),transparent)' }} />
