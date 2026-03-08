@@ -51,19 +51,21 @@ function buildColumns(photos: TrackPhoto[]): Column[] {
 }
 
 /* ─────────────────────────────────────────────────────────── */
-const FRICTION = 0.88; // momentum decay per frame
-const MIN_VEL  = 0.1;  // px/frame below which motion stops
-// wheel: pixels per unit of deltaY (line-mode ~16px, pixel-mode 1px)
+const FRICTION   = 0.88;
+const MIN_VEL    = 0.1;
 const WHEEL_MULT = 1.2;
+// grid overlay scrolls this many times faster than the photos layer
+const GRID_SPEED = 2.5;
 
 export default function DragTrack({
   photos,
   onClickPhoto,
   trackHeight = 'clamp(340px, 68vh, 680px)',
 }: Props) {
-  const wrapperRef  = useRef<HTMLDivElement>(null);
-  const railRef     = useRef<HTMLDivElement>(null);
-  const setWidthRef = useRef(0);   // pixel width of ONE copy of columns
+  const wrapperRef    = useRef<HTMLDivElement>(null);
+  const railRef       = useRef<HTMLDivElement>(null);
+  const gridRailRef   = useRef<HTMLDivElement>(null);
+  const setWidthRef   = useRef(0);   // pixel width of ONE copy of columns
 
   // motion state in refs — no re-renders
   const dragging   = useRef(false);
@@ -110,16 +112,13 @@ export default function DragTrack({
 
       rail.style.transform = `translateX(${offsetX.current}px)`;
 
-      // per-image parallax: each image reveals a different crop
-      // depending on where it currently sits in the viewport
-      const vw = window.innerWidth;
-      rail.querySelectorAll<HTMLElement>('.bw-img').forEach((img) => {
-        const rect = img.getBoundingClientRect();
-        const cx   = rect.left + rect.width / 2;
-        // map 0..vw → 70%..30% (image enters from right showing its left side, exits left showing right)
-        const pct  = Math.max(20, Math.min(80, 70 - (cx / vw) * 40));
-        img.style.objectPosition = `${pct}% center`;
-      });
+      // grid rail: same columns but moves GRID_SPEED× faster → parallax depth
+      if (gridRailRef.current) {
+        const sw = setWidthRef.current;
+        let gridOff = (offsetX.current * GRID_SPEED) % sw;
+        if (gridOff > 0) gridOff -= sw;
+        gridRailRef.current.style.transform = `translateX(${gridOff}px)`;
+      }
 
       rafId = requestAnimationFrame(tick);
     }
@@ -181,6 +180,40 @@ export default function DragTrack({
     };
   }, [onMove, onUp]);
 
+  /* ── render one set of overlay columns (same shape, transparent+border) ── */
+  const BORDER = 8; // px of opaque inset border on each cell
+  const renderOverlayColumns = (keyPrefix: string) =>
+    columns.map((col, ci) => {
+      const firstRatio = photos[col.indices[0]].width / photos[col.indices[0]].height;
+      const colW = firstRatio < 0.85
+        ? `calc(${trackHeight} * 0.49)`
+        : `calc(${trackHeight} * 0.75)`;
+      return (
+        <div
+          key={`${keyPrefix}-${ci}`}
+          style={{
+            flexShrink:    0,
+            width:         colW,
+            height:        '100%',
+            display:       'flex',
+            flexDirection: 'column',
+            gap:           'clamp(10px,1.6vmin,22px)',
+          }}
+        >
+          {col.indices.map((_photoIdx, si) => (
+            <div
+              key={si}
+              style={{
+                flex:      1,
+                boxShadow: `inset 0 0 0 ${BORDER}px var(--bg)`,
+                background: 'transparent',
+              }}
+            />
+          ))}
+        </div>
+      );
+    });
+
   /* ── render one set of columns ───────────────────────── */
   const renderColumns = (keyPrefix: string) =>
     columns.map((col, ci) => {
@@ -220,7 +253,7 @@ export default function DragTrack({
                     width:            '100%',
                     height:           '100%',
                     objectFit:        'cover',
-                    objectPosition:   '50% center', // overwritten each frame by rAF parallax
+                    objectPosition:   '50% center',
                     filter:           'brightness(0.82) saturate(0.8)',
                     transition:       'filter 0.4s ease',
                     cursor:           'inherit',
@@ -248,6 +281,7 @@ export default function DragTrack({
     <div
       ref={wrapperRef}
       style={{
+        position:         'relative',
         overflow:         'hidden',
         cursor:           'grab',
         userSelect:       'none',
@@ -257,7 +291,7 @@ export default function DragTrack({
       onMouseDown={(e) => onDown(e.clientX)}
       onTouchStart={(e) => onDown(e.touches[0].clientX)}
     >
-      {/* rail: two identical copies for seamless wrap */}
+      {/* layer 1 — photos rail (two identical copies for seamless wrap) */}
       <div
         ref={railRef}
         style={{
@@ -273,6 +307,27 @@ export default function DragTrack({
       >
         {renderColumns('a')}
         {renderColumns('b')}
+      </div>
+
+      {/* layer 2 — mirror of the photo rail, positioned absolute, moves 2.5× faster */}
+      <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 2, overflow: 'hidden' }}>
+        <div
+          ref={gridRailRef}
+          style={{
+            display:       'flex',
+            flexDirection: 'row',
+            alignItems:    'stretch',
+            gap:           'clamp(10px,1.6vmin,22px)',
+            height:        '100%',
+            willChange:    'transform',
+            paddingLeft:   'clamp(1rem,3vw,3rem)',
+            paddingRight:  'clamp(1rem,3vw,3rem)',
+            background:    'var(--bg)',  /* fills every gap/padding area */
+          }}
+        >
+          {renderOverlayColumns('oa')}
+          {renderOverlayColumns('ob')}
+        </div>
       </div>
     </div>
   );

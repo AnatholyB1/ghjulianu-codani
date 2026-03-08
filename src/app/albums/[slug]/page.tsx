@@ -1,38 +1,151 @@
 'use client';
 
-import Image       from 'next/image';
-import Link        from 'next/link';
+import Image        from 'next/image';
+import Link         from 'next/link';
 import { notFound } from 'next/navigation';
-import { useState, use, useMemo } from 'react'; // useMemo kept for trackPhotos
-import ScrollReveal from '@/components/ScrollReveal';
-import Lightbox    from '@/components/Lightbox';
-import DragTrack, { TrackPhoto } from '@/components/DragTrack';
-import { albums }  from '@/data/albums';
+import { useState, use, useEffect, useRef } from 'react';
+import Lightbox     from '@/components/Lightbox';
+import { albums }   from '@/data/albums';
 
+/* ── Hero parallax ─────────────────────────────────────────
+   The cover image is 140% tall; a rAF scroll listener shifts
+   it upward so it moves at ~40% of the page-scroll speed.
+───────────────────────────────────────────────────────────── */
+function useHeroParallax() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const imgRef     = useRef<HTMLImageElement>(null);
+
+  useEffect(() => {
+    let rafId: number;
+    const tick = () => {
+      const section = sectionRef.current;
+      const img     = imgRef.current;
+      if (!section || !img) return;
+      const { top, height } = section.getBoundingClientRect();
+      // how far the section top is from the viewport top (negative when scrolled past)
+      const progress = -top / (height + window.innerHeight); // 0 → 1
+      const shift    = progress * 40; // 0% → 40% shift (image is 140% tall)
+      img.style.transform = `translateY(${shift}%)`;
+    };
+    const onScroll = () => { cancelAnimationFrame(rafId); rafId = requestAnimationFrame(tick); };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    tick();
+    return () => { window.removeEventListener('scroll', onScroll); cancelAnimationFrame(rafId); };
+  }, []);
+
+  return { sectionRef, imgRef };
+}
+
+/* ── Photo card with enter/exit animation + inner parallax ──
+   The <img> is 120% tall; its translateY shifts based on where
+   the card sits in the viewport (top → bottom = 0% → -20%).
+───────────────────────────────────────────────────────────── */
+function PhotoCard({
+  src, width, height, alt, index, onClick,
+}: {
+  src: string; width: number; height: number; alt?: string;
+  index: number; onClick: () => void;
+}) {
+  const wrapRef      = useRef<HTMLDivElement>(null);
+  const imgRef       = useRef<HTMLImageElement>(null);
+  const [vis, setVis] = useState(false);
+
+  // Visibility for fade-in / fade-out
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => setVis(entry.isIntersecting),
+      { threshold: 0.06, rootMargin: '0px 0px -40px 0px' },
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
+  // Inner image parallax on scroll
+  useEffect(() => {
+    let rafId: number;
+    const tick = () => {
+      const wrap = wrapRef.current;
+      const img  = imgRef.current;
+      if (!wrap || !img) return;
+      const { top, height: h } = wrap.getBoundingClientRect();
+      const vh = window.innerHeight;
+      // progress: 0 when bottom of card enters viewport, 1 when top exits top
+      const progress = 1 - (top + h) / (vh + h);
+      const shift    = Math.max(-20, Math.min(0, progress * -20)); // 0% → -20%
+      img.style.transform = `translateY(${shift}%)`;
+    };
+    const onScroll = () => { cancelAnimationFrame(rafId); rafId = requestAnimationFrame(tick); };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    tick();
+    return () => { window.removeEventListener('scroll', onScroll); cancelAnimationFrame(rafId); };
+  }, []);
+
+  const delay = (index % 4) * 60;
+
+  return (
+    <div
+      ref={wrapRef}
+      onClick={onClick}
+      style={{
+        breakInside:  'avoid',
+        marginBottom: 'clamp(10px,1.4vmin,20px)',
+        overflow:     'hidden',
+        cursor:       'zoom-in',
+        display:      'block',
+        opacity:       vis ? 1 : 0,
+        transform:     vis ? 'translateY(0) scale(1)' : 'translateY(32px) scale(0.97)',
+        transition:   `opacity 0.7s cubic-bezier(0.22,1,0.36,1) ${delay}ms,
+                       transform 0.7s cubic-bezier(0.22,1,0.36,1) ${delay}ms`,
+      }}
+    >
+      {/* wrapper that clips the over-tall image */}
+      <div style={{ overflow: 'hidden', display: 'block' }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          ref={imgRef}
+          src={src}
+          alt={alt ?? ''}
+          width={width}
+          height={height}
+          loading="lazy"
+          style={{
+            display:         'block',
+            width:           '100%',
+            height:          'calc(100% + 20%)', // 120% tall for parallax room
+            objectFit:       'cover',
+            objectPosition:  'center center',
+            filter:          'brightness(0.88) saturate(0.85)',
+            transition:      'filter 0.4s ease',
+            willChange:      'transform',
+          }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLImageElement).style.filter = 'brightness(1) saturate(1)';
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLImageElement).style.filter = 'brightness(0.88) saturate(0.85)';
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────── */
 export default function AlbumPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug }  = use(params);
   const album     = albums.find((a) => a.slug === slug);
   const [lightbox, setLightbox] = useState<number | null>(null);
-
-  const trackPhotos: TrackPhoto[] = useMemo(
-    () => (album?.photos ?? []).map((p) => ({
-      src:    p.src,
-      width:  p.width,
-      height: p.height,
-      alt:    p.alt,
-      aspect: p.height > p.width ? '2/3' : p.width > p.height * 1.2 ? '4/3' : '3/2',
-    })),
-    [album],
-  );
-
-
+  const { sectionRef, imgRef }   = useHeroParallax();
 
   if (!album) notFound();
 
   return (
     <>
-      {/* Hero banner */}
+      {/* Hero banner — cover image scrolls at 40% speed */}
       <section
+        ref={sectionRef}
         style={{
           position:   'relative',
           height:     'clamp(300px, 50vh, 560px)',
@@ -41,18 +154,26 @@ export default function AlbumPage({ params }: { params: Promise<{ slug: string }
           alignItems: 'flex-end',
         }}
       >
-        <Image
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          ref={imgRef}
           src={album.cover}
           alt={album.title}
-          fill
-          unoptimized
-          priority
-          style={{ objectFit: 'cover', objectPosition: 'center', filter: 'brightness(0.38)' }}
+          style={{
+            position:   'absolute',
+            inset:      0,
+            width:      '100%',
+            height:     '140%',   // taller than its container
+            objectFit:  'cover',
+            objectPosition: 'center top',
+            filter:     'brightness(0.38)',
+            willChange: 'transform',
+            top:        '-20%',   // centre the oversize start position
+          }}
         />
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(0deg,rgba(8,8,8,0.96) 0%,rgba(8,8,8,0.25) 60%,transparent 100%)' }} />
 
         <div style={{ position: 'relative', zIndex: 2, padding: 'clamp(2rem,5vw,4rem)' }}>
-          {/* Breadcrumb */}
           <p style={{ fontSize: '0.6rem', letterSpacing: '0.18em', color: 'var(--muted)', marginBottom: '1rem' }}>
             <Link href="/albums" style={{ color: 'var(--muted)', textDecoration: 'none' }}>ALBUMS</Link>
             {' → '}
@@ -61,13 +182,13 @@ export default function AlbumPage({ params }: { params: Promise<{ slug: string }
 
           <h1
             style={{
-              fontFamily:    'var(--font-cormorant),serif',
-              fontSize:      'clamp(2.5rem,7vw,5.5rem)',
-              fontStyle:     'italic',
-              fontWeight:    300,
-              lineHeight:    0.95,
-              color:         'var(--text)',
-              animation:     'fadeInUp 0.9s cubic-bezier(0.22,1,0.36,1) 0.1s both',
+              fontFamily: 'var(--font-cormorant),serif',
+              fontSize:   'clamp(2.5rem,7vw,5.5rem)',
+              fontStyle:  'italic',
+              fontWeight: 300,
+              lineHeight: 0.95,
+              color:      'var(--text)',
+              animation:  'fadeInUp 0.9s cubic-bezier(0.22,1,0.36,1) 0.1s both',
             }}
           >
             {album.title}
@@ -95,20 +216,26 @@ export default function AlbumPage({ params }: { params: Promise<{ slug: string }
         </div>
       </section>
 
-      {/* ── Brick-wall drag track ── */}
-      <section style={{ padding: 'clamp(2rem,4vw,4rem) 0' }}>
-        <ScrollReveal direction="up" threshold={0.05}>
-          <DragTrack
-            photos={trackPhotos}
-            onClickPhoto={(idx) => setLightbox(idx)}
+      {/* Masonry collage with per-photo inner parallax */}
+      <section
+        style={{
+          padding:   'clamp(2rem,4vw,4rem) clamp(1rem,3vw,3rem)',
+          columns:   '3 220px',
+          columnGap: 'clamp(10px,1.4vmin,20px)',
+        }}
+      >
+        {album.photos.map((photo, i) => (
+          <PhotoCard
+            key={i}
+            src={photo.src}
+            width={photo.width}
+            height={photo.height}
+            alt={photo.alt}
+            index={i}
+            onClick={() => setLightbox(i)}
           />
-        </ScrollReveal>
+        ))}
       </section>
-
-      {/* Drag hint */}
-      <p style={{ textAlign: 'center', fontSize: '0.58rem', letterSpacing: '0.18em', color: 'var(--muted)', opacity: 0.5, paddingBottom: '2rem' }}>
-        ← GLISSER →
-      </p>
 
       {/* Back link */}
       <div style={{ padding: '0 clamp(1rem,3vw,3rem) clamp(3rem,5vw,5rem)', borderTop: '1px solid var(--border)', paddingTop: '2rem', marginTop: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>

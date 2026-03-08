@@ -1,9 +1,7 @@
 'use client';
 
-import Image  from 'next/image';
-import Link   from 'next/link';
-import { useState } from 'react';
-import ScrollReveal from '@/components/ScrollReveal';
+import Link      from 'next/link';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { albums } from '@/data/albums';
 
 const CATEGORIES = ['all', 'event', 'brand'] as const;
@@ -13,208 +11,252 @@ export default function AlbumsPage() {
   const [cat, setCat] = useState<Cat>('all');
   const filtered = cat === 'all' ? albums : albums.filter((a) => a.category === cat);
 
+  const trackRef    = useRef<HTMLDivElement>(null);
+  const downAt      = useRef(0);
+  const prevPct     = useRef(0);
+  const isDragging  = useRef(false);
+  const hasDragged  = useRef(false);
+
+  // Reset position when filter changes
+  useEffect(() => {
+    prevPct.current = 0;
+    const track = trackRef.current;
+    if (!track) return;
+    track.animate({ transform: 'translate(0%, -50%)' }, { duration: 0, fill: 'forwards' });
+    track.querySelectorAll<HTMLElement>('.album-cover').forEach((img) => {
+      img.animate({ objectPosition: '100% center' }, { duration: 0, fill: 'forwards' });
+    });
+  }, [cat]);
+
+  const moveTo = useCallback((nextPct: number) => {
+    const track = trackRef.current;
+    if (!track) return;
+    track.animate(
+      { transform: `translate(${nextPct}%, -50%)` },
+      { duration: 1200, fill: 'forwards', easing: 'cubic-bezier(0.16,1,0.3,1)' },
+    );
+    track.querySelectorAll<HTMLElement>('.album-cover').forEach((img) => {
+      img.animate(
+        { objectPosition: `${100 + nextPct}% center` },
+        { duration: 1200, fill: 'forwards', easing: 'cubic-bezier(0.16,1,0.3,1)' },
+      );
+    });
+  }, []);
+
+  const onDown = useCallback((x: number) => {
+    isDragging.current = true;
+    hasDragged.current = false;
+    downAt.current = x;
+  }, []);
+
+  const onUp = useCallback(() => {
+    if (!isDragging.current) return;
+    isDragging.current = false;
+    prevPct.current = parseFloat(trackRef.current?.dataset.pct ?? String(prevPct.current));
+  }, []);
+
+  const onMove = useCallback((x: number) => {
+    if (!isDragging.current) return;
+    const delta    = downAt.current - x;
+    if (Math.abs(delta) > 4) hasDragged.current = true;
+    const maxDelta = window.innerWidth * 2;
+    const pct      = (delta / maxDelta) * -100;
+    const next     = Math.max(Math.min(prevPct.current + pct, 0), -100);
+    if (trackRef.current) trackRef.current.dataset.pct = String(next);
+    moveTo(next);
+  }, [moveTo]);
+
+  const onWheel = useCallback((e: WheelEvent) => {
+    e.preventDefault();
+    // Use whichever axis has more movement (supports trackpad horizontal swipe too)
+    const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+    const step  = (delta / window.innerWidth) * -25; // sensitivity
+    const next  = Math.max(Math.min(prevPct.current + step, 0), -100);
+    prevPct.current = next;
+    if (trackRef.current) trackRef.current.dataset.pct = String(next);
+    moveTo(next);
+  }, [moveTo]);
+
+  useEffect(() => {
+    const mm = (e: MouseEvent) => onMove(e.clientX);
+    const tm = (e: TouchEvent) => onMove(e.touches[0].clientX);
+    window.addEventListener('mousemove', mm, { passive: true });
+    window.addEventListener('touchmove', tm, { passive: true });
+    window.addEventListener('mouseup',   onUp);
+    window.addEventListener('touchend',  onUp);
+    // wheel must be non-passive to call preventDefault and stop page scroll
+    window.addEventListener('wheel', onWheel, { passive: false });
+    return () => {
+      window.removeEventListener('mousemove', mm);
+      window.removeEventListener('touchmove', tm);
+      window.removeEventListener('mouseup',   onUp);
+      window.removeEventListener('touchend',  onUp);
+      window.removeEventListener('wheel', onWheel);
+    };
+  }, [onMove, onUp, onWheel]);
+
   return (
-    <>
-      {/* Header */}
-      <section style={{ padding: 'clamp(2.5rem,5vw,5rem) clamp(1.5rem,5vw,5rem) 0' }}>
-        <ScrollReveal direction="up">
-          <p style={{ fontSize: '0.62rem', letterSpacing: '0.22em', color: 'var(--muted)', marginBottom: '0.8rem' }}>
-            GALERIES
-          </p>
-          <h1
+    <div
+      style={{
+        height:           'calc(100vh - var(--navbar-h))',
+        overflow:         'hidden',
+        position:         'relative',
+        userSelect:       'none',
+        WebkitUserSelect: 'none',
+        cursor:           'grab',
+      }}
+      onMouseDown={(e) => onDown(e.clientX)}
+      onTouchStart={(e) => onDown(e.touches[0].clientX)}
+    >
+      {/* Filter tabs – top-left */}
+      <div style={{
+        position:  'absolute',
+        top:       'clamp(1.5rem,3vw,2.5rem)',
+        left:      'clamp(1.5rem,3vw,3rem)',
+        zIndex:    10,
+        display:   'flex',
+        gap:       '0.2rem',
+        pointerEvents: 'auto',
+      }}>
+        {CATEGORIES.map((c) => (
+          <button
+            key={c}
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={() => setCat(c)}
             style={{
-              fontFamily: 'var(--font-cormorant),serif',
-              fontSize:   'clamp(2.5rem,7vw,5.5rem)',
-              fontStyle:  'italic',
-              fontWeight: 300,
-              lineHeight: 0.95,
-              color:      'var(--text)',
+              background:    cat === c ? 'var(--text)' : 'transparent',
+              color:         cat === c ? '#080808' : 'var(--muted)',
+              border:        '1px solid var(--border)',
+              padding:       '0.45rem 1.2rem',
+              fontSize:      '0.62rem',
+              letterSpacing: '0.14em',
+              cursor:        'pointer',
+              transition:    'all 0.25s ease',
             }}
           >
-            Albums
-          </h1>
-        </ScrollReveal>
+            {c === 'all' ? 'TOUT' : c === 'event' ? 'ÉVÉNEMENTS' : 'MARQUES'}
+          </button>
+        ))}
+      </div>
 
-        {/* Filter tabs */}
-        <ScrollReveal direction="up" delay={120}>
-          <div style={{ display: 'flex', gap: '0.2rem', marginTop: '2.5rem' }}>
-            {CATEGORIES.map((c) => (
-              <button
-                key={c}
-                onClick={() => setCat(c)}
-                style={{
-                  background:    cat === c ? 'var(--text)' : 'transparent',
-                  color:         cat === c ? '#080808' : 'var(--muted)',
-                  border:        '1px solid var(--border)',
-                  padding:       '0.45rem 1.2rem',
-                  fontSize:      '0.62rem',
-                  letterSpacing: '0.14em',
-                  cursor:        'pointer',
-                  transition:    'all 0.25s ease',
-                }}
-              >
-                {c === 'all' ? 'TOUT' : c === 'event' ? 'ÉVÉNEMENTS' : 'MARQUES'}
-              </button>
-            ))}
-          </div>
-        </ScrollReveal>
-      </section>
+      {/* Drag hint */}
+      <p style={{
+        position:      'absolute',
+        bottom:        'clamp(1.5rem,3vw,2.5rem)',
+        left:          '50%',
+        transform:     'translateX(-50%)',
+        zIndex:        10,
+        fontSize:      '0.58rem',
+        letterSpacing: '0.18em',
+        color:         'var(--muted)',
+        opacity:       0.45,
+        pointerEvents: 'none',
+      }}>
+        ← GLISSER →
+      </p>
 
-      {/* Album cards – inspired by atmospheric vertical scroll */}
-      <section style={{ padding: 'clamp(2.5rem,5vw,5rem) clamp(1.5rem,5vw,5rem)' }}>
-        <div
-          className="albums-grid"
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(min(300px,100%),1fr))',
-            gap: '2px',
-          }}
-        >
-          {filtered.map((album, i) => (
-            <ScrollReveal key={album.slug} direction="up" delay={i * 80}>
-              <Link
-                href={`/albums/${album.slug}`}
-                className="album-card"
-                style={{
-                  display:        'block',
-                  position:       'relative',
-                  overflow:       'hidden',
-                  textDecoration: 'none',
-                  aspectRatio:    '3/4',
-                  background:     '#0c0c0c',
-                }}
-              >
-                {/* Cover image */}
-                <Image
-                  src={album.cover}
-                  alt={album.title}
-                  fill
-                  unoptimized
-                  className="album-img"
-                  style={{
-                    objectFit:  'cover',
-                    filter:     'brightness(0.55) saturate(0.85)',
-                    transition: 'transform 0.7s cubic-bezier(0.22,1,0.36,1), filter 0.5s ease',
-                  }}
-                />
+      {/* Track – absolutely centred vertically, starts at left edge */}
+      <div
+        ref={trackRef}
+        data-pct="0"
+        style={{
+          position:      'absolute',
+          left:          '50%',
+          top:           '50%',
+          transform:     'translate(0%, -50%)',
+          display:       'flex',
+          gap:           '4vmin',
+          willChange:    'transform',
+        }}
+      >
+        {filtered.map((album) => (
+          <Link
+            key={album.slug}
+            href={`/albums/${album.slug}`}
+            draggable={false}
+            onClick={(e) => { if (hasDragged.current) e.preventDefault(); }}
+            style={{
+              flexShrink:     0,
+              display:        'block',
+              width:          '40vmin',
+              height:         '56vmin',
+              overflow:       'hidden',
+              position:       'relative',
+              textDecoration: 'none',
+            }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={album.cover}
+              alt={album.title}
+              draggable={false}
+              className="album-cover"
+              style={{
+                width:          '100%',
+                height:         '100%',
+                objectFit:      'cover',
+                objectPosition: '100% center',
+                filter:         'brightness(0.55) saturate(0.8)',
+                transition:     'filter 0.5s ease',
+                display:        'block',
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.filter = 'brightness(0.35) saturate(0.7)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.filter = 'brightness(0.55) saturate(0.8)'; }}
+            />
 
-                {/* Gradient overlay */}
-                <div className="album-overlay" style={{
-                  position:   'absolute',
-                  inset:      0,
-                  background: 'linear-gradient(0deg,rgba(8,8,8,0.78) 0%, rgba(8,8,8,0.15) 60%, transparent 100%)',
-                  transition: 'background 0.45s ease',
-                }} />
+            {/* gradient */}
+            <div style={{
+              position:   'absolute',
+              inset:      0,
+              background: 'linear-gradient(0deg,rgba(8,8,8,0.85) 0%,rgba(8,8,8,0.1) 55%,transparent 100%)',
+              pointerEvents: 'none',
+            }} />
 
-                {/* Category badge */}
-                <span style={{
-                  position:      'absolute',
-                  top:           '1.2rem',
-                  right:         '1.2rem',
-                  fontSize:      '0.55rem',
-                  letterSpacing: '0.18em',
-                  color:         'var(--muted)',
-                  border:        '1px solid rgba(255,255,255,0.1)',
-                  padding:       '3px 8px',
-                  background:    'rgba(8,8,8,0.5)',
-                }}>
-                  {album.category === 'event' ? 'ÉVÉNEMENT' : 'MARQUE'}
-                </span>
+            {/* category badge */}
+            <span style={{
+              position:      'absolute',
+              top:           '1rem',
+              right:         '1rem',
+              fontSize:      '0.52rem',
+              letterSpacing: '0.18em',
+              color:         'var(--muted)',
+              border:        '1px solid rgba(255,255,255,0.1)',
+              padding:       '3px 7px',
+              background:    'rgba(8,8,8,0.5)',
+              pointerEvents: 'none',
+            }}>
+              {album.category === 'event' ? 'ÉVÉNEMENT' : 'MARQUE'}
+            </span>
 
-                {/* Album name – centred, reveals on hover */}
-                <div
-                  className="album-title-box"
-                  style={{
-                    position:       'absolute',
-                    inset:          0,
-                    display:        'flex',
-                    flexDirection:  'column',
-                    alignItems:     'center',
-                    justifyContent: 'center',
-                    padding:        '1.5rem',
-                    transition:     'opacity 0.35s ease',
-                    opacity:        0,
-                  }}
-                >
-                  <h2
-                    style={{
-                      fontFamily:    'var(--font-cormorant),serif',
-                      fontSize:      'clamp(1.6rem,3.5vw,2.4rem)',
-                      fontStyle:     'italic',
-                      fontWeight:    400,
-                      letterSpacing: '0.04em',
-                      color:         'var(--text)',
-                      textAlign:     'center',
-                      lineHeight:    1.1,
-                    }}
-                  >
-                    {album.title}
-                  </h2>
-                  {album.date && (
-                    <p style={{ marginTop: '0.5rem', fontSize: '0.6rem', letterSpacing: '0.18em', color: 'var(--muted)' }}>
-                      {album.date}
-                    </p>
-                  )}
-                  <span style={{
-                    display: 'inline-block', marginTop: '1.2rem',
-                    fontSize: '0.6rem', letterSpacing: '0.18em', color: 'rgba(255,255,255,0.4)',
-                    borderBottom: '1px solid rgba(255,255,255,0.25)', paddingBottom: '2px',
-                  }}>
-                    VOIR →
-                  </span>
-                </div>
-
-                {/* Bottom title (always visible) */}
-                <div
-                  className="album-title-bottom"
-                  style={{
-                    position:   'absolute',
-                    bottom:     '1.5rem',
-                    left:       '1.5rem',
-                    right:      '1.5rem',
-                    transition: 'opacity 0.35s ease, transform 0.35s ease',
-                  }}
-                >
-                  <h2
-                    style={{
-                      fontFamily:    'var(--font-cormorant),serif',
-                      fontSize:      'clamp(1.3rem,3vw,1.9rem)',
-                      fontStyle:     'italic',
-                      fontWeight:    400,
-                      color:         'var(--text)',
-                      lineHeight:    1.1,
-                    }}
-                  >
-                    {album.title}
-                  </h2>
-                  {album.date && (
-                    <p style={{ marginTop: '0.3rem', fontSize: '0.58rem', letterSpacing: '0.14em', color: 'var(--muted)' }}>
-                      {album.date}
-                    </p>
-                  )}
-                </div>
-              </Link>
-            </ScrollReveal>
-          ))}
-        </div>
-      </section>
-
-      <style>{`
-        .album-card:hover .album-img {
-          transform: scale(1.06);
-          filter: brightness(0.3) saturate(0.7) !important;
-        }
-        .album-card:hover .album-title-box {
-          opacity: 1 !important;
-        }
-        .album-card:hover .album-title-bottom {
-          opacity: 0 !important;
-          transform: translateY(8px);
-        }
-        .album-card:hover .album-overlay {
-          background: linear-gradient(0deg, rgba(8,8,8,0.88) 0%, rgba(8,8,8,0.55) 100%) !important;
-        }
-      `}</style>
-    </>
+            {/* title */}
+            <div style={{
+              position:      'absolute',
+              bottom:        '1.4rem',
+              left:          '1.4rem',
+              right:         '1.4rem',
+              pointerEvents: 'none',
+            }}>
+              <h2 style={{
+                fontFamily:    'var(--font-cormorant),serif',
+                fontSize:      'clamp(1.2rem,3vmin,1.8rem)',
+                fontStyle:     'italic',
+                fontWeight:    400,
+                color:         'var(--text)',
+                lineHeight:    1.1,
+                margin:        0,
+              }}>
+                {album.title}
+              </h2>
+              {album.date && (
+                <p style={{ marginTop: '0.3rem', fontSize: '0.55rem', letterSpacing: '0.14em', color: 'var(--muted)' }}>
+                  {album.date}
+                </p>
+              )}
+            </div>
+          </Link>
+        ))}
+      </div>
+    </div>
   );
 }
+
