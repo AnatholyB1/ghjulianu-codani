@@ -73,6 +73,28 @@ body.no-scroll { overflow: hidden; }
   to   { opacity: 1; transform: scale(1); }
 }
 
+/* ── Mobile / touch ─────────────────────────────────── */
+a, button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Hide grab cursor on touch-only devices */
+@media (hover: none) {
+  .drag-area { cursor: default !important; }
+}
+
+/* Scroll-hint: hide on narrow phones */
+@media (max-width: 480px) {
+  .scroll-hint { display: none !important; }
+}
+
+/* BottomBar responsive */
+@media (max-width: 560px) {
+  .bb-bar  { padding: 0 1.2rem !important; gap: 0.6rem; }
+  .bb-text { font-size: 0.58rem !important; letter-spacing: 0.04em !important; }
+  .bb-prefix { display: none; }
+}
+
 /* Cursor blink */
 @keyframes blink {
   0%, 100% { opacity: 1; }

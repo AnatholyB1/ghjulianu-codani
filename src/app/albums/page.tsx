@@ -97,12 +97,14 @@ export default function AlbumsPage() {
 
   return (
     <div
+      className="drag-area"
       style={{
         height:           'calc(100vh - var(--navbar-h))',
         overflow:         'hidden',
         position:         'relative',
         userSelect:       'none',
         WebkitUserSelect: 'none',
+        touchAction:      'none',
         cursor:           'grab',
       }}
       onMouseDown={(e) => onDown(e.clientX)}

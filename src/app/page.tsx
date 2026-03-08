@@ -114,7 +114,7 @@ export default function HomePage() {
         </div>
 
         {/* Scroll hint */}
-        <div style={{
+        <div className="scroll-hint" style={{
           position: 'absolute', bottom: '2rem', right: '2.5rem', zIndex: 2,
           display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px',
           animation: heroReady ? 'fadeIn 1s ease 0.7s both' : 'none',

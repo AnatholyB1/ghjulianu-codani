@@ -21,6 +21,7 @@ export default function BottomBar() {
   return (
     <div
       role="contentinfo"
+      className="bb-bar"
       style={{
         position:   'fixed',
         bottom:     0,
@@ -31,7 +32,7 @@ export default function BottomBar() {
         alignItems: 'center',
         justifyContent: 'space-between',
         padding:    '0 2rem',
-        height:     '52px',
+        minHeight:  '52px',
         background: 'rgba(8,8,8,0.9)',
         borderTop:  '1px solid var(--border)',
         backdropFilter: 'blur(14px)',
@@ -41,13 +42,15 @@ export default function BottomBar() {
       }}
     >
       <p
+        className="bb-text"
         style={{
           fontSize:      '0.65rem',
           letterSpacing: '0.12em',
           color:         'var(--muted)',
+          whiteSpace:    'nowrap',
         }}
       >
-        Vous appréciez mon travail ?{' '}
+        <span className="bb-prefix">Vous appréciez mon travail ?{' '}</span>
         <Link
           href="/don"
           style={{
