@@ -64,7 +64,6 @@ export default function Navbar() {
         {/* Desktop nav */}
         <nav
           style={{
-            display:    'flex',
             gap:        '2.2rem',
             alignItems: 'center',
           }}
@@ -114,10 +113,9 @@ export default function Navbar() {
             border:     'none',
             cursor:     'pointer',
             color:      'var(--text)',
-            display:    'flex',
             flexDirection: 'column',
             gap:        '5px',
-            padding:    '4px',
+            padding:    '8px',
           }}
         >
           {[0, 1, 2].map((i) => (
@@ -183,9 +181,9 @@ export default function Navbar() {
       <style>{`
         .hidden-mobile { display: flex; }
         .show-mobile   { display: none; }
-        @media (max-width: 768px) {
-          .hidden-mobile { display: none; }
-          .show-mobile   { display: flex; }
+        @media (max-width: 900px) {
+          .hidden-mobile { display: none !important; }
+          .show-mobile   { display: flex !important; }
         }
       `}</style>
     </>

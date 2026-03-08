@@ -170,6 +170,7 @@ export default function AlbumsPage() {
           gap:           '4vmin',
           willChange:    'transform',
         }}
+        className="album-track"
       >
         {filtered.map((album) => (
           <Link
@@ -186,6 +187,7 @@ export default function AlbumsPage() {
               position:       'relative',
               textDecoration: 'none',
             }}
+            className="album-track-card"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -258,6 +260,13 @@ export default function AlbumsPage() {
           </Link>
         ))}
       </div>
+
+      <style>{`
+        @media (max-width: 900px) {
+          .album-track      { gap: 5vw !important; }
+          .album-track-card { width: 72vw !important; height: calc(72vw * 1.4) !important; }
+        }
+      `}</style>
     </div>
   );
 }
