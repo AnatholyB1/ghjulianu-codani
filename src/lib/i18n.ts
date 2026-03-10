@@ -10,6 +10,7 @@ const translations = {
       tarifs:    'TARIFS',
       contact:   'CONTACT',
       don:       'FAIRE UN DON',
+      myAlbum:   'MON ALBUM',
     },
 
     // ── Home ────────────────────────────────────────────────
@@ -181,7 +182,23 @@ const translations = {
       drag:   '← GLISSER →',
       dateLocale: 'fr-FR',
     },
-
+    // ── Client page ────────────────────────────────────────────
+    client: {
+      label:           'ESPACE CLIENT',
+      title:           'Mon album',
+      desc:            "Vous avez reçu une clé d'accès personnalisée ? Saisissez-la ci-dessous pour visualiser et télécharger votre album en haute qualité.",
+      keyLabel:        'CLÉ D\'ACCÈS',
+      keyPlaceholder:  'Entrez votre clé...',
+      submit:          'ACCÉDER À MON ALBUM',
+      loading:         'RECHERCHE EN COURS...',
+      error:           'Clé invalide ou expirée. Vérifiez la clé reçue par email.',
+      helpTitle:       'COMMENT ÇA FONCTIONNE',
+      helpItems: [
+        'Vous recevez une clé unique après votre séance photo ou événement',
+        "Saisissez cette clé ici pour accéder à votre album privé",
+        "Parcourez, sélectionnez et téléchargez vos photos directement depuis l'album",
+      ],
+    },
     // ── Footer ──────────────────────────────────────────────
     footer: {
       mentions: 'Mentions légales',
@@ -208,6 +225,7 @@ const translations = {
       tarifs:    'PRICING',
       contact:   'CONTACT',
       don:       'SUPPORT ME',
+      myAlbum:   'MY ALBUM',
     },
 
     home: {
@@ -372,6 +390,24 @@ const translations = {
       all:    'ALL',
       drag:   '← DRAG →',
       dateLocale: 'en-GB',
+    },
+
+    // ── Client page ──────────────────────────────────────────────────────────────────────────────────────
+    client: {
+      label:           'CLIENT SPACE',
+      title:           'My album',
+      desc:            'Received a personalised access key? Enter it below to view and download your album in full quality.',
+      keyLabel:        'ACCESS KEY',
+      keyPlaceholder:  'Enter your key...',
+      submit:          'ACCESS MY ALBUM',
+      loading:         'SEARCHING...',
+      error:           'Invalid or expired key. Please check the key you received by email.',
+      helpTitle:       'HOW IT WORKS',
+      helpItems: [
+        'You receive a unique key after your photo session or event',
+        'Enter that key here to access your private album',
+        'Browse, select and download your photos directly from the album',
+      ],
     },
 
     footer: {

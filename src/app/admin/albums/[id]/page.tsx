@@ -29,6 +29,22 @@ export default async function EditAlbumPage({ params }: { params: Promise<{ id: 
 
   return (
     <>
+      {/* Background photo preview banner */}
+      {album.background_url && (
+        <div style={{ position: 'relative', height: '160px', overflow: 'hidden', marginBottom: '2rem', border: '1px solid rgba(255,255,255,0.07)' }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={album.background_url}
+            alt="Photo de fond"
+            style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', filter: 'brightness(0.5)', display: 'block' }}
+          />
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, rgba(8,8,8,0.7) 0%, rgba(8,8,8,0.2) 100%)' }} />
+          <p style={{ position: 'absolute', bottom: '0.8rem', left: '1rem', fontSize: '0.52rem', letterSpacing: '0.18em', color: 'rgba(200,169,126,0.7)' }}>
+            PHOTO DE FOND
+          </p>
+        </div>
+      )}
+
       <div style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
           <p style={subLabel}><Link href="/admin/albums" style={{ color: '#7a7a74', textDecoration: 'none' }}>ALBUMS</Link> / MODIFIER</p>

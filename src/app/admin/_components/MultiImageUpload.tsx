@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useReducer, useRef, useCallback, memo, useState } from 'react';
 import { uploadFile } from '@/app/admin/actions';
 import { compressImage, getBucketPreset, formatSize } from '@/lib/compressImage';
 

@@ -1,7 +1,6 @@
 ﻿'use client';
 
 import Link         from 'next/link';
-import Image        from 'next/image';
 import { useState, useEffect, useRef } from 'react';
 import Lightbox     from '@/components/Lightbox';
 import { useCart, type CartPhoto } from '@/contexts/CartContext';
@@ -14,7 +13,7 @@ function downloadPrefix(slug: string): string {
   return slug.replace(/-/g, '').toUpperCase().substring(0, 12);
 }
 
-/* ── Hero parallax ─────────────────────────────────────────── */
+/* ── Hero parallax — unused, kept for future use ────────────── */
 function useHeroParallax() {
   const sectionRef = useRef<HTMLElement>(null);
   const imgRef     = useRef<HTMLImageElement>(null);
@@ -191,29 +190,39 @@ function PhotoCard({
 /* ── CTA Banner ─────────────────────────────────────────────── */
 function CtaBanner() {
   return (
-    <Link
-      href="/contact"
+    <div
       style={{
         display:        'flex',
         alignItems:     'center',
         justifyContent: 'space-between',
         padding:        '1rem clamp(1rem,3vw,2rem)',
-        background:     'rgba(200,169,126,0.07)',
-        border:         '1px solid rgba(200,169,126,0.18)',
-        textDecoration: 'none',
-        gap:            '1rem',
-        transition:     'background 0.2s',
+        background:     'rgba(200,169,126,0.05)',
+        borderTop:      '1px solid rgba(200,169,126,0.12)',
+        borderBottom:   '1px solid rgba(200,169,126,0.12)',
+        gap:            '2rem',
+        flexWrap:       'wrap',
       }}
-      onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(200,169,126,0.13)'; }}
-      onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(200,169,126,0.07)'; }}
     >
-      <span style={{ fontFamily: 'var(--font-cormorant),serif', fontSize: 'clamp(0.9rem,2vw,1.1rem)', fontStyle: 'italic', fontWeight: 300, color: 'var(--text)', lineHeight: 1.3 }}>
-        Intéressé par des photos ? Clique ici pour les avoir en haute qualité&nbsp;!
+      <span style={{ fontFamily: 'var(--font-cormorant),serif', fontSize: 'clamp(0.9rem,2vw,1.05rem)', fontStyle: 'italic', fontWeight: 300, color: 'var(--text)', lineHeight: 1.4 }}>
+        Vous souhaitez obtenir des photos en haute qualité ?
       </span>
-      <span style={{ fontSize: '0.58rem', letterSpacing: '0.18em', color: 'var(--accent)', whiteSpace: 'nowrap', flexShrink: 0 }}>
-        NOUS CONTACTER →
-      </span>
-    </Link>
+      <div style={{ display: 'flex', gap: 'clamp(1.2rem,3vw,2.5rem)', flexWrap: 'wrap', alignItems: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+          <span style={{ fontSize: '0.9rem', opacity: 0.5 }}>①</span>
+          <span style={{ fontSize: '0.6rem', letterSpacing: '0.1em', color: 'var(--muted)', lineHeight: 1.4 }}>Survolez une photo<br />et cliquez sur le panier</span>
+        </div>
+        <span style={{ fontSize: '0.5rem', color: 'rgba(200,169,126,0.3)' }}>→</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+          <span style={{ fontSize: '0.9rem', opacity: 0.5 }}>②</span>
+          <span style={{ fontSize: '0.6rem', letterSpacing: '0.1em', color: 'var(--muted)', lineHeight: 1.4 }}>Composez votre sélection<br />depuis n'importe quel album</span>
+        </div>
+        <span style={{ fontSize: '0.5rem', color: 'rgba(200,169,126,0.3)' }}>→</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+          <span style={{ fontSize: '0.9rem', opacity: 0.5 }}>③</span>
+          <span style={{ fontSize: '0.6rem', letterSpacing: '0.1em', color: 'var(--muted)', lineHeight: 1.4 }}>Envoyez votre panier<br />pour recevoir les fichiers HD</span>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -226,7 +235,6 @@ export default function AlbumPageClient({
   photos: AlbumPhoto[];
 }) {
   const [lightbox, setLightbox] = useState<number | null>(null);
-  const { sectionRef, imgRef }  = useHeroParallax();
 
   const prefix         = downloadPrefix(album.slug);
   const lightboxPhotos = photos.map((p, i) => ({
@@ -245,50 +253,15 @@ export default function AlbumPageClient({
 
   return (
     <>
-      {/* ── Fixed left sidebar ── */}
-      <aside className="album-sidebar">
-        {album.cover_url && (
-          <div style={{ width: '100%', aspectRatio: '3/4', overflow: 'hidden', marginBottom: '1rem', flexShrink: 0 }}>
-            <Image
-              src={album.cover_url}
-              alt={album.title}
-              width={160}
-              height={213}
-              unoptimized
-              style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'brightness(0.75)' }}
-            />
-          </div>
-        )}
-
-        <div style={{ flex: 1, overflow: 'hidden' }}>
-          <h2 style={{ fontFamily: 'var(--font-cormorant),serif', fontSize: '0.9rem', fontStyle: 'italic', fontWeight: 300, color: 'var(--text)', lineHeight: 1.2, marginBottom: '0.6rem', wordBreak: 'break-word' }}>
-            {album.title}
-          </h2>
-          <p style={{ fontSize: '0.5rem', letterSpacing: '0.14em', color: 'var(--muted)', marginBottom: '0.3rem' }}>{dateStr}</p>
-          {album.location && (
-            <p style={{ fontSize: '0.48rem', letterSpacing: '0.1em', color: 'rgba(122,122,116,0.65)' }}>{album.location}</p>
-          )}
-          {album.category && (
-            <p style={{ marginTop: '0.6rem', fontSize: '0.45rem', letterSpacing: '0.18em', color: 'rgba(200,169,126,0.5)', textTransform: 'uppercase' }}>{album.category.name}</p>
-          )}
-        </div>
-
-        <p style={{ fontSize: '0.45rem', letterSpacing: '0.1em', color: 'rgba(122,122,116,0.35)', marginTop: 'auto', paddingTop: '1rem', flexShrink: 0 }}>
-          {photos.length} PHOTOS
-        </p>
-      </aside>
-
       {/* ── Hero ── */}
       <section
-        ref={sectionRef}
-        style={{ position: 'relative', height: 'clamp(300px, 50vh, 560px)', overflow: 'hidden', display: 'flex', alignItems: 'flex-end' }}
+        style={{ position: 'relative', height: 'clamp(340px, 55vh, 620px)', overflow: 'hidden', display: 'flex', alignItems: 'flex-end' }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          ref={imgRef}
-          src={album.cover_url ?? 'https://picsum.photos/seed/hero/1200/800'}
+          src={album.background_url ?? album.cover_url ?? 'https://picsum.photos/seed/hero/1920/1080'}
           alt={album.title}
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '140%', objectFit: 'cover', objectPosition: 'center top', filter: 'brightness(0.38)', willChange: 'transform', top: '-20%' }}
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'center', filter: 'brightness(0.45)', background: '#080808' }}
         />
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(0deg,rgba(8,8,8,0.96) 0%,rgba(8,8,8,0.25) 60%,transparent 100%)' }} />
 
@@ -328,13 +301,12 @@ export default function AlbumPageClient({
       </section>
 
       {/* ── CTA top ── */}
-      <div className="album-main-offset">
+      <div>
         <CtaBanner />
       </div>
 
       {/* ── Photo grid ── */}
       <section
-        className="album-main-offset"
         style={{
           padding:   'clamp(1.5rem,3vw,2.5rem) clamp(0.75rem,2vw,1.5rem)',
           columns:   '4 160px',
@@ -357,7 +329,7 @@ export default function AlbumPageClient({
       </section>
 
       {/* ── CTA bottom + back link ── */}
-      <div className="album-main-offset" style={{ borderTop: '1px solid var(--border)', marginTop: '0.5rem' }}>
+      <div style={{ borderTop: '1px solid var(--border)', marginTop: '0.5rem' }}>
         <CtaBanner />
         <div style={{ padding: 'clamp(1.5rem,3vw,2.5rem) clamp(0.75rem,2vw,1.5rem)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
           <Link href="/albums" style={{ fontSize: '0.65rem', letterSpacing: '0.14em', color: 'var(--muted)', textDecoration: 'none' }}>← RETOUR AUX ALBUMS</Link>
@@ -365,30 +337,8 @@ export default function AlbumPageClient({
         </div>
       </div>
 
-      {/* ── Sidebar + layout styles ── */}
       <style>{`
-        .album-sidebar {
-          position:        fixed;
-          top:             var(--navbar-h);
-          left:            0;
-          width:           160px;
-          height:          calc(100vh - var(--navbar-h));
-          background:      rgba(8,8,8,0.9);
-          border-right:    1px solid var(--border);
-          backdrop-filter: blur(10px);
-          padding:         1.2rem 1rem;
-          z-index:         50;
-          display:         flex;
-          flex-direction:  column;
-          overflow:        hidden;
-          animation:       fadeIn 0.5s ease 0.15s both;
-        }
-        .album-main-offset { margin-left: 160px; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @media (max-width: 680px) {
-          .album-sidebar     { display: none; }
-          .album-main-offset { margin-left: 0; }
-        }
       `}</style>
 
       {lightbox !== null && (

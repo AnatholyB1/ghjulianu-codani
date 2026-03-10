@@ -20,6 +20,7 @@ export default function Navbar() {
     { label: t.nav.tarifs,    href: '/tarifs' },
     { label: t.nav.contact,   href: '/contact' },
     { label: t.nav.don,       href: '/don' },
+    { label: t.nav.myAlbum,   href: '/mon-album' },
   ];
 
   useEffect(() => {
@@ -74,7 +75,38 @@ export default function Navbar() {
           className="hidden-mobile"
         >
           {NAV_LINKS.map((link) => {
-            const active = pathname === link.href;
+            const active  = pathname === link.href;
+            const isCta   = link.href === '/mon-album';
+
+            if (isCta) return (
+              <Link
+                key={link.href}
+                href={link.href}
+                style={{
+                  fontSize:      '0.62rem',
+                  letterSpacing: '0.14em',
+                  color:         active ? '#080808' : 'var(--accent)',
+                  textDecoration: 'none',
+                  background:    active ? 'var(--accent)' : 'transparent',
+                  border:        '1px solid var(--accent)',
+                  padding:       '0.38rem 0.9rem',
+                  transition:    'background 0.2s, color 0.2s',
+                  marginLeft:    '0.4rem',
+                  whiteSpace:    'nowrap',
+                }}
+                onMouseEnter={(e) => {
+                  const el = e.currentTarget as HTMLElement;
+                  if (!active) { el.style.background = 'var(--accent)'; el.style.color = '#080808'; }
+                }}
+                onMouseLeave={(e) => {
+                  const el = e.currentTarget as HTMLElement;
+                  if (!active) { el.style.background = 'transparent'; el.style.color = 'var(--accent)'; }
+                }}
+              >
+                {link.label}
+              </Link>
+            );
+
             return (
               <Link
                 key={link.href}
@@ -185,25 +217,42 @@ export default function Navbar() {
           transition: 'opacity 0.35s ease',
         }}
       >
-        {NAV_LINKS.map((link, i) => (
-          <Link
-            key={link.href}
-            href={link.href}
-            style={{
-              fontFamily:    'var(--font-cormorant), serif',
-              fontSize:      'clamp(1.6rem, 6vw, 2.4rem)',
-              fontStyle:     'italic',
-              letterSpacing: '0.05em',
-              color:         pathname === link.href ? 'var(--accent)' : 'var(--text)',
-              textDecoration: 'none',
-              opacity:       menuOpen ? 1 : 0,
-              transform:     menuOpen ? 'translateY(0)' : 'translateY(20px)',
-              transition:    `opacity 0.4s ease ${i * 0.06}s, transform 0.4s ease ${i * 0.06}s`,
-            }}
-          >
-            {link.label}
-          </Link>
-        ))}
+        {NAV_LINKS.map((link, i) => {
+          const mActive = pathname === link.href;
+          const mIsCta  = link.href === '/mon-album';
+          return (
+            <Link
+              key={link.href}
+              href={link.href}
+              style={mIsCta ? {
+                fontFamily:    'var(--font-space), sans-serif',
+                fontSize:      '0.65rem',
+                letterSpacing: '0.16em',
+                color:         mActive ? '#080808' : 'var(--accent)',
+                textDecoration: 'none',
+                background:    mActive ? 'var(--accent)' : 'transparent',
+                border:        '1px solid var(--accent)',
+                padding:       '0.55rem 1.4rem',
+                marginTop:     '0.6rem',
+                opacity:       menuOpen ? 1 : 0,
+                transform:     menuOpen ? 'translateY(0)' : 'translateY(20px)',
+                transition:    `opacity 0.4s ease ${i * 0.06}s, transform 0.4s ease ${i * 0.06}s`,
+              } : {
+                fontFamily:    'var(--font-cormorant), serif',
+                fontSize:      'clamp(1.6rem, 6vw, 2.4rem)',
+                fontStyle:     'italic',
+                letterSpacing: '0.05em',
+                color:         mActive ? 'var(--accent)' : 'var(--text)',
+                textDecoration: 'none',
+                opacity:       menuOpen ? 1 : 0,
+                transform:     menuOpen ? 'translateY(0)' : 'translateY(20px)',
+                transition:    `opacity 0.4s ease ${i * 0.06}s, transform 0.4s ease ${i * 0.06}s`,
+              }}
+            >
+              {link.label}
+            </Link>
+          );
+        })}
 
         {/* Mobile language switcher */}
         <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>

@@ -190,7 +190,30 @@ export async function verifyAlbumKey(slug: string, key: string): Promise<boolean
     httpOnly: true,
     sameSite: 'lax',
     path:     `/albums/${slug}`,
-    maxAge:   60 * 60 * 24 * 30, // 30 days
+    maxAge:   60 * 60 * 24 * 30,
   });
   return true;
+}
+
+// ── CLIENT KEY LOOKUP ─────────────────────────────────────
+
+export async function findAlbumByKey(key: string): Promise<{ slug: string; title: string } | null> {
+  const supabase = await createClient();
+  const { data: album } = await supabase
+    .from('albums')
+    .select('slug, title, access_key')
+    .eq('access_key', key.trim())
+    .eq('is_public', false)
+    .single();
+
+  if (!album) return null;
+
+  const cookieStore = await cookies();
+  cookieStore.set(`album-access-${album.slug}`, album.access_key, {
+    httpOnly: true,
+    sameSite: 'lax',
+    path:     `/albums/${album.slug}`,
+    maxAge:   60 * 60 * 24 * 30,
+  });
+  return { slug: album.slug, title: album.title };
 }
