@@ -1,11 +1,12 @@
 import { createClient }                                    from '@/utils/supabase/server';
 import { notFound }                                         from 'next/navigation';
-import { updateAlbum, deleteAlbum, deleteAlbumPhoto, regenerateAccessKey } from '../../actions';
-import type { Category, AlbumPhoto }                        from '@/lib/db.types';
+import { updateAlbum, deleteAlbum, regenerateAccessKey } from '../../actions';
+import type { Category }                                     from '@/lib/db.types';
 import Link                                                 from 'next/link';
 import ConfirmButton                                        from '../../_components/ConfirmButton';
 import ImageUploadField                                     from '../../_components/ImageUploadField';
 import AddAlbumPhotoForm                                    from '../../_components/AddAlbumPhotoForm';
+import DraggablePhotoGrid                                   from '../../_components/DraggablePhotoGrid';
 
 export default async function EditAlbumPage({ params }: { params: Promise<{ id: string }> }) {
   const { id }   = await params;
@@ -117,27 +118,8 @@ export default async function EditAlbumPage({ params }: { params: Promise<{ id: 
           {/* Add photo form */}
           <AddAlbumPhotoForm albumId={id} />
 
-          {/* Photo grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(90px,1fr))', gap: '4px' }}>
-            {photos?.map((photo: AlbumPhoto) => (
-              <div key={photo.id} style={{ position: 'relative', aspectRatio: '1', overflow: 'hidden', background: '#1a1a1a' }}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={photo.src} alt={photo.alt ?? ''} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                <div style={{ position: 'absolute', top: '3px', right: '3px' }}>
-                  <ConfirmButton
-                    formAction={deleteAlbumPhoto.bind(null, photo.id, id)}
-                    message="Supprimer ?"
-                    style={{ background: 'rgba(8,8,8,0.8)', border: 'none', color: '#e07070', width: '20px', height: '20px', fontSize: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                  >
-                    ✕
-                  </ConfirmButton>
-                </div>
-              </div>
-            ))}
-          </div>
-          {(!photos || photos.length === 0) && (
-            <p style={{ fontSize: '0.72rem', color: '#7a7a74', marginTop: '0.5rem' }}>Aucune photo.</p>
-          )}
+          {/* Drag-to-reorder photo grid */}
+          <DraggablePhotoGrid photos={photos ?? []} albumId={id} />
         </div>
       </div>
     </>

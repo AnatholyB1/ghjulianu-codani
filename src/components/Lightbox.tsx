@@ -7,14 +7,15 @@ import { useCart } from '@/contexts/CartContext';
 type Photo = { src: string; width: number; height: number; alt?: string; context?: string };
 
 interface Props {
-  photos:   Photo[];
-  index:    number;
-  onClose:  () => void;
-  onNext:   () => void;
-  onPrev:   () => void;
+  photos:    Photo[];
+  index:     number;
+  onClose:   () => void;
+  onNext:    () => void;
+  onPrev:    () => void;
+  showCart?: boolean;
 }
 
-export default function Lightbox({ photos, index, onClose, onNext, onPrev }: Props) {
+export default function Lightbox({ photos, index, onClose, onNext, onPrev, showCart = true }: Props) {
   const photo = photos[index];
   const { add, remove, has } = useCart();
   const inCart = has(photo.src);
@@ -140,6 +141,7 @@ export default function Lightbox({ photos, index, onClose, onNext, onPrev }: Pro
           {index + 1} / {photos.length}
         </p>
 
+        {showCart && (
         <button
           onClick={(e) => {
             e.stopPropagation();
@@ -163,6 +165,7 @@ export default function Lightbox({ photos, index, onClose, onNext, onPrev }: Pro
         >
           {inCart ? '✓ DANS LE PANIER' : '+ PANIER'}
         </button>
+        )}
       </div>
     </div>
   );

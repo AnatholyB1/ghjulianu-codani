@@ -91,21 +91,21 @@ export default function MentionsLegalesPage() {
           <P>
             <strong>Contact :</strong>{' '}
             <a
-              href="mailto:contact@ghjulianucodani.com"
+              href="mailto:ghjulianu.codani@gmail.com"
               style={{ color: 'var(--accent)', textDecoration: 'none', borderBottom: '1px solid var(--accent)', paddingBottom: '1px' }}
             >
-              contact@ghjulianucodani.com
+              ghjulianu.codani@gmail.com
             </a>
           </P>
           <P>
             <strong>Instagram :</strong>{' '}
             <a
-              href="https://instagram.com/ghjulianucodani"
+              href="https://instagram.com/ghjulianu.cdn"
               target="_blank"
               rel="noopener noreferrer"
               style={{ color: 'var(--accent)', textDecoration: 'none', borderBottom: '1px solid var(--accent)', paddingBottom: '1px' }}
             >
-              @ghjulianucodani
+              @ghjulianu.cdn
             </a>
           </P>
           <P><strong>Directeur de la publication :</strong> Ghjulianu Codani</P>
@@ -187,10 +187,10 @@ export default function MentionsLegalesPage() {
             Pour exercer vos droits ou pour toute question relative à vos données personnelles, vous pouvez contacter
             Ghjulianu Codani à l'adresse{' '}
             <a
-              href="mailto:contact@ghjulianucodani.com"
+              href="mailto:ghjulianu.codani@gmail.com"
               style={{ color: 'var(--accent)', textDecoration: 'none', borderBottom: '1px solid var(--accent)', paddingBottom: '1px' }}
             >
-              contact@ghjulianucodani.com
+              ghjulianu.codani@gmail.com
             </a>.
           </P>
           <P>

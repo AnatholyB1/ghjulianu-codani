@@ -138,24 +138,24 @@ export default function Navbar() {
             );
           })}
           {/* Language switcher */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0', marginLeft: '0.8rem', borderLeft: '1px solid var(--border)', paddingLeft: '1.2rem' }}>
-            {(['fr', 'en'] as const).map((l, i) => (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginLeft: '0.8rem', borderLeft: '1px solid var(--border)', paddingLeft: '1.2rem' }}>
+            {(['fr', 'en'] as const).map((l) => (
               <button
                 key={l}
                 onClick={() => setLang(l)}
                 style={{
-                  background:    'none',
-                  border:        'none',
+                  background:    lang === l ? 'rgba(200,169,126,0.15)' : 'transparent',
+                  border:        lang === l ? '1px solid rgba(200,169,126,0.45)' : '1px solid transparent',
                   cursor:        'pointer',
-                  fontSize:      '0.6rem',
+                  fontSize:      '0.62rem',
                   letterSpacing: '0.14em',
-                  color:         lang === l ? 'var(--accent)' : 'var(--muted)',
+                  color:         lang === l ? 'var(--accent)' : 'rgba(122,122,116,0.7)',
                   fontFamily:    'var(--font-space), sans-serif',
                   fontWeight:    lang === l ? 600 : 400,
-                  padding:       i === 0 ? '0 6px 0 0' : '0 0 0 6px',
-                  borderRight:   i === 0 ? '1px solid var(--border)' : 'none',
-                  transition:    'color 0.2s',
-                  lineHeight:    1,
+                  padding:       '3px 8px',
+                  borderRadius:  '2px',
+                  transition:    'all 0.2s',
+                  lineHeight:    1.4,
                 }}
               >
                 {l.toUpperCase()}

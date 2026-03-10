@@ -1,15 +1,107 @@
 'use client';
 
 import Link      from 'next/link';
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import type { Album, Category } from '@/lib/db.types';
 import { useT } from '@/hooks/useT';
 
 type AlbumWithCat = Album & { category: Category | null };
 
+/* ── Category preview overlay ──────────────────────────────── */
+function CategoryPreview({ name, photos }: { name: string; photos: string[] }) {
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const id = setTimeout(() => setVisible(true), 30);
+    return () => clearTimeout(id);
+  }, []);
+
+  return (
+    <div
+      style={{
+        position:       'fixed',
+        inset:          0,
+        zIndex:         200,
+        background:     'rgba(8,8,8,0.96)',
+        display:        'flex',
+        flexDirection:  'column',
+        alignItems:     'center',
+        justifyContent: 'center',
+        gap:            '2.5rem',
+        opacity:        visible ? 1 : 0,
+        transition:     'opacity 0.45s ease',
+        pointerEvents:  'none',
+      }}
+    >
+      <div style={{ display: 'flex', gap: 'clamp(1rem,3vw,2.5rem)', alignItems: 'center' }}>
+        {photos.map((src, i) => (
+          <div
+            key={src}
+            style={{
+              width:       i === 1 ? 'clamp(160px,20vw,240px)' : 'clamp(110px,14vw,170px)',
+              aspectRatio: '3 / 4',
+              overflow:    'hidden',
+              transform:   visible
+                ? i === 0 ? 'translateY(12px) rotate(-3deg)' : i === 2 ? 'translateY(12px) rotate(3deg)' : 'translateY(0)'
+                : 'translateY(30px) scale(0.92)',
+              opacity:     visible ? 1 : 0,
+              transition:  `opacity 0.6s ease ${i * 90 + 80}ms, transform 0.7s cubic-bezier(0.22,1,0.36,1) ${i * 90 + 80}ms`,
+              boxShadow:   '0 16px 48px rgba(0,0,0,0.7)',
+            }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'brightness(0.85) saturate(0.9)' }} />
+          </div>
+        ))}
+      </div>
+      <h2
+        style={{
+          fontFamily:  'var(--font-cormorant),serif',
+          fontSize:    'clamp(2rem,6vw,4.5rem)',
+          fontStyle:   'italic',
+          fontWeight:  300,
+          color:       'var(--text)',
+          letterSpacing: '0.04em',
+          margin:      0,
+          opacity:     visible ? 1 : 0,
+          transform:   visible ? 'translateY(0)' : 'translateY(14px)',
+          transition:  'opacity 0.6s ease 350ms, transform 0.7s cubic-bezier(0.22,1,0.36,1) 350ms',
+        }}
+      >
+        {name}
+      </h2>
+    </div>
+  );
+}
+
+/* ── helpers ─────────────────────────────────────────────────── */
+function animateTrack(track: HTMLDivElement, pct: number) {
+  track.animate(
+    { transform: `translate(${pct}%, -50%)` },
+    { duration: 150, fill: 'forwards', easing: 'cubic-bezier(0.16,1,0.3,1)' },
+  );
+  track.querySelectorAll<HTMLElement>('.album-cover').forEach((img) => {
+    img.animate(
+      { objectPosition: `${100 + pct}% center` },
+      { duration: 150, fill: 'forwards', easing: 'cubic-bezier(0.16,1,0.3,1)' },
+    );
+  });
+}
+
+/* ── Main component ──────────────────────────────────────────── */
 export default function AlbumsDragTrack({ albums }: { albums: AlbumWithCat[] }) {
   const t = useT();
-  const [cat, setCat] = useState<string>('all');
+  const [cat,        setCat]        = useState<string>('all');
+  const [previewCat, setPreviewCat] = useState<{ name: string; photos: string[] } | null>(null);
+
+  function handleCatClick(slug: string, displayName: string) {
+    const covers = albums
+      .filter((a) => a.category?.slug === slug && a.cover_url)
+      .slice(0, 3)
+      .map((a) => a.cover_url!);
+    if (covers.length === 0) { setCat(slug); return; }
+    setPreviewCat({ name: displayName, photos: covers });
+    setTimeout(() => { setPreviewCat(null); setCat(slug); }, 2300);
+  }
 
   const filtered = cat === 'all'
     ? albums
@@ -21,30 +113,25 @@ export default function AlbumsDragTrack({ albums }: { albums: AlbumWithCat[] }) 
     ).values()
   );
 
-  const trackRef    = useRef<HTMLDivElement>(null);
-  const downAt      = useRef(0);
-  const prevPct     = useRef(0);
-  const isDragging  = useRef(false);
-  const hasDragged  = useRef(false);
-  const hasEntered  = useRef(false);
+  /* ── drag state (stored directly in dataset, exactly like the reference) */
+  const trackRef   = useRef<HTMLDivElement>(null);
+  const hasDragged = useRef(false);
 
+  /* Reset track position when category changes */
   useEffect(() => {
-    prevPct.current = 0;
     const track = trackRef.current;
     if (!track) return;
-    if (!hasEntered.current) {
-      // First mount: slide in from right
-      hasEntered.current = true;
+    track.dataset.mouseDownAt    = '0';
+    track.dataset.prevPercentage = '0';
+    track.dataset.percentage     = '0';
+    // Entrance animation on first mount, instant reset on cat change
+    const isFirst = !track.dataset.entered;
+    if (isFirst) {
+      track.dataset.entered = '1';
       track.animate(
         { transform: ['translate(60%, -50%)', 'translate(0%, -50%)'] },
-        { duration: 1100, fill: 'forwards', easing: 'cubic-bezier(0.16,1,0.3,1)' }
+        { duration: 500, fill: 'forwards', easing: 'cubic-bezier(0.16,1,0.3,1)' },
       );
-      track.querySelectorAll<HTMLElement>('.album-cover').forEach((img, i) => {
-        img.animate(
-          { objectPosition: ['100% center', '100% center'] },
-          { duration: 0, fill: 'forwards' }
-        );
-      });
     } else {
       track.animate({ transform: 'translate(0%, -50%)' }, { duration: 0, fill: 'forwards' });
       track.querySelectorAll<HTMLElement>('.album-cover').forEach((img) => {
@@ -53,86 +140,93 @@ export default function AlbumsDragTrack({ albums }: { albums: AlbumWithCat[] }) 
     }
   }, [cat]);
 
-  const moveTo = useCallback((nextPct: number) => {
-    const track = trackRef.current;
-    if (!track) return;
-    track.animate(
-      { transform: `translate(${nextPct}%, -50%)` },
-      { duration: 1200, fill: 'forwards', easing: 'cubic-bezier(0.16,1,0.3,1)' },
-    );
-    track.querySelectorAll<HTMLElement>('.album-cover').forEach((img) => {
-      img.animate(
-        { objectPosition: `${100 + nextPct}% center` },
-        { duration: 1200, fill: 'forwards', easing: 'cubic-bezier(0.16,1,0.3,1)' },
-      );
-    });
-  }, []);
-
-  const onDown = useCallback((x: number) => {
-    isDragging.current = true;
-    hasDragged.current = false;
-    downAt.current = x;
-  }, []);
-
-  const onUp = useCallback(() => {
-    if (!isDragging.current) return;
-    isDragging.current = false;
-    prevPct.current = parseFloat(trackRef.current?.dataset.pct ?? String(prevPct.current));
-  }, []);
-
-  const onMove = useCallback((x: number) => {
-    if (!isDragging.current) return;
-    const delta    = downAt.current - x;
-    if (Math.abs(delta) > 4) hasDragged.current = true;
-    const maxDelta = window.innerWidth * 2;
-    const pct      = (delta / maxDelta) * -100;
-    const next     = Math.max(Math.min(prevPct.current + pct, 0), -100);
-    if (trackRef.current) trackRef.current.dataset.pct = String(next);
-    moveTo(next);
-  }, [moveTo]);
-
-  const onWheel = useCallback((e: WheelEvent) => {
-    e.preventDefault();
-    const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
-    const step  = (delta / window.innerWidth) * -25;
-    const next  = Math.max(Math.min(prevPct.current + step, 0), -100);
-    prevPct.current = next;
-    if (trackRef.current) trackRef.current.dataset.pct = String(next);
-    moveTo(next);
-  }, [moveTo]);
-
+  /* ── pointer/touch handlers wired on the window (same as reference) */
   useEffect(() => {
-    const mm = (e: MouseEvent) => onMove(e.clientX);
-    const tm = (e: TouchEvent) => onMove(e.touches[0].clientX);
-    window.addEventListener('mousemove', mm, { passive: true });
-    window.addEventListener('touchmove', tm, { passive: true });
-    window.addEventListener('mouseup',   onUp);
-    window.addEventListener('touchend',  onUp);
-    window.addEventListener('wheel', onWheel, { passive: false });
-    return () => {
-      window.removeEventListener('mousemove', mm);
-      window.removeEventListener('touchmove', tm);
-      window.removeEventListener('mouseup',   onUp);
-      window.removeEventListener('touchend',  onUp);
-      window.removeEventListener('wheel', onWheel);
+    const handleDown = (clientX: number) => {
+      const track = trackRef.current;
+      if (!track) return;
+      hasDragged.current = false;
+      track.dataset.mouseDownAt = String(clientX);
     };
-  }, [onMove, onUp, onWheel]);
+
+    const handleUp = () => {
+      const track = trackRef.current;
+      if (!track) return;
+      track.dataset.mouseDownAt    = '0';
+      track.dataset.prevPercentage = track.dataset.percentage ?? '0';
+    };
+
+    const handleMove = (clientX: number) => {
+      const track = trackRef.current;
+      if (!track || track.dataset.mouseDownAt === '0') return;
+
+      const mouseDelta   = parseFloat(track.dataset.mouseDownAt!) - clientX;
+      const maxDelta     = window.innerWidth / 2;
+      const percentage   = (mouseDelta / maxDelta) * -100;
+      const prev         = parseFloat(track.dataset.prevPercentage ?? '0');
+      const next         = Math.max(Math.min(prev + percentage, 0), -100);
+
+      if (Math.abs(mouseDelta) > 4) hasDragged.current = true;
+
+      track.dataset.percentage = String(next);
+      animateTrack(track, next);
+    };
+
+    /* wheel: only intercept horizontal (trackpad swipe), let vertical through */
+    const handleWheel = (e: WheelEvent) => {
+      const isHorizontal = Math.abs(e.deltaX) > Math.abs(e.deltaY);
+      if (!isHorizontal) return;          // let vertical scroll pass through
+      e.preventDefault();
+      const track = trackRef.current;
+      if (!track) return;
+      const prev = parseFloat(track.dataset.prevPercentage ?? '0');
+      const step = (e.deltaX / window.innerWidth) * -25;
+      const next = Math.max(Math.min(prev + step, 0), -100);
+      track.dataset.prevPercentage = String(next);
+      track.dataset.percentage     = String(next);
+      animateTrack(track, next);
+    };
+
+    const onMouseDown  = (e: MouseEvent)  => handleDown(e.clientX);
+    const onTouchStart = (e: TouchEvent)  => handleDown(e.touches[0].clientX);
+    const onMouseMove  = (e: MouseEvent)  => handleMove(e.clientX);
+    const onTouchMove  = (e: TouchEvent)  => handleMove(e.touches[0].clientX);
+
+    window.addEventListener('mousedown',  onMouseDown);
+    window.addEventListener('touchstart', onTouchStart, { passive: true });
+    window.addEventListener('mouseup',    handleUp);
+    window.addEventListener('touchend',   handleUp);
+    window.addEventListener('mousemove',  onMouseMove, { passive: true });
+    window.addEventListener('touchmove',  onTouchMove, { passive: true });
+    window.addEventListener('wheel',      handleWheel, { passive: false });
+
+    return () => {
+      window.removeEventListener('mousedown',  onMouseDown);
+      window.removeEventListener('touchstart', onTouchStart);
+      window.removeEventListener('mouseup',    handleUp);
+      window.removeEventListener('touchend',   handleUp);
+      window.removeEventListener('mousemove',  onMouseMove);
+      window.removeEventListener('touchmove',  onTouchMove);
+      window.removeEventListener('wheel',      handleWheel);
+    };
+  }, []);
 
   return (
     <div
-      className="drag-area"
       style={{
         height:           'calc(100vh - var(--navbar-h))',
         overflow:         'hidden',
         position:         'relative',
         userSelect:       'none',
         WebkitUserSelect: 'none',
-        touchAction:      'none',
+        touchAction:      'pan-y',
         cursor:           'grab',
       }}
-      onMouseDown={(e) => onDown(e.clientX)}
-      onTouchStart={(e) => onDown(e.touches[0].clientX)}
     >
+      {previewCat && (
+        <CategoryPreview name={previewCat.name} photos={previewCat.photos} />
+      )}
+
       {/* Filter tabs */}
       <div style={{ position: 'absolute', top: 'clamp(1.5rem,3vw,2.5rem)', left: 'clamp(1.5rem,3vw,3rem)', zIndex: 10, display: 'flex', gap: '0.2rem', pointerEvents: 'auto' }}>
         <button
@@ -146,7 +240,7 @@ export default function AlbumsDragTrack({ albums }: { albums: AlbumWithCat[] }) 
           <button
             key={c.slug}
             onMouseDown={(e) => e.stopPropagation()}
-            onClick={() => setCat(c.slug)}
+            onClick={() => handleCatClick(c.slug, c.name.toUpperCase())}
             style={{ background: cat === c.slug ? 'var(--text)' : 'transparent', color: cat === c.slug ? '#080808' : 'var(--muted)', border: '1px solid var(--border)', padding: '0.45rem 1.2rem', fontSize: '0.62rem', letterSpacing: '0.14em', cursor: 'pointer', transition: 'all 0.25s ease' }}
           >
             {c.name.toUpperCase()}
@@ -154,11 +248,27 @@ export default function AlbumsDragTrack({ albums }: { albums: AlbumWithCat[] }) 
         ))}
       </div>
 
-      <p className="scroll-hint" style={{ position: 'absolute', bottom: 'clamp(1.5rem,3vw,2.5rem)', left: '50%', transform: 'translateX(-50%)', zIndex: 10, fontSize: '0.58rem', letterSpacing: '0.18em', color: 'var(--muted)', opacity: 0.45, pointerEvents: 'none' }}>
+      <p style={{ position: 'absolute', bottom: 'clamp(1.5rem,3vw,2.5rem)', left: '50%', transform: 'translateX(-50%)', zIndex: 10, fontSize: '0.58rem', letterSpacing: '0.18em', color: 'var(--muted)', opacity: 0.45, pointerEvents: 'none' }}>
         {t.albums.drag}
       </p>
 
-      <div ref={trackRef} data-pct="0" style={{ position: 'absolute', left: 'calc(50% - 20vmin)', top: '50%', transform: 'translate(0%, -50%)', display: 'flex', gap: '4vmin', willChange: 'transform' }} className="album-track">
+      {/* Track — mirrors the reference #image-track exactly */}
+      <div
+        ref={trackRef}
+        data-mouse-down-at="0"
+        data-prev-percentage="0"
+        data-percentage="0"
+        style={{
+          display:   'flex',
+          gap:       '4vmin',
+          position:  'absolute',
+          left:      'calc(50% - 20vmin)',
+          top:       '50%',
+          transform: 'translate(0%, -50%)',
+          willChange: 'transform',
+        }}
+        className="album-track"
+      >
         {filtered.map((album) => (
           <Link
             key={album.id}
@@ -197,10 +307,13 @@ export default function AlbumsDragTrack({ albums }: { albums: AlbumWithCat[] }) 
               </h2>
               <div style={{ marginTop: '0.4rem', display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
                 {(() => {
-                  const d = new Date(album.created_at);
-                  const mo = d.toLocaleDateString(t.albums.dateLocale, { month: 'long' });
-                  const yr = d.getFullYear();
-                  const label = `${mo.charAt(0).toUpperCase() + mo.slice(1)} ${yr}`;
+                  const label = album.year
+                    ? album.year
+                    : (() => {
+                        const d  = new Date(album.created_at);
+                        const mo = d.toLocaleDateString(t.albums.dateLocale, { month: 'long' });
+                        return `${mo.charAt(0).toUpperCase() + mo.slice(1)} ${d.getFullYear()}`;
+                      })();
                   return <p style={{ fontSize: '0.52rem', letterSpacing: '0.14em', color: 'var(--muted)' }}>{label}</p>;
                 })()}
                 {(album as AlbumWithCat & { location?: string | null }).location && (

@@ -20,7 +20,7 @@ const translations = {
       ctaContact:     'ME CONTACTER',
       scroll:         'SCROLL',
       prestationsLabel: 'PRESTATIONS',
-      prestationsDesc1: "Photographe spécialisé dans l'univers nightlife et musique électronique, je travaille au cœur des clubs, des événements et des scènes artistiques afin de capturer l'atmosphère unique de chaque moment.",
+      prestationsDesc1: "Photographe spécialisé dans l'univers nightlife et musique électronique, je travaille au cœur des clubs, des événements et des scènes artistiques afin de capturer l'atmosphère émotionnelle unique de chaque moment.",
       prestationsDesc2: "Mon approche se concentre sur l'énergie des lieux, la présence des artistes et les interactions qui donnent vie à la nuit. Chaque projet est pour moi l'occasion de créer des images à la fois immersives, sensibles et visuellement fortes.",
       availableFor:   'DISPONIBLE POUR',
       availableItems: [
@@ -234,7 +234,7 @@ const translations = {
       ctaContact:     'CONTACT ME',
       scroll:         'SCROLL',
       prestationsLabel: 'SERVICES',
-      prestationsDesc1: 'Photographer specializing in nightlife and electronic music, I work at the heart of clubs, events and artistic scenes to capture the unique atmosphere of each moment.',
+      prestationsDesc1: 'Photographer specializing in nightlife and electronic music, I work at the heart of clubs, events and artistic scenes to capture the unique emotional atmosphere of each moment.',
       prestationsDesc2: 'My approach focuses on the energy of spaces, the presence of artists, and the interactions that bring the night to life. Every project is an opportunity to create images that are immersive, sensitive and visually compelling.',
       availableFor:   'AVAILABLE FOR',
       availableItems: [

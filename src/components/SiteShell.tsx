@@ -10,7 +10,7 @@ import { LanguageProvider } from '@/contexts/LanguageContext';
 
 export default function SiteShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isAdmin  = pathname.startsWith('/admin');
+  const isAdmin   = pathname.startsWith('/admin');
 
   if (isAdmin) {
     return <>{children}</>;

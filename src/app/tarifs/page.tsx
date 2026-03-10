@@ -36,16 +36,18 @@ export default function TarifsPage() {
               padding:       'clamp(2rem,3.5vw,3rem) 0',
               borderBottom:  '1px solid var(--border)',
               alignItems:    'start',
-              background:    badge ? 'linear-gradient(90deg,rgba(200,169,126,0.03) 0%,transparent 100%)' : 'transparent',
+              background:    badge ? 'linear-gradient(90deg,rgba(200,169,126,0.06) 0%,transparent 100%)' : 'transparent',
+              borderLeft:    badge ? '2px solid rgba(200,169,126,0.35)' : '2px solid transparent',
+              paddingLeft:   badge ? 'clamp(0.8rem,1.5vw,1.2rem)' : '0',
             }}>
               <div>
                 {badge
-                  ? <p style={{ fontSize: '0.5rem', letterSpacing: '0.2em', color: 'var(--accent)', marginBottom: '0.7rem' }}>{badge}</p>
+                  ? <p style={{ fontSize: '0.5rem', letterSpacing: '0.22em', color: 'var(--accent)', marginBottom: '0.7rem', background: 'rgba(200,169,126,0.12)', border: '1px solid rgba(200,169,126,0.3)', borderRadius: '2px', display: 'inline-block', padding: '2px 8px', boxShadow: '0 0 10px rgba(200,169,126,0.18)' }}>{badge}</p>
                   : <p style={{ fontSize: '0.5rem', letterSpacing: '0.2em', color: 'transparent', marginBottom: '0.7rem', userSelect: 'none' }}>·</p>
                 }
                 <h2 style={{ fontFamily: 'var(--font-cormorant),serif', fontSize: 'clamp(2rem,4vw,3rem)', fontStyle: 'italic', fontWeight: 300, color: 'var(--text)', lineHeight: 1, marginBottom: '1rem' }}>{p.id}</h2>
-                <p style={{ fontSize: '0.62rem', letterSpacing: '0.08em', color: 'var(--muted)', marginBottom: '0.25rem' }}>{p.photos}</p>
-                <p style={{ fontSize: '0.55rem', letterSpacing: '0.06em', color: 'rgba(122,122,116,0.55)' }}>{p.duration}</p>
+                <p style={{ fontSize: '0.82rem', letterSpacing: '0.06em', color: 'var(--accent)', marginBottom: '0.25rem', fontFamily: 'var(--font-cormorant),serif', fontStyle: 'italic' }}>{p.photos}</p>
+                <p style={{ fontSize: '0.72rem', letterSpacing: '0.05em', color: 'var(--muted)', fontFamily: 'var(--font-cormorant),serif' }}>{p.duration}</p>
               </div>
               <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.6rem', paddingTop: '1.8rem' }}>
                 {p.features.map((f) => (

@@ -19,6 +19,22 @@ const btnBase: React.CSSProperties = {
   border:         'none',
 };
 
+/** Wraps matching substrings with an accent <span>. Case-insensitive. */
+function Hilite({ text, words }: { text: string; words: string[] }) {
+  const esc = words.map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  const rx  = new RegExp(`(${esc.join('|')})`, 'gi');
+  const parts = text.split(rx);
+  return (
+    <>
+      {parts.map((p, i) =>
+        words.some((w) => w.toLowerCase() === p.toLowerCase())
+          ? <span key={i} style={{ color: 'var(--text)', fontWeight: 600, fontStyle: 'normal' }}>{p}</span>
+          : <span key={i}>{p}</span>
+      )}
+    </>
+  );
+}
+
 export default function DonPage() {
   const t = useT();
   const td = t.don;
@@ -41,9 +57,15 @@ export default function DonPage() {
             {td.subTitle.split('\n').map((l, i) => (<span key={i}>{l}{i === 0 && <br />}</span>))}
           </h2>
 
-          <p style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.9, marginBottom: '1.2rem' }}>{td.p1}</p>
-          <p style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.9, marginBottom: '1.2rem' }}>{td.p2}</p>
-          <p style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.9, fontStyle: 'italic' }}>{td.p3}</p>
+          <p style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.9, marginBottom: '1.2rem' }}>
+            <Hilite text={td.p1} words={['\u00e9tudiant', 'passion']} />
+          </p>
+          <p style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.9, marginBottom: '1.2rem' }}>
+            <Hilite text={td.p2} words={['1\u00a0\u20ac', '2\u00a0\u20ac', '5\u00a0\u20ac', '\u00e0 la hauteur de vos moyens']} />
+          </p>
+          <p style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.9, fontStyle: 'italic' }}>
+            <Hilite text={td.p3} words={['Merci sinc\u00e8rement']} />
+          </p>
 
           <p style={{ marginTop: '2rem', fontSize: '0.75rem', fontStyle: 'italic', fontFamily: 'var(--font-cormorant),serif', color: 'var(--text)', opacity: 0.6 }}>
             — Ghjulianu
@@ -87,9 +109,9 @@ export default function DonPage() {
                 href="https://lydia-app.com/pay?target=ghjulianu.codani"
                 target="_blank"
                 rel="noopener noreferrer"
-                style={{ ...btnBase, background: 'transparent', color: 'var(--text)', border: '1px solid var(--border)' }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.borderColor = 'var(--accent)'; (e.currentTarget as HTMLAnchorElement).style.color = 'var(--accent)'; }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.borderColor = 'var(--border)'; (e.currentTarget as HTMLAnchorElement).style.color = 'var(--text)'; }}
+                style={{ ...btnBase, background: 'var(--accent)', color: '#080808' }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.opacity = '0.82'; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.opacity = '1'; }}
               >
                 {/* Lydia icon */}
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden>

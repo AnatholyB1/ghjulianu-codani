@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from 'react';
 import Image    from 'next/image';
 import Lightbox from '@/components/Lightbox';
-import { useCart, type CartPhoto } from '@/contexts/CartContext';
 import type { PortfolioPhoto } from '@/lib/db.types';
 
 type LBPhoto = { src: string; width: number; height: number; alt: string; context?: string };
@@ -17,8 +16,6 @@ function PhotoCard({
   const ref              = useRef<HTMLDivElement>(null);
   const [vis,  setVis]   = useState(false);
   const [hov,  setHov]   = useState(false);
-  const { add, remove, has } = useCart();
-  const inCart = has(src);
 
   useEffect(() => {
     const el = ref.current;
@@ -32,8 +29,6 @@ function PhotoCard({
   }, []);
 
   const delay = (index % 4) * 60;
-
-  const cartPhoto: CartPhoto = { id: src, src, width, height, alt: alt ?? '', context: 'Portfolio' };
 
   return (
     <div
@@ -51,9 +46,10 @@ function PhotoCard({
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
     >
-      {/* image (overflow hidden here so cart btn stays visible) */}
+      {/* image */}
       <div
         onClick={onClick}
+        onContextMenu={(e) => e.preventDefault()}
         style={{ overflow: 'hidden', cursor: 'zoom-in', display: 'block' }}
       >
         <Image
@@ -61,50 +57,21 @@ function PhotoCard({
           alt={alt ?? ''}
           width={width}
           height={height}
+          draggable={false}
           sizes="(max-width:600px) calc(50vw - 2rem), (max-width:1100px) calc(33vw - 2rem), 400px"
           style={{
-            display:    'block',
-            width:      '100%',
-            height:     'auto',
-            filter:     hov ? 'brightness(1) saturate(1)' : 'brightness(0.88) saturate(0.85)',
-            transform:  hov ? 'scale(1.025)' : 'scale(1)',
-            transition: 'filter 0.4s ease, transform 0.5s cubic-bezier(0.22,1,0.36,1)',
+            display:        'block',
+            width:          '100%',
+            height:         'auto',
+            filter:         'brightness(1) saturate(1)',
+            transform:      hov ? 'scale(1.025)' : 'scale(1)',
+            transition:     'transform 0.5s cubic-bezier(0.22,1,0.36,1)',
+            userSelect:     'none',
+            WebkitUserSelect: 'none',
+            pointerEvents:  'none',
           }}
         />
       </div>
-
-      {/* cart button */}
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          inCart ? remove(src) : add(cartPhoto);
-        }}
-        aria-label={inCart ? 'Retirer du panier' : 'Ajouter au panier'}
-        style={{
-          position:       'absolute',
-          bottom:         '8px',
-          right:          '8px',
-          width:          '32px',
-          height:         '32px',
-          borderRadius:   '50%',
-          background:     inCart ? 'rgba(100,200,120,0.92)' : 'rgba(200,169,126,0.92)',
-          border:         'none',
-          cursor:         'pointer',
-          display:        'flex',
-          alignItems:     'center',
-          justifyContent: 'center',
-          fontSize:       '0.9rem',
-          color:          '#080808',
-          fontWeight:     700,
-          lineHeight:     1,
-          opacity:        hov || inCart ? 1 : 0,
-          transform:      hov || inCart ? 'scale(1)' : 'scale(0.8)',
-          transition:     'opacity 0.2s ease, transform 0.2s ease',
-          boxShadow:      '0 2px 8px rgba(0,0,0,0.4)',
-        }}
-      >
-        {inCart ? '✓' : '+'}
-      </button>
     </div>
   );
 }
@@ -117,7 +84,7 @@ export default function PortfolioGrid({ photos }: { photos: PortfolioPhoto[] }) 
 
   return (
     <>
-      <section style={{ padding: 'clamp(2rem,4vw,4rem) clamp(1rem,3vw,3rem)', columns: '3 220px', columnGap: 'clamp(10px,1.4vmin,20px)' }}>
+      <section style={{ padding: 'clamp(2rem,4vw,4rem) clamp(1rem,3vw,3rem)', columns: '4 180px', columnGap: 'clamp(10px,1.4vmin,20px)' }}>
         {photos.map((photo, i) => (
           <PhotoCard
             key={photo.id}
@@ -135,6 +102,7 @@ export default function PortfolioGrid({ photos }: { photos: PortfolioPhoto[] }) 
         <Lightbox
           photos={lbPhotos}
           index={lightbox}
+          showCart={false}
           onClose={() => setLightbox(null)}
           onNext={() => setLightbox((lightbox + 1) % photos.length)}
           onPrev={() => setLightbox((lightbox - 1 + photos.length) % photos.length)}

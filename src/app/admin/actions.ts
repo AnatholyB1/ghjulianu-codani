@@ -94,6 +94,26 @@ export async function deleteAlbum(id: string) {
   redirect('/admin/albums');
 }
 
+/**
+ * Persists a new sort order for albums.
+ * `orderedIds` is the full list of album IDs in the desired display order (first = shown first).
+ * Each album receives sort_order = n - index (so first item has highest sort_order,
+ * matching the existing `ORDER BY sort_order DESC`).
+ */
+export async function reorderAlbums(orderedIds: string[]) {
+  const supabase = await createClient();
+  const n = orderedIds.length;
+  const results = await Promise.all(
+    orderedIds.map((id, idx) =>
+      supabase.from('albums').update({ sort_order: n - idx }).eq('id', id)
+    )
+  );
+  const failed = results.find((r) => r.error);
+  if (failed?.error) throw new Error(failed.error.message);
+  revalidatePath('/admin/albums');
+  revalidatePath('/albums');
+}
+
 export async function regenerateAccessKey(id: string) {
   const supabase   = await createClient();
   const access_key = randomBytes(6).toString('hex');
@@ -129,6 +149,22 @@ export async function deleteAlbumPhoto(id: string, album_id: string) {
   const { error } = await supabase.from('album_photos').delete().eq('id', id);
   if (error) throw new Error(error.message);
   revalidatePath(`/admin/albums/${album_id}`);
+}
+
+/**
+ * Persists a new sort order for album photos.
+ * `orderedIds` is the full list of photo IDs in the desired display order.
+ * Each photo receives sort_order = its index in that array.
+ */
+export async function reorderAlbumPhotos(albumId: string, orderedIds: string[]) {
+  const supabase = await createClient();
+  const updates  = orderedIds.map((id, idx) => ({ id, sort_order: idx }));
+  const { error } = await supabase
+    .from('album_photos')
+    .upsert(updates, { onConflict: 'id' });
+  if (error) throw new Error(error.message);
+  // Revalidate the public album page so visitors see the new order immediately.
+  revalidatePath('/albums');
 }
 
 // ── PORTFOLIO ─────────────────────────────────────────────────

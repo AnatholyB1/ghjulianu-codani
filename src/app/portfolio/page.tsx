@@ -4,11 +4,16 @@ import PortfolioGrid    from './PortfolioGrid';
 
 export default async function PortfolioPage() {
   const supabase = await createClient();
-  const { data: photos } = await supabase
+  const { data: raw } = await supabase
     .from('portfolio_photos')
-    .select('*')
-    .order('sort_order', { ascending: true })
-    .order('created_at', { ascending: false });
+    .select('*');
+
+  // Fisher-Yates shuffle — new random order on every request
+  const photos = [...(raw ?? [])];
+  for (let i = photos.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [photos[i], photos[j]] = [photos[j], photos[i]];
+  }
 
   return (
     <>

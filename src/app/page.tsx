@@ -4,10 +4,26 @@ import Image from 'next/image';
 import Link  from 'next/link';
 import ScrollReveal    from '@/components/ScrollReveal';
 import IntroAnimation from '@/components/IntroAnimation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import type { Album } from '@/lib/db.types';
 import { useT } from '@/hooks/useT';
+
+/** Wraps matching words with accent colour */
+function HiText({ text, words }: { text: string; words: string[] }) {
+  const esc = words.map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  const rx  = new RegExp(`(${esc.join('|')})`, 'gi');
+  const parts = text.split(rx);
+  return (
+    <>
+      {parts.map((p, i) =>
+        words.some((w) => w.toLowerCase() === p.toLowerCase())
+          ? <span key={i} style={{ color: 'var(--accent)', fontStyle: 'italic' }}>{p}</span>
+          : <span key={i}>{p}</span>
+      )}
+    </>
+  );
+}
 
 export default function HomePage() {
   const t = useT();
@@ -62,9 +78,9 @@ export default function HomePage() {
           fill
           priority
           sizes="100vw"
-          style={{ objectFit: 'cover', objectPosition: 'center', filter: 'brightness(0.42)' }}
+          style={{ objectFit: 'cover', objectPosition: 'center', filter: 'brightness(0.62)' }}
         />
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(0deg,rgba(8,8,8,0.97) 0%,rgba(8,8,8,0.35) 50%,transparent 100%)' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(0deg,rgba(8,8,8,0.95) 0%,rgba(8,8,8,0.18) 50%,transparent 100%)' }} />
 
         <div style={{ position: 'relative', zIndex: 2, padding: 'clamp(2rem,5vw,5rem)', maxWidth: '820px' }}>
           <h1
@@ -145,19 +161,26 @@ export default function HomePage() {
 
             <ScrollReveal direction="up" delay={140}>
               <p style={{ fontFamily: 'var(--font-cormorant),serif', fontSize: 'clamp(1.05rem,1.8vw,1.2rem)', fontWeight: 300, lineHeight: 1.95, color: 'var(--muted)', marginBottom: '2.8rem' }}>
-                {t.home.prestationsDesc2}
+                <HiText text={t.home.prestationsDesc2} words={["l'\u00e9nergie", '\u00e9nergie', 'artistes', 'interactions', 'interaction', 'vie \u00e0 la nuit', 'immersives', '\u00e9motionnelles', 'visuellement fortes', 'visually compelling', 'immersive', 'energy', 'artists', 'interactions']} />
               </p>
             </ScrollReveal>
 
             <ScrollReveal direction="up" delay={200}>
               <p style={{ fontSize: '0.58rem', letterSpacing: '0.22em', color: 'var(--muted)', marginBottom: '1.2rem' }}>{t.home.availableFor}</p>
               <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 3rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                {t.home.availableItems.map((item) => (
-                  <li key={item} style={{ display: 'flex', gap: '0.85rem', alignItems: 'baseline' }}>
-                    <span style={{ color: 'var(--accent)', fontSize: '0.55rem', flexShrink: 0 }}>—</span>
-                    <span style={{ fontSize: '0.8rem', color: 'var(--muted)', lineHeight: 1.75 }}>{item}</span>
-                  </li>
-                ))}
+                {t.home.availableItems.map((item) => {
+                  const colonIdx = item.indexOf(' :');
+                  return (
+                    <li key={item} style={{ display: 'flex', gap: '0.85rem', alignItems: 'baseline' }}>
+                      <span style={{ color: 'var(--accent)', fontSize: '0.55rem', flexShrink: 0 }}>—</span>
+                      <span style={{ fontSize: '0.8rem', color: 'var(--muted)', lineHeight: 1.75 }}>
+                        {colonIdx > -1 ? (
+                          <><span style={{ color: 'var(--text)', fontWeight: 500 }}>{item.slice(0, colonIdx)}</span>{item.slice(colonIdx)}</>
+                        ) : item}
+                      </span>
+                    </li>
+                  );
+                })}
               </ul>
             </ScrollReveal>
 
@@ -185,7 +208,7 @@ export default function HomePage() {
             </ScrollReveal>
           </div>
 
-          {/* ── RIGHT : photos ── */}
+          {/* ── RIGHT : photos avec parallax ── */}
           <ScrollReveal direction="right" delay={120} style={{ position: 'relative', alignSelf: 'stretch' }}>
 
             {/* Grande photo principale */}
@@ -204,13 +227,13 @@ export default function HomePage() {
                 style={{
                   objectFit:      'cover',
                   objectPosition: 'center',
-                  filter:         'brightness(0.82) saturate(0.88)',
+                  filter:         'brightness(0.92) saturate(0.9)',
                   transition:     'transform 0.8s cubic-bezier(0.22,1,0.36,1)',
                 }}
                 className="presta-img-main"
               />
-              {/* vignette */}
-              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg,transparent 55%,rgba(8,8,8,0.55) 100%)' }} />
+              {/* vignette légère */}
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg,transparent 60%,rgba(8,8,8,0.35) 100%)' }} />
             </div>
 
             {/* Petite photo décalée en bas à gauche */}
@@ -233,7 +256,7 @@ export default function HomePage() {
                 style={{
                   objectFit:      'cover',
                   objectPosition: 'center',
-                  filter:         'brightness(0.78) saturate(0.82)',
+                  filter:         'brightness(0.9) saturate(0.88)',
                   transition:     'transform 0.8s cubic-bezier(0.22,1,0.36,1)',
                 }}
                 className="presta-img-secondary"
@@ -266,10 +289,13 @@ export default function HomePage() {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
             {recentAlbums.map((album, i) => {
-              const d     = new Date(album.created_at);
-              const month = d.toLocaleDateString(t.home.dateLocale, { month: 'long' });
-              const year  = d.getFullYear();
-              const label = `${month.charAt(0).toUpperCase() + month.slice(1)} ${year}`;
+              const label = album.year
+                ? album.year
+                : (() => {
+                    const d     = new Date(album.created_at);
+                    const month = d.toLocaleDateString(t.home.dateLocale, { month: 'long' });
+                    return `${month.charAt(0).toUpperCase() + month.slice(1)} ${d.getFullYear()}`;
+                  })();
 
               return (
                 <ScrollReveal key={album.id} direction="up" delay={i * 80}>
