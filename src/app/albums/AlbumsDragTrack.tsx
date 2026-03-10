@@ -81,7 +81,7 @@ function animateTrack(track: HTMLDivElement, pct: number) {
   );
   track.querySelectorAll<HTMLElement>('.album-cover').forEach((img) => {
     img.animate(
-      { objectPosition: `${100 + pct}% center` },
+      { objectPosition: `${50 - pct * 0.6}% center` },
       { duration: 150, fill: 'forwards', easing: 'cubic-bezier(0.16,1,0.3,1)' },
     );
   });
@@ -135,7 +135,7 @@ export default function AlbumsDragTrack({ albums }: { albums: AlbumWithCat[] }) 
     } else {
       track.animate({ transform: 'translate(0%, -50%)' }, { duration: 0, fill: 'forwards' });
       track.querySelectorAll<HTMLElement>('.album-cover').forEach((img) => {
-        img.animate({ objectPosition: '100% center' }, { duration: 0, fill: 'forwards' });
+        img.animate({ objectPosition: '50% center' }, { duration: 0, fill: 'forwards' });
       });
     }
   }, [cat]);
@@ -285,7 +285,7 @@ export default function AlbumsDragTrack({ albums }: { albums: AlbumWithCat[] }) 
               draggable={false}
               loading="lazy"
               className="album-cover"
-              style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: '100% center', filter: 'brightness(0.55) saturate(0.8)', display: 'block' }}
+              style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: '50% center', filter: 'brightness(0.55) saturate(0.8)', display: 'block' }}
               onMouseEnter={(e) => { e.currentTarget.style.filter = 'brightness(0.35) saturate(0.7)'; }}
               onMouseLeave={(e) => { e.currentTarget.style.filter = 'brightness(0.55) saturate(0.8)'; }}
             />
