@@ -1,9 +1,10 @@
 'use client';
 
 import Image from 'next/image';
-import { useEffect, KeyboardEvent, useCallback } from 'react';
+import { useEffect, useCallback } from 'react';
+import { useCart } from '@/contexts/CartContext';
 
-type Photo = { src: string; width: number; height: number; alt?: string };
+type Photo = { src: string; width: number; height: number; alt?: string; context?: string };
 
 interface Props {
   photos:   Photo[];
@@ -15,6 +16,8 @@ interface Props {
 
 export default function Lightbox({ photos, index, onClose, onNext, onPrev }: Props) {
   const photo = photos[index];
+  const { add, remove, has } = useCart();
+  const inCart = has(photo.src);
 
   const handleKey = useCallback((e: globalThis.KeyboardEvent) => {
     if (e.key === 'Escape')     onClose();
@@ -114,20 +117,53 @@ export default function Lightbox({ photos, index, onClose, onNext, onPrev }: Pro
         ✕
       </button>
 
-      {/* Counter */}
-      <p
+      {/* Counter + cart button */}
+      <div
         style={{
-          position:      'fixed',
-          bottom:        '1.5rem',
-          left:          '50%',
-          transform:     'translateX(-50%)',
-          fontSize:      '0.65rem',
-          letterSpacing: '0.14em',
-          color:         'rgba(255,255,255,0.35)',
+          position:       'fixed',
+          bottom:         '1.5rem',
+          left:           '50%',
+          transform:      'translateX(-50%)',
+          display:        'flex',
+          alignItems:     'center',
+          gap:            '1.5rem',
         }}
       >
-        {index + 1} / {photos.length}
-      </p>
+        <p
+          style={{
+            fontSize:      '0.65rem',
+            letterSpacing: '0.14em',
+            color:         'rgba(255,255,255,0.35)',
+            whiteSpace:    'nowrap',
+          }}
+        >
+          {index + 1} / {photos.length}
+        </p>
+
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            inCart
+              ? remove(photo.src)
+              : add({ id: photo.src, src: photo.src, width: photo.width, height: photo.height, alt: photo.alt ?? '', context: photo.context });
+          }}
+          style={{
+            background:    inCart ? 'rgba(100,200,120,0.18)' : 'rgba(200,169,126,0.18)',
+            border:        `1px solid ${inCart ? 'rgba(100,200,120,0.5)' : 'rgba(200,169,126,0.5)'}`,
+            color:         inCart ? 'rgb(120,220,140)' : 'var(--accent)',
+            padding:       '0.35rem 0.85rem',
+            fontSize:      '0.6rem',
+            letterSpacing: '0.14em',
+            cursor:        'pointer',
+            borderRadius:  '2px',
+            transition:    'background 0.2s, border-color 0.2s',
+            whiteSpace:    'nowrap',
+            fontFamily:    'var(--font-space)',
+          }}
+        >
+          {inCart ? '✓ DANS LE PANIER' : '+ PANIER'}
+        </button>
+      </div>
     </div>
   );
 }

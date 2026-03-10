@@ -1,8 +1,7 @@
 import type { Metadata } from 'next';
 import { Cormorant_Garamond, Space_Grotesk } from 'next/font/google';
 import './globals.css';
-import Navbar    from '@/components/Navbar';
-import BottomBar from '@/components/BottomBar';
+import SiteShell from '@/components/SiteShell';
 
 const cormorant = Cormorant_Garamond({
   variable: '--font-cormorant',
@@ -105,11 +104,7 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <body className={`${cormorant.variable} ${space.variable}`}>
-        <Navbar />
-        <main style={{ minHeight: '100vh', paddingTop: 'var(--navbar-h)' }}>
-          {children}
-        </main>
-        <BottomBar />
+        <SiteShell>{children}</SiteShell>
       </body>
     </html>
   );
