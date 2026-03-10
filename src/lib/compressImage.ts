@@ -1,6 +1,10 @@
 /**
  * Client-side image compression via Canvas API — zero dependencies.
  * Converts any image to WebP and resizes to the configured max dimensions.
+ *
+ * Also generates a LQIP (Low Quality Image Placeholder): a tiny inline base64
+ * data URL (~200–400 bytes) to use as `blurDataURL` in <Image placeholder="blur">.
+ * No extra network request — the placeholder is embedded directly in the HTML.
  */
 
 export interface CompressionOptions {
@@ -15,6 +19,28 @@ export interface CompressResult {
   height:         number;
   originalSize:   number;
   compressedSize: number;
+  /** Tiny base64 WebP (~200–400 bytes) for placeholder="blur" */
+  lqipDataUrl:    string;
+}
+
+/**
+ * Generates a LQIP from an already-loaded HTMLImageElement.
+ * Produces a ~20px-wide WebP at quality 0.05 — visually just a colour wash.
+ * @internal called by compressImage()
+ */
+function lqipFromImage(img: HTMLImageElement): string {
+  const LQIP_W = 20;
+  const ratio  = img.naturalHeight / img.naturalWidth;
+  const lw     = LQIP_W;
+  const lh     = Math.max(1, Math.round(lw * ratio));
+
+  const c      = document.createElement('canvas');
+  c.width      = lw;
+  c.height     = lh;
+  c.getContext('2d')!.drawImage(img, 0, 0, lw, lh);
+
+  // toDataURL is synchronous, quality 0.05 produces <400 bytes
+  return c.toDataURL('image/webp', 0.05);
 }
 
 export async function compressImage(
@@ -36,6 +62,9 @@ export async function compressImage(
       w = Math.round(w * ratio);
       h = Math.round(h * ratio);
 
+      // Generate LQIP while source image is still in memory
+      const lqipDataUrl = lqipFromImage(img);
+
       const canvas = document.createElement('canvas');
       canvas.width  = w;
       canvas.height = h;
@@ -52,6 +81,7 @@ export async function compressImage(
             height:         h,
             originalSize:   original.size,
             compressedSize: blob.size,
+            lqipDataUrl,
           });
         },
         'image/webp',
@@ -83,4 +113,32 @@ export function formatSize(bytes: number): string {
   if (bytes < 1024)         return `${bytes} o`;
   if (bytes < 1024 * 1024)  return `${(bytes / 1024).toFixed(0)} Ko`;
   return `${(bytes / 1024 / 1024).toFixed(1)} Mo`;
+}
+
+/**
+ * Standalone LQIP generator — useful when you want a blur placeholder
+ * for an image that was already uploaded (no re-compression needed).
+ *
+ * Returns a data URL (~200–400 bytes) usable directly as `blurDataURL`
+ * in `<Image placeholder="blur" blurDataURL={...} />`.
+ *
+ * To use LQIP with next/image:
+ *   1. Store the returned string in the `lqip` column of album_photos /
+ *      portfolio_photos (TEXT column, nullable).
+ *      SQL: ALTER TABLE album_photos ADD COLUMN IF NOT EXISTS lqip TEXT;
+ *           ALTER TABLE portfolio_photos ADD COLUMN IF NOT EXISTS lqip TEXT;
+ *   2. Pass `placeholder="blur" blurDataURL={photo.lqip ?? undefined}`
+ *      to the <Image> component.
+ */
+export function generateLqip(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      resolve(lqipFromImage(img));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('LQIP: impossible de lire l\'image')); };
+    img.src = url;
+  });
 }

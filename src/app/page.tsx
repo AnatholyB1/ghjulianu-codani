@@ -61,7 +61,7 @@ export default function HomePage() {
           alt="Hero background"
           fill
           priority
-          unoptimized
+          sizes="100vw"
           style={{ objectFit: 'cover', objectPosition: 'center', filter: 'brightness(0.42)' }}
         />
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(0deg,rgba(8,8,8,0.97) 0%,rgba(8,8,8,0.35) 50%,transparent 100%)' }} />
@@ -200,7 +200,7 @@ export default function HomePage() {
                 src="/furtive-108.jpg"
                 alt="Ambiance event"
                 fill
-                unoptimized
+                sizes="(max-width:900px) 100vw, 45vw"
                 style={{
                   objectFit:      'cover',
                   objectPosition: 'center',
@@ -229,7 +229,7 @@ export default function HomePage() {
                 src="/furtive-109.jpg"
                 alt="Détail"
                 fill
-                unoptimized
+                sizes="(max-width:900px) 52vw, 23vw"
                 style={{
                   objectFit:      'cover',
                   objectPosition: 'center',
@@ -293,7 +293,7 @@ export default function HomePage() {
                             alt={album.title}
                             width={80}
                             height={60}
-                            unoptimized
+                            sizes="80px"
                             style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'brightness(0.82)', transition: 'transform 0.5s ease' }}
                             className="event-thumb"
                           />

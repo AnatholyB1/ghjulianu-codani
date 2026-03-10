@@ -61,7 +61,7 @@ function PhotoCard({
           alt={alt ?? ''}
           width={width}
           height={height}
-          unoptimized
+          sizes="(max-width:600px) calc(50vw - 2rem), (max-width:1100px) calc(33vw - 2rem), 400px"
           style={{
             display:    'block',
             width:      '100%',

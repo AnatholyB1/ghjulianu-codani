@@ -74,6 +74,7 @@ export default function Lightbox({ photos, index, onClose, onNext, onPrev }: Pro
           alt={photo.alt ?? ''}
           width={photo.width}
           height={photo.height}
+          sizes="92vw"
           style={{
             maxWidth:   '92vw',
             maxHeight:  '88vh',
@@ -82,7 +83,6 @@ export default function Lightbox({ photos, index, onClose, onNext, onPrev }: Pro
             objectFit:  'contain',
           }}
           priority
-          unoptimized
         />
       </div>
 

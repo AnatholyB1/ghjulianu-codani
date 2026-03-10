@@ -173,6 +173,7 @@ export default function AlbumsDragTrack({ albums }: { albums: AlbumWithCat[] }) 
               src={album.cover_url ?? 'https://picsum.photos/seed/default/600/900'}
               alt={album.title}
               draggable={false}
+              loading="lazy"
               className="album-cover"
               style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: '100% center', filter: 'brightness(0.55) saturate(0.8)', display: 'block' }}
               onMouseEnter={(e) => { e.currentTarget.style.filter = 'brightness(0.35) saturate(0.7)'; }}
