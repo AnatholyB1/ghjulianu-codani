@@ -22,6 +22,9 @@ export default async function NewAlbumPage() {
           <Row label="ANNÉE">
             <input name="year" placeholder="2025" style={inputS} />
           </Row>
+          <Row label="LIEU">
+            <input name="location" placeholder="Paris, France" style={inputS} />
+          </Row>
           <Row label="CATÉGORIE">
             <select name="category_id" style={inputS}>
               <option value="">— Aucune —</option>

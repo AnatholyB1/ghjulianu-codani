@@ -21,7 +21,7 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 */
 
 /* ── Shared photo tokens – must match page.tsx ────────────── */
-export const INTRO_CENTER_SRC = 'https://picsum.photos/seed/intro_hero/1200/1800';
+export const INTRO_CENTER_SRC = '/furtive-109.jpg';
 export const INTRO_LEFT_SRC   = 'https://picsum.photos/seed/intro_left/800/1400';
 export const INTRO_RIGHT_SRC  = 'https://picsum.photos/seed/intro_right/800/1400';
 
@@ -262,7 +262,7 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
             textAlign:     'center',
           }}
         >
-          PHOTOGRAPHE
+          PHOTOGRAPHE — PARIS || CORSE
         </p>
 
         {/* Line below */}

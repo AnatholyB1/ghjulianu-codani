@@ -8,14 +8,14 @@ import {
 
 import { useCart } from '@/contexts/CartContext';
 
-async function downloadPhoto(src: string, alt: string) {
+async function downloadPhoto(src: string, alt: string, downloadName?: string) {
   try {
     const res  = await fetch(src);
     const blob = await res.blob();
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
     a.href     = url;
-    a.download = `${(alt || 'photo').replace(/\s+/g, '-').toLowerCase()}.jpg`;
+    a.download = `${(downloadName || alt || 'photo').replace(/\s+/g, '-').toLowerCase()}.jpg`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -53,7 +53,7 @@ export default function CartDrawer() {
     setDonationModal(false);
     setDownloading(true);
     for (const photo of items) {
-      await downloadPhoto(photo.src, photo.alt);
+      await downloadPhoto(photo.src, photo.alt, photo.downloadName);
     }
     setDownloading(false);
   }

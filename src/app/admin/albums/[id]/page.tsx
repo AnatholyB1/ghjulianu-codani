@@ -49,6 +49,7 @@ export default async function EditAlbumPage({ params }: { params: Promise<{ id: 
           <form action={update} style={formCol}>
             <Row label="TITRE *"><input name="title" required defaultValue={album.title} style={inputS} /></Row>
             <Row label="ANNÉE"><input name="year" defaultValue={album.year ?? ''} placeholder="2025" style={inputS} /></Row>
+            <Row label="LIEU"><input name="location" defaultValue={album.location ?? ''} placeholder="Paris, France" style={inputS} /></Row>
             <Row label="CATÉGORIE">
               <select name="category_id" defaultValue={album.category_id ?? ''} style={inputS}>
                 <option value="">— Aucune —</option>

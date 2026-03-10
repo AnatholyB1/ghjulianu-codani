@@ -3,12 +3,13 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
 export type CartPhoto = {
-  id:       string; // unique key = src
-  src:      string;
-  width:    number;
-  height:   number;
-  alt:      string;
-  context?: string; // e.g. album title or 'Portfolio'
+  id:            string; // unique key = src
+  src:           string;
+  width:         number;
+  height:        number;
+  alt:           string;
+  context?:      string; // e.g. album title or 'Portfolio'
+  downloadName?: string; // filename for download e.g. FURTIVE25_001
 };
 
 type CartCtx = {

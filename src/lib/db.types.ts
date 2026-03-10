@@ -14,6 +14,7 @@ export interface Album {
   year:           string | null;
   category_id:    string | null;
   description:    string | null;
+  location:       string | null;
   cover_url:      string | null;
   background_url: string | null;
   is_public:      boolean;

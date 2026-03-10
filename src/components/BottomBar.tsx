@@ -2,8 +2,10 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { useT } from '@/hooks/useT';
 
 export default function BottomBar() {
+  const t = useT();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -50,7 +52,7 @@ export default function BottomBar() {
           whiteSpace:    'nowrap',
         }}
       >
-        <span className="bb-prefix">Vous appréciez mon travail ?{' '}</span>
+        <span className="bb-prefix">{t.bottomBar.enjoy}{' '}</span>
         <Link
           href="/don"
           style={{
@@ -60,7 +62,7 @@ export default function BottomBar() {
             paddingBottom:  '1px',
           }}
         >
-          Faire un don
+          {t.bottomBar.donate}
         </Link>
       </p>
 
@@ -77,7 +79,7 @@ export default function BottomBar() {
         onMouseEnter={(e) => ((e.target as HTMLElement).style.opacity = '1')}
         onMouseLeave={(e) => ((e.target as HTMLElement).style.opacity = '0.7')}
       >
-        CONTACT
+        {t.bottomBar.contact}
       </Link>
     </div>
   );

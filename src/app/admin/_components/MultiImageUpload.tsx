@@ -2,18 +2,20 @@
 
 import { useState, useRef, useCallback } from 'react';
 import { uploadFile } from '@/app/admin/actions';
+import { compressImage, getBucketPreset, formatSize } from '@/lib/compressImage';
 
-type FileStatus = 'pending' | 'uploading' | 'done' | 'error';
+type FileStatus = 'pending' | 'compressing' | 'uploading' | 'done' | 'error';
 
 interface FileItem {
-  id:      string;
-  file:    File;
-  preview: string;
-  status:  FileStatus;
-  url:     string;
-  width:   number;
-  height:  number;
-  error:   string;
+  id:        string;
+  file:      File;
+  preview:   string;
+  status:    FileStatus;
+  url:       string;
+  width:     number;
+  height:    number;
+  error:     string;
+  savedPct?: number; // compression gain %
 }
 
 interface Props {
@@ -76,13 +78,25 @@ export default function MultiImageUpload({ bucket, onUpload, onComplete }: Props
     if (!pending.length) return;
     setRunning(true);
 
+    const preset = getBucketPreset(bucket);
     for (const item of pending) {
-      // Mark uploading
+      // Step 1 — compress
+      setItems((prev) => prev.map((i) => i.id === item.id ? { ...i, status: 'compressing' } : i));
+      let compressed: Awaited<ReturnType<typeof compressImage>>;
+      try {
+        compressed = await compressImage(item.file, preset);
+      } catch {
+        setItems((prev) => prev.map((i) => i.id === item.id ? { ...i, status: 'error', error: 'Compression échouée' } : i));
+        continue;
+      }
+      const savedPct = Math.round((1 - compressed.compressedSize / compressed.originalSize) * 100);
+
+      // Step 2 — upload
       setItems((prev) => prev.map((i) => i.id === item.id ? { ...i, status: 'uploading' } : i));
       try {
-        const url = await uploadFile(bucket, item.file);
-        await onUpload(url, item.width, item.height);
-        setItems((prev) => prev.map((i) => i.id === item.id ? { ...i, status: 'done', url } : i));
+        const url = await uploadFile(bucket, compressed.file);
+        await onUpload(url, compressed.width, compressed.height);
+        setItems((prev) => prev.map((i) => i.id === item.id ? { ...i, status: 'done', url, savedPct } : i));
       } catch (e) {
         const msg = e instanceof Error ? e.message : 'Erreur upload';
         setItems((prev) => prev.map((i) => i.id === item.id ? { ...i, status: 'error', error: msg } : i));
@@ -165,6 +179,11 @@ export default function MultiImageUpload({ bucket, onUpload, onComplete }: Props
               />
 
               {/* Status overlay */}
+              {item.status === 'compressing' && (
+                <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(8,8,8,0.55)' }}>
+                  <span style={{ fontSize: '0.5rem', letterSpacing: '0.08em', color: '#c8a97e', textAlign: 'center', padding: '2px' }}>ZIP</span>
+                </div>
+              )}
               {item.status === 'uploading' && (
                 <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(8,8,8,0.5)' }}>
                   <span style={{ fontSize: '0.56rem', letterSpacing: '0.1em', color: '#c8a97e' }}>…</span>
@@ -194,10 +213,15 @@ export default function MultiImageUpload({ bucket, onUpload, onComplete }: Props
                 </button>
               )}
 
-              {/* Dimensions badge */}
+              {/* Dimensions / savings badge */}
               {item.status === 'pending' && (
                 <div style={{ position: 'absolute', bottom: '2px', left: '3px', fontSize: '0.45rem', color: 'rgba(255,255,255,0.4)', letterSpacing: '0.04em', lineHeight: 1 }}>
-                  {item.width}×{item.height}
+                  {item.width}×{item.height} · {formatSize(item.file.size)}
+                </div>
+              )}
+              {item.status === 'done' && item.savedPct !== undefined && item.savedPct > 0 && (
+                <div style={{ position: 'absolute', bottom: '2px', left: '3px', fontSize: '0.45rem', color: '#6dbf7a', letterSpacing: '0.04em', lineHeight: 1 }}>
+                  -{item.savedPct}%
                 </div>
               )}
             </div>
@@ -226,7 +250,7 @@ export default function MultiImageUpload({ bucket, onUpload, onComplete }: Props
             }}
           >
             {running
-              ? `UPLOAD EN COURS…`
+              ? `TRAITEMENT EN COURS…`
               : `AJOUTER ${pendingCount} PHOTO${pendingCount > 1 ? 'S' : ''}`}
           </button>
           {(doneCount > 0 || errorCount > 0) && !running && (

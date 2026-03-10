@@ -3,45 +3,36 @@
 import Image from 'next/image';
 import Link  from 'next/link';
 import ScrollReveal    from '@/components/ScrollReveal';
-import IntroAnimation, { INTRO_CENTER_SRC, INTRO_LEFT_SRC, INTRO_RIGHT_SRC } from '@/components/IntroAnimation';
+import IntroAnimation from '@/components/IntroAnimation';
 import { useState, useEffect } from 'react';
-
-const SERVICES = [
-  {
-    key:   'perso',
-    label: 'SHOOTING PERSONNEL',
-    sub:   'Portraits, séances solo & collaborations artistiques.',
-    img:   INTRO_LEFT_SRC,
-    href:  '/contact',
-  },
-  {
-    key:   'marques',
-    label: 'POUR DES MARQUES',
-    sub:   'Identité visuelle, produits, événements de marque.',
-    img:   'https://picsum.photos/seed/s2/900/600',
-    href:  '/contact',
-  },
-  {
-    key:   'nightlife',
-    label: 'ÉVÉNEMENTIEL NIGHTLIFE',
-    sub:   "Soirées, clubs, festivals – capturer l'énergie brute de la nuit.",
-    img:   INTRO_RIGHT_SRC,
-    href:  '/albums',
-  },
-];
+import { createClient } from '@/utils/supabase/client';
+import type { Album } from '@/lib/db.types';
+import { useT } from '@/hooks/useT';
 
 export default function HomePage() {
-  const [showIntro, setShowIntro]     = useState(false);
-  const [heroReady, setHeroReady]     = useState(false);
+  const t = useT();
+  const [showIntro,     setShowIntro]     = useState(false);
+  const [heroReady,     setHeroReady]     = useState(false);
+  const [recentAlbums,  setRecentAlbums]  = useState<Album[]>([]);
 
   useEffect(() => {
     const played = sessionStorage.getItem('intro-played');
     if (!played) {
       setShowIntro(true);
     } else {
-      // Already played this session — show hero content immediately
       setHeroReady(true);
     }
+  }, []);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase
+      .from('albums')
+      .select('id,title,slug,cover_url,created_at,year')
+      .eq('is_public', true)
+      .order('created_at', { ascending: false })
+      .limit(3)
+      .then(({ data }) => { if (data) setRecentAlbums(data as Album[]); });
   }, []);
 
   function handleIntroDone() {
@@ -66,7 +57,7 @@ export default function HomePage() {
         }}
       >
         <Image
-          src={INTRO_CENTER_SRC}
+          src="/furtive-109.jpg"
           alt="Hero background"
           fill
           priority
@@ -100,7 +91,7 @@ export default function HomePage() {
             animation: heroReady ? 'fadeInUp 0.9s cubic-bezier(0.16,1,0.3,1) 0.22s both' : 'none',
             opacity:   heroReady ? undefined : 0,
           }}>
-            PHOTOGRAPHE — PARIS
+            {t.home.heroSubtitle}
           </p>
 
           <div style={{
@@ -108,8 +99,8 @@ export default function HomePage() {
             animation: heroReady ? 'fadeInUp 0.9s cubic-bezier(0.16,1,0.3,1) 0.4s both' : 'none',
             opacity:   heroReady ? undefined : 0,
           }}>
-            <Link href="/portfolio" style={ctaStyle('solid')}>VOIR LE PORTFOLIO</Link>
-            <Link href="/contact"   style={ctaStyle('outline')}>ME CONTACTER</Link>
+            <Link href="/portfolio" style={ctaStyle('solid')}>{t.home.ctaPortfolio}</Link>
+            <Link href="/contact"   style={ctaStyle('outline')}>{t.home.ctaContact}</Link>
           </div>
         </div>
 
@@ -120,72 +111,276 @@ export default function HomePage() {
           animation: heroReady ? 'fadeIn 1s ease 0.7s both' : 'none',
           opacity:   heroReady ? undefined : 0,
         }}>
-          <span style={{ fontSize: '0.58rem', letterSpacing: '0.18em', color: 'var(--muted)', writingMode: 'vertical-rl' }}>SCROLL</span>
+          <span style={{ fontSize: '0.58rem', letterSpacing: '0.18em', color: 'var(--muted)', writingMode: 'vertical-rl' }}>{t.home.scroll}</span>
           <div style={{ width: '1px', height: '48px', background: 'linear-gradient(to bottom,var(--muted),transparent)' }} />
         </div>
       </section>
 
-      {/* ── SERVICES ── */}
-      <section style={{ padding: 'clamp(4rem,8vw,8rem) clamp(1.5rem,5vw,5rem)', maxWidth: '1300px', margin: '0 auto' }}>
-        <ScrollReveal direction="up">
-          <p style={{ fontSize: '0.62rem', letterSpacing: '0.22em', color: 'var(--muted)', marginBottom: '3rem' }}>
-            PRESTATIONS
-          </p>
-        </ScrollReveal>
+      {/* ── PRESTATIONS ── */}
+      <section style={{ borderTop: '1px solid var(--border)', padding: 'clamp(4rem,8vw,8rem) clamp(1.5rem,5vw,5rem)' }}>
+        <div style={{
+          maxWidth:            '1300px',
+          margin:              '0 auto',
+          display:             'grid',
+          gridTemplateColumns: 'minmax(0,1fr) minmax(0,420px)',
+          gap:                 'clamp(3rem,6vw,7rem)',
+          alignItems:          'start',
+        }}
+        className="prestations-grid"
+        >
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(280px,1fr))', gap: '1px', border: '1px solid var(--border)' }}>
-          {SERVICES.map((s, i) => (
-            <ScrollReveal key={s.key} direction="up" delay={i * 100}>
-              <Link href={s.href} style={{ display: 'block', textDecoration: 'none', position: 'relative', overflow: 'hidden', aspectRatio: '4/3', background: '#0a0a0a' }} className="service-card">
-                <Image src={s.img} alt={s.label} fill unoptimized className="service-img"
-                  style={{ objectFit: 'cover', filter: 'brightness(0.4)', transition: 'transform 0.7s cubic-bezier(0.22,1,0.36,1),filter 0.5s ease' }}
-                />
-                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(0deg,rgba(8,8,8,0.88) 0%,transparent 60%)' }} />
-                <div style={{ position: 'absolute', bottom: '1.8rem', left: '1.8rem', right: '1.8rem' }}>
-                  <h3 style={{ fontFamily: 'var(--font-cormorant),serif', fontSize: 'clamp(1.3rem,3vw,1.7rem)', fontStyle: 'italic', fontWeight: 400, color: 'var(--text)', marginBottom: '0.5rem' }}>
-                    {s.label}
-                  </h3>
-                  <p style={{ fontSize: '0.68rem', letterSpacing: '0.06em', color: 'var(--muted)', lineHeight: 1.6 }}>{s.sub}</p>
-                </div>
+          {/* ── LEFT : texte ── */}
+          <div>
+            <ScrollReveal direction="up">
+              <p style={{ fontSize: '0.62rem', letterSpacing: '0.22em', color: 'var(--muted)', marginBottom: '3rem' }}>
+                {t.home.prestationsLabel}
+              </p>
+            </ScrollReveal>
+
+            <ScrollReveal direction="up" delay={80}>
+              <p style={{ fontFamily: 'var(--font-cormorant),serif', fontSize: 'clamp(1.05rem,1.8vw,1.2rem)', fontWeight: 300, lineHeight: 1.95, color: 'var(--text)', marginBottom: '1.6rem' }}>
+                {t.home.prestationsDesc1}
+              </p>
+            </ScrollReveal>
+
+            <ScrollReveal direction="up" delay={140}>
+              <p style={{ fontFamily: 'var(--font-cormorant),serif', fontSize: 'clamp(1.05rem,1.8vw,1.2rem)', fontWeight: 300, lineHeight: 1.95, color: 'var(--muted)', marginBottom: '2.8rem' }}>
+                {t.home.prestationsDesc2}
+              </p>
+            </ScrollReveal>
+
+            <ScrollReveal direction="up" delay={200}>
+              <p style={{ fontSize: '0.58rem', letterSpacing: '0.22em', color: 'var(--muted)', marginBottom: '1.2rem' }}>{t.home.availableFor}</p>
+              <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 3rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                {t.home.availableItems.map((item) => (
+                  <li key={item} style={{ display: 'flex', gap: '0.85rem', alignItems: 'baseline' }}>
+                    <span style={{ color: 'var(--accent)', fontSize: '0.55rem', flexShrink: 0 }}>—</span>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--muted)', lineHeight: 1.75 }}>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </ScrollReveal>
+
+            <ScrollReveal direction="up" delay={260}>
+              <Link
+                href="/tarifs"
+                style={{
+                  display:        'inline-flex',
+                  alignItems:     'center',
+                  gap:            '0.5rem',
+                  padding:        '0.65rem 1.3rem',
+                  fontSize:       '0.6rem',
+                  letterSpacing:  '0.18em',
+                  background:     '#111',
+                  color:          'var(--text)',
+                  border:         '1px solid var(--border)',
+                  textDecoration: 'none',
+                  transition:     'border-color 0.2s, color 0.2s',
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.22)'; e.currentTarget.style.color = '#fff'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border)';           e.currentTarget.style.color = 'var(--text)'; }}
+              >
+                {t.home.seeRates}
               </Link>
             </ScrollReveal>
-          ))}
+          </div>
+
+          {/* ── RIGHT : photos ── */}
+          <ScrollReveal direction="right" delay={120} style={{ position: 'relative', alignSelf: 'stretch' }}>
+
+            {/* Grande photo principale */}
+            <div style={{
+              position:     'relative',
+              overflow:     'hidden',
+              aspectRatio:  '3/4',
+              background:   '#0d0d0d',
+              marginTop:    'clamp(0px,-2vw,-32px)',
+            }}>
+              <Image
+                src="/furtive-108.jpg"
+                alt="Ambiance event"
+                fill
+                unoptimized
+                style={{
+                  objectFit:      'cover',
+                  objectPosition: 'center',
+                  filter:         'brightness(0.82) saturate(0.88)',
+                  transition:     'transform 0.8s cubic-bezier(0.22,1,0.36,1)',
+                }}
+                className="presta-img-main"
+              />
+              {/* vignette */}
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg,transparent 55%,rgba(8,8,8,0.55) 100%)' }} />
+            </div>
+
+            {/* Petite photo décalée en bas à gauche */}
+            <div style={{
+              position:    'absolute',
+              bottom:      'clamp(-1.5rem,-3vw,-2.5rem)',
+              left:        'clamp(-1rem,-3vw,-2rem)',
+              width:       '52%',
+              overflow:    'hidden',
+              aspectRatio: '4/3',
+              background:  '#0d0d0d',
+              border:      '3px solid var(--bg)',
+              boxShadow:   '0 8px 40px rgba(0,0,0,0.7)',
+            }}>
+              <Image
+                src="/furtive-109.jpg"
+                alt="Détail"
+                fill
+                unoptimized
+                style={{
+                  objectFit:      'cover',
+                  objectPosition: 'center',
+                  filter:         'brightness(0.78) saturate(0.82)',
+                  transition:     'transform 0.8s cubic-bezier(0.22,1,0.36,1)',
+                }}
+                className="presta-img-secondary"
+              />
+            </div>
+
+            {/* Numéro décoratif */}
+            <p style={{
+              position:      'absolute',
+              top:           '-1.2rem',
+              right:         0,
+              fontSize:      '0.52rem',
+              letterSpacing: '0.22em',
+              color:         'rgba(200,169,126,0.35)',
+              fontFamily:    'var(--font-space)',
+            }}>
+              01 / 01
+            </p>
+          </ScrollReveal>
         </div>
       </section>
 
-      {/* ── RECENT EVENT strip ── */}
-      <section style={{ borderTop: '1px solid var(--border)', padding: 'clamp(3rem,6vw,6rem) clamp(1.5rem,5vw,5rem)', display: 'flex', gap: '3rem', alignItems: 'center', flexWrap: 'wrap' }}>
-        <ScrollReveal direction="left" style={{ flex: '1 1 280px' }}>
-          <p style={{ fontSize: '0.62rem', letterSpacing: '0.22em', color: 'var(--muted)', marginBottom: '1rem' }}>DERNIERS ÉVÉNEMENTS</p>
-          <p style={{ fontFamily: 'var(--font-cormorant),serif', fontSize: 'clamp(1.8rem,4vw,2.8rem)', fontStyle: 'italic', fontWeight: 300, lineHeight: 1.1, color: 'var(--text)' }}>
-            ONESH · FURTIVE
-            <br />FIGHTCLUB · UFO
-          </p>
-          <Link href="/albums" style={{ display: 'inline-block', marginTop: '2rem', fontSize: '0.65rem', letterSpacing: '0.18em', color: 'var(--accent)', textDecoration: 'none', borderBottom: '1px solid var(--accent)', paddingBottom: '2px' }}>
-            VOIR LES ALBUMS →
-          </Link>
-        </ScrollReveal>
+      {/* ── DERNIERS ÉVÉNEMENTS ── */}
+      <section style={{ borderTop: '1px solid var(--border)', padding: 'clamp(3rem,6vw,6rem) clamp(1.5rem,5vw,5rem)' }}>
+        <div style={{ maxWidth: '1300px', margin: '0 auto' }}>
 
-        <ScrollReveal direction="right" delay={150}
-          style={{ flex: '2 1 400px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px', alignItems: 'start' }}
-        >
-          {[
-            { src: 'https://picsum.photos/seed/e1/600/900', w: 600, h: 900 },
-            { src: 'https://picsum.photos/seed/e2/600/400', w: 600, h: 400 },
-            { src: 'https://picsum.photos/seed/e3/600/400', w: 600, h: 400 },
-            { src: 'https://picsum.photos/seed/e4/600/900', w: 600, h: 900 },
-          ].map((img, i) => (
-            <div key={i} style={{ overflow: 'hidden' }}>
-              <Image src={img.src} alt="" width={img.w} height={img.h} unoptimized
-                style={{ width: '100%', height: 'auto', objectFit: 'cover', display: 'block', filter: 'brightness(0.78)' }}
-              />
+          <ScrollReveal direction="up">
+            <p style={{ fontSize: '0.62rem', letterSpacing: '0.22em', color: 'var(--muted)', marginBottom: '2.5rem' }}>{t.home.latestEvents}</p>
+          </ScrollReveal>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+            {recentAlbums.map((album, i) => {
+              const d     = new Date(album.created_at);
+              const month = d.toLocaleDateString(t.home.dateLocale, { month: 'long' });
+              const year  = d.getFullYear();
+              const label = `${month.charAt(0).toUpperCase() + month.slice(1)} ${year}`;
+
+              return (
+                <ScrollReveal key={album.id} direction="up" delay={i * 80}>
+                  <Link
+                    href={`/albums/${album.slug}`}
+                    style={{ textDecoration: 'none', display: 'block' }}
+                    className="event-row"
+                  >
+                    <div style={{
+                      display:        'flex',
+                      alignItems:     'center',
+                      gap:            'clamp(1rem,3vw,2.5rem)',
+                      padding:        'clamp(1rem,2vw,1.5rem) 0',
+                      borderBottom:   '1px solid var(--border)',
+                    }}>
+                      {/* Thumbnail */}
+                      <div style={{ width: '80px', height: '60px', flexShrink: 0, overflow: 'hidden', background: '#111' }}>
+                        {album.cover_url ? (
+                          <Image
+                            src={album.cover_url}
+                            alt={album.title}
+                            width={80}
+                            height={60}
+                            unoptimized
+                            style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'brightness(0.82)', transition: 'transform 0.5s ease' }}
+                            className="event-thumb"
+                          />
+                        ) : (
+                          <div style={{ width: '100%', height: '100%', background: '#1a1a1a' }} />
+                        )}
+                      </div>
+
+                      {/* Index */}
+                      <span style={{ fontSize: '0.52rem', letterSpacing: '0.14em', color: 'rgba(122,122,116,0.4)', flexShrink: 0, minWidth: '1.4rem' }}>
+                        {String(i + 1).padStart(2, '0')}
+                      </span>
+
+                      {/* Title */}
+                      <p style={{
+                        fontFamily:    'var(--font-cormorant),serif',
+                        fontSize:      'clamp(1.4rem,3vw,2rem)',
+                        fontStyle:     'italic',
+                        fontWeight:    300,
+                        color:         'var(--text)',
+                        flex:          1,
+                        transition:    'color 0.2s',
+                      }}
+                        className="event-title"
+                      >
+                        {album.title}
+                      </p>
+
+                      {/* Date */}
+                      <span style={{ fontSize: '0.6rem', letterSpacing: '0.14em', color: 'var(--muted)', flexShrink: 0, whiteSpace: 'nowrap' }}>
+                        {label}
+                      </span>
+
+                      {/* Arrow */}
+                      <span style={{ fontSize: '0.9rem', color: 'var(--accent)', flexShrink: 0, transition: 'transform 0.2s' }} className="event-arrow">
+                        →
+                      </span>
+                    </div>
+                  </Link>
+                </ScrollReveal>
+              );
+            })}
+
+            {recentAlbums.length === 0 && (
+              <p style={{ fontSize: '0.75rem', color: 'var(--muted)', padding: '2rem 0' }}>{t.home.noEvents}</p>
+            )}
+          </div>
+
+          <ScrollReveal direction="up" delay={280}>
+            <div style={{ marginTop: '2.5rem' }}>
+              <Link
+                href="/albums"
+                style={{
+                  display:        'inline-flex',
+                  alignItems:     'center',
+                  gap:            '0.5rem',
+                  padding:        '0.65rem 1.3rem',
+                  fontSize:       '0.6rem',
+                  letterSpacing:  '0.18em',
+                  background:     '#111',
+                  color:          'var(--text)',
+                  border:         '1px solid var(--border)',
+                  textDecoration: 'none',
+                  transition:     'border-color 0.2s, color 0.2s',
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.22)'; e.currentTarget.style.color = '#fff'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border)';           e.currentTarget.style.color = 'var(--text)'; }}
+              >
+                {t.home.seeAllAlbums}
+              </Link>
             </div>
-          ))}
-        </ScrollReveal>
+          </ScrollReveal>
+
+        </div>
       </section>
 
       <style>{`
-        .service-card:hover .service-img { transform: scale(1.06); filter: brightness(0.55) !important; }
+        .prestations-grid { align-items: start; }
+        @media (max-width: 760px) {
+          .prestations-grid { grid-template-columns: 1fr !important; }
+          .prestations-grid > *:last-child { margin-top: 4rem; padding-bottom: 3.5rem; }
+        }
+        .presta-img-main:hover      { transform: scale(1.04) !important; }
+        .presta-img-secondary:hover { transform: scale(1.06) !important; }
+        .event-row:hover .event-title { color: var(--accent) !important; }
+        .event-row:hover .event-arrow { transform: translateX(4px); }
+        .event-row:hover .event-thumb { transform: scale(1.08); }
       `}</style>
     </>
   );

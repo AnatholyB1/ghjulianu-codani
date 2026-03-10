@@ -2,6 +2,7 @@
 
 import { useState, useTransition, useRef } from 'react';
 import { uploadFile } from '@/app/admin/actions';
+import { compressImage, getBucketPreset, formatSize } from '@/lib/compressImage';
 
 interface Props {
   name:        string;
@@ -15,21 +16,26 @@ export default function ImageUploadField({ name, bucket, defaultUrl, aspectHint 
   const [preview, setPreview] = useState(defaultUrl ?? '');
   const [pending, start]      = useTransition();
   const [error, setError]     = useState('');
+  const [savings, setSavings] = useState('');
   const [drag, setDrag]       = useState(false);
   const inputRef              = useRef<HTMLInputElement>(null);
 
   async function handleFile(file: File) {
     if (!file.type.startsWith('image/')) { setError('Fichier non supporté.'); return; }
     setError('');
+    setSavings('');
     // Immediate local preview
     const local = URL.createObjectURL(file);
     setPreview(local);
     start(async () => {
       try {
-        const pub = await uploadFile(bucket, file);
+        const compressed = await compressImage(file, getBucketPreset(bucket));
+        const pub = await uploadFile(bucket, compressed.file);
         setUrl(pub);
         setPreview(pub);
         URL.revokeObjectURL(local);
+        const pct = Math.round((1 - compressed.compressedSize / compressed.originalSize) * 100);
+        if (pct > 0) setSavings(`${formatSize(compressed.originalSize)} → ${formatSize(compressed.compressedSize)} (−${pct}%)`);
       } catch {
         setError('Échec de l\'upload. Vérifiez le bucket Supabase.');
         setPreview(defaultUrl ?? '');
@@ -138,6 +144,11 @@ export default function ImageUploadField({ name, bucket, defaultUrl, aspectHint 
       {url && !pending && (
         <p style={{ fontSize: '0.56rem', color: '#7a7a74', marginTop: '0.35rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           ✓ {url.split('/').pop()}
+        </p>
+      )}
+      {savings && !pending && (
+        <p style={{ fontSize: '0.54rem', color: '#6dbf7a', marginTop: '0.2rem', letterSpacing: '0.04em' }}>
+          {savings}
         </p>
       )}
 

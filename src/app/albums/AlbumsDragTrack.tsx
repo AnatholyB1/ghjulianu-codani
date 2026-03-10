@@ -3,10 +3,12 @@
 import Link      from 'next/link';
 import { useState, useRef, useCallback, useEffect } from 'react';
 import type { Album, Category } from '@/lib/db.types';
+import { useT } from '@/hooks/useT';
 
 type AlbumWithCat = Album & { category: Category | null };
 
 export default function AlbumsDragTrack({ albums }: { albums: AlbumWithCat[] }) {
+  const t = useT();
   const [cat, setCat] = useState<string>('all');
 
   const filtered = cat === 'all'
@@ -24,15 +26,31 @@ export default function AlbumsDragTrack({ albums }: { albums: AlbumWithCat[] }) 
   const prevPct     = useRef(0);
   const isDragging  = useRef(false);
   const hasDragged  = useRef(false);
+  const hasEntered  = useRef(false);
 
   useEffect(() => {
     prevPct.current = 0;
     const track = trackRef.current;
     if (!track) return;
-    track.animate({ transform: 'translate(0%, -50%)' }, { duration: 0, fill: 'forwards' });
-    track.querySelectorAll<HTMLElement>('.album-cover').forEach((img) => {
-      img.animate({ objectPosition: '100% center' }, { duration: 0, fill: 'forwards' });
-    });
+    if (!hasEntered.current) {
+      // First mount: slide in from right
+      hasEntered.current = true;
+      track.animate(
+        { transform: ['translate(60%, -50%)', 'translate(0%, -50%)'] },
+        { duration: 1100, fill: 'forwards', easing: 'cubic-bezier(0.16,1,0.3,1)' }
+      );
+      track.querySelectorAll<HTMLElement>('.album-cover').forEach((img, i) => {
+        img.animate(
+          { objectPosition: ['100% center', '100% center'] },
+          { duration: 0, fill: 'forwards' }
+        );
+      });
+    } else {
+      track.animate({ transform: 'translate(0%, -50%)' }, { duration: 0, fill: 'forwards' });
+      track.querySelectorAll<HTMLElement>('.album-cover').forEach((img) => {
+        img.animate({ objectPosition: '100% center' }, { duration: 0, fill: 'forwards' });
+      });
+    }
   }, [cat]);
 
   const moveTo = useCallback((nextPct: number) => {
@@ -122,7 +140,7 @@ export default function AlbumsDragTrack({ albums }: { albums: AlbumWithCat[] }) 
           onClick={() => setCat('all')}
           style={{ background: cat === 'all' ? 'var(--text)' : 'transparent', color: cat === 'all' ? '#080808' : 'var(--muted)', border: '1px solid var(--border)', padding: '0.45rem 1.2rem', fontSize: '0.62rem', letterSpacing: '0.14em', cursor: 'pointer', transition: 'all 0.25s ease' }}
         >
-          TOUT
+          {t.albums.all}
         </button>
         {categories.map((c) => (
           <button
@@ -137,10 +155,10 @@ export default function AlbumsDragTrack({ albums }: { albums: AlbumWithCat[] }) 
       </div>
 
       <p className="scroll-hint" style={{ position: 'absolute', bottom: 'clamp(1.5rem,3vw,2.5rem)', left: '50%', transform: 'translateX(-50%)', zIndex: 10, fontSize: '0.58rem', letterSpacing: '0.18em', color: 'var(--muted)', opacity: 0.45, pointerEvents: 'none' }}>
-        ← GLISSER →
+        {t.albums.drag}
       </p>
 
-      <div ref={trackRef} data-pct="0" style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(0%, -50%)', display: 'flex', gap: '4vmin', willChange: 'transform' }} className="album-track">
+      <div ref={trackRef} data-pct="0" style={{ position: 'absolute', left: 'calc(50% - 20vmin)', top: '50%', transform: 'translate(0%, -50%)', display: 'flex', gap: '4vmin', willChange: 'transform' }} className="album-track">
         {filtered.map((album) => (
           <Link
             key={album.id}
@@ -176,9 +194,20 @@ export default function AlbumsDragTrack({ albums }: { albums: AlbumWithCat[] }) 
               <h2 style={{ fontFamily: 'var(--font-cormorant),serif', fontSize: 'clamp(1.2rem,3vmin,1.8rem)', fontStyle: 'italic', fontWeight: 400, color: 'var(--text)', lineHeight: 1.1, margin: 0 }}>
                 {album.title}
               </h2>
-              {album.year && (
-                <p style={{ marginTop: '0.3rem', fontSize: '0.55rem', letterSpacing: '0.14em', color: 'var(--muted)' }}>{album.year}</p>
-              )}
+              <div style={{ marginTop: '0.4rem', display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                {(() => {
+                  const d = new Date(album.created_at);
+                  const mo = d.toLocaleDateString(t.albums.dateLocale, { month: 'long' });
+                  const yr = d.getFullYear();
+                  const label = `${mo.charAt(0).toUpperCase() + mo.slice(1)} ${yr}`;
+                  return <p style={{ fontSize: '0.52rem', letterSpacing: '0.14em', color: 'var(--muted)' }}>{label}</p>;
+                })()}
+                {(album as AlbumWithCat & { location?: string | null }).location && (
+                  <p style={{ fontSize: '0.5rem', letterSpacing: '0.12em', color: 'rgba(122,122,116,0.7)' }}>
+                    {(album as AlbumWithCat & { location?: string | null }).location}
+                  </p>
+                )}
+              </div>
             </div>
           </Link>
         ))}

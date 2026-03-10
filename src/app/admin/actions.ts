@@ -40,6 +40,7 @@ export async function createAlbum(formData: FormData) {
   const title       = (formData.get('title') as string).trim();
   const slug        = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
   const year        = (formData.get('year') as string) || null;
+  const location    = (formData.get('location') as string) || null;
   const category_id = (formData.get('category_id') as string) || null;
   const description = (formData.get('description') as string) || null;
   const cover_url   = (formData.get('cover_url') as string) || null;
@@ -49,7 +50,7 @@ export async function createAlbum(formData: FormData) {
 
   const { data, error } = await supabase
     .from('albums')
-    .insert({ title, slug, year, category_id, description, cover_url, background_url: bg_url, is_public, access_key })
+    .insert({ title, slug, year, location, category_id, description, cover_url, background_url: bg_url, is_public, access_key })
     .select('id')
     .single();
 
@@ -63,6 +64,7 @@ export async function updateAlbum(id: string, formData: FormData) {
   const supabase    = await createClient();
   const title       = (formData.get('title') as string).trim();
   const year        = (formData.get('year') as string) || null;
+  const location    = (formData.get('location') as string) || null;
   const category_id = (formData.get('category_id') as string) || null;
   const description = (formData.get('description') as string) || null;
   const cover_url   = (formData.get('cover_url') as string) || null;
@@ -75,7 +77,7 @@ export async function updateAlbum(id: string, formData: FormData) {
 
   const { error } = await supabase
     .from('albums')
-    .update({ title, year, category_id, description, cover_url, background_url: bg_url, is_public, access_key })
+    .update({ title, year, location, category_id, description, cover_url, background_url: bg_url, is_public, access_key })
     .eq('id', id);
 
   if (error) throw new Error(error.message);

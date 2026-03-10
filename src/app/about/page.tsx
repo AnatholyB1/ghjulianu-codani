@@ -1,19 +1,18 @@
+'use client';
 import ScrollReveal from '@/components/ScrollReveal';
 import Link         from 'next/link';
 import Image        from 'next/image';
-
-export const metadata = {
-  title: 'À Propos — Ghjulianu Codani',
-};
+import { useT }     from '@/hooks/useT';
 
 export default function AboutPage() {
+  const t = useT();
   return (
     <>
       <section style={{ padding: 'clamp(2.5rem,5vw,5rem) clamp(1.5rem,5vw,5rem)' }}>
         <ScrollReveal direction="up">
-          <p style={{ fontSize: '0.62rem', letterSpacing: '0.22em', color: 'var(--muted)', marginBottom: '0.8rem' }}>À PROPOS</p>
+          <p style={{ fontSize: '0.62rem', letterSpacing: '0.22em', color: 'var(--muted)', marginBottom: '0.8rem' }}>{t.about.label}</p>
           <h1 style={{ fontFamily: 'var(--font-cormorant),serif', fontSize: 'clamp(2.5rem,7vw,5.5rem)', fontStyle: 'italic', fontWeight: 300, lineHeight: 0.95, color: 'var(--text)' }}>
-            Fiche de présentation
+            {t.about.title}
           </h1>
         </ScrollReveal>
       </section>
@@ -35,22 +34,22 @@ export default function AboutPage() {
         {/* Bio */}
         <ScrollReveal direction="right" delay={120} style={{ flex: '1 1 300px', paddingTop: '1rem' }}>
           <h2 style={{ fontFamily: 'var(--font-cormorant),serif', fontSize: 'clamp(1.6rem,3vw,2.4rem)', fontStyle: 'italic', fontWeight: 300, color: 'var(--text)', marginBottom: '2rem' }}>
-            Ghjulianu Codani
+            {t.about.name}
           </h2>
 
           <p style={{ fontSize: '0.9rem', lineHeight: 1.9, color: 'var(--muted)', marginBottom: '1.5rem' }}>
-            Photographe spécialisé dans l'événementiel nightlife, le shooting personnel et la communication de marque. Basé à Paris, j'interviens lors des soirées, festivals et événements pour capturer des instants vrais dans des environnements souvent imprévisibles.
+            {t.about.bio1}
           </p>
           <p style={{ fontSize: '0.9rem', lineHeight: 1.9, color: 'var(--muted)', marginBottom: '1.5rem' }}>
-            Mon approche se définit par une photographie atmosphérique, brute et contrastée — proche du sujet, dans l'instant. Je travaille principalement en lumière ambiante, stroboscopique ou artificielle, cherchant systématiquement la composition dans le chaos.
+            {t.about.bio2}
           </p>
           <p style={{ fontSize: '0.9rem', lineHeight: 1.9, color: 'var(--muted)', marginBottom: '2.5rem' }}>
-            Parmi mes collaborations : <strong style={{ color: 'var(--text)', fontWeight: 400 }}>ONESH, FURTIVE, FIGHTCLUB, UFO RECORDZ</strong> (événements) et <strong style={{ color: 'var(--text)', fontWeight: 400 }}>ATRIA RECORDS, TECHNOSHOP</strong> (marques / labels).
+            {t.about.bio3}<strong style={{ color: 'var(--text)', fontWeight: 400 }}>ONESH, FURTIVE, FIGHTCLUB, UFO RECORDZ</strong>{t.about.bio3b}<strong style={{ color: 'var(--text)', fontWeight: 400 }}>ATRIA RECORDS, TECHNOSHOP</strong>{t.about.bio3c}
           </p>
 
           {/* Prestations tags */}
           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '2.5rem' }}>
-            {['Shooting Personnel', 'Marques & Labels', 'Événementiel Nightlife'].map((tag) => (
+            {t.about.tags.map((tag) => (
               <span key={tag} style={{ fontSize: '0.6rem', letterSpacing: '0.12em', border: '1px solid var(--border)', padding: '0.35rem 0.9rem', color: 'var(--muted)' }}>
                 {tag.toUpperCase()}
               </span>
@@ -58,8 +57,8 @@ export default function AboutPage() {
           </div>
 
           <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-            <Link href="/portfolio" style={btnStyle('solid')}>PORTFOLIO</Link>
-            <Link href="/contact"   style={btnStyle('outline')}>ME CONTACTER</Link>
+            <Link href="/portfolio" style={btnStyle('solid')}>{t.about.btnPortfolio}</Link>
+            <Link href="/contact"   style={btnStyle('outline')}>{t.about.btnContact}</Link>
           </div>
         </ScrollReveal>
       </section>

@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS albums (
   year            TEXT,
   category_id     UUID        REFERENCES categories(id) ON DELETE SET NULL,
   description     TEXT,
+  location        TEXT,        -- lieu de l'événement
   cover_url       TEXT,        -- miniature (card)
   background_url  TEXT,        -- hero / fond
   is_public       BOOLEAN     DEFAULT TRUE,

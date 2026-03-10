@@ -3,20 +3,24 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
-
-const NAV_LINKS = [
-  { label: 'PORTFOLIO',    href: '/portfolio' },
-  { label: 'ALBUMS',       href: '/albums' },
-  { label: 'À PROPOS',     href: '/about' },
-  { label: 'TARIFS',       href: '/tarifs' },
-  { label: 'CONTACT',      href: '/contact' },
-  { label: 'FAIRE UN DON', href: '/don' },
-];
+import { useLang } from '@/contexts/LanguageContext';
+import { useT }    from '@/hooks/useT';
 
 export default function Navbar() {
   const pathname = usePathname();
+  const { lang, setLang } = useLang();
+  const t = useT();
   const [scrolled, setScrolled]   = useState(false);
   const [menuOpen, setMenuOpen]   = useState(false);
+
+  const NAV_LINKS = [
+    { label: t.nav.portfolio, href: '/portfolio' },
+    { label: t.nav.albums,    href: '/albums' },
+    { label: t.nav.about,     href: '/about' },
+    { label: t.nav.tarifs,    href: '/tarifs' },
+    { label: t.nav.contact,   href: '/contact' },
+    { label: t.nav.don,       href: '/don' },
+  ];
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -101,6 +105,31 @@ export default function Navbar() {
               </Link>
             );
           })}
+          {/* Language switcher */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0', marginLeft: '0.8rem', borderLeft: '1px solid var(--border)', paddingLeft: '1.2rem' }}>
+            {(['fr', 'en'] as const).map((l, i) => (
+              <button
+                key={l}
+                onClick={() => setLang(l)}
+                style={{
+                  background:    'none',
+                  border:        'none',
+                  cursor:        'pointer',
+                  fontSize:      '0.6rem',
+                  letterSpacing: '0.14em',
+                  color:         lang === l ? 'var(--accent)' : 'var(--muted)',
+                  fontFamily:    'var(--font-space), sans-serif',
+                  fontWeight:    lang === l ? 600 : 400,
+                  padding:       i === 0 ? '0 6px 0 0' : '0 0 0 6px',
+                  borderRight:   i === 0 ? '1px solid var(--border)' : 'none',
+                  transition:    'color 0.2s',
+                  lineHeight:    1,
+                }}
+              >
+                {l.toUpperCase()}
+              </button>
+            ))}
+          </div>
         </nav>
 
         {/* Hamburger */}
@@ -175,6 +204,29 @@ export default function Navbar() {
             {link.label}
           </Link>
         ))}
+
+        {/* Mobile language switcher */}
+        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+          {(['fr', 'en'] as const).map((l) => (
+            <button
+              key={l}
+              onClick={() => setLang(l)}
+              style={{
+                background:    lang === l ? 'var(--accent)' : 'transparent',
+                border:        '1px solid var(--border)',
+                color:         lang === l ? '#080808' : 'var(--muted)',
+                cursor:        'pointer',
+                fontSize:      '0.65rem',
+                letterSpacing: '0.14em',
+                padding:       '0.45rem 1rem',
+                fontFamily:    'var(--font-space), sans-serif',
+                transition:    'all 0.2s',
+              }}
+            >
+              {l.toUpperCase()}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Inline style for responsive helpers */}
