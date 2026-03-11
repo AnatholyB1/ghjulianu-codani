@@ -254,18 +254,14 @@ export default function DragTrack({
                     height:           '100%',
                     objectFit:        'cover',
                     objectPosition:   '50% center',
-                    filter:           'brightness(0.82) saturate(0.8)',
-                    transition:       'filter 0.4s ease',
                     cursor:           'inherit',
                     userSelect:       'none',
                     WebkitUserSelect: 'none',
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.filter = 'brightness(1.02) saturate(1)';
                     e.currentTarget.style.cursor = 'zoom-in';
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.filter = 'brightness(0.82) saturate(0.8)';
                     e.currentTarget.style.cursor = 'grab';
                   }}
                 />

@@ -98,8 +98,7 @@ export default function HomePage() {
           alt="Hero background"
           fill
           priority
-          sizes="100vw"
-          style={{ objectFit: 'cover', objectPosition: 'center', filter: 'brightness(0.62)' }}
+          style={{ objectFit: 'cover', objectPosition: 'center' }}
         />
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(0deg,rgba(8,8,8,0.95) 0%,rgba(8,8,8,0.18) 50%,transparent 100%)' }} />
 
@@ -268,8 +267,7 @@ export default function HomePage() {
                   src="/furtive-1.jpg"
                   alt="Club photography"
                   fill
-                  sizes="(max-width:760px) 74vw, 34vw"
-                  style={{ objectFit: 'cover', objectPosition: 'center 30%', filter: 'brightness(0.85) contrast(1.12) saturate(0.7)' }}
+                  style={{ objectFit: 'cover', objectPosition: 'center 30%' }}
                   className="cp-img"
                 />
                 <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg,transparent 50%,rgba(8,8,8,0.45) 100%)', pointerEvents: 'none' }} />
@@ -284,8 +282,7 @@ export default function HomePage() {
                   src="/IMG_1022-2.jpg"
                   alt="Festival ambiance"
                   fill
-                  sizes="(max-width:760px) 26vw, 12vw"
-                  style={{ objectFit: 'cover', objectPosition: 'center', filter: 'brightness(0.8) contrast(1.18) saturate(0.65) sepia(0.1)' }}
+                  style={{ objectFit: 'cover', objectPosition: 'center' }}
                   className="cp-img"
                 />
               </div>
@@ -299,8 +296,7 @@ export default function HomePage() {
                   src="/IMG_1684.jpg"
                   alt="Moment capturé"
                   fill
-                  sizes="(max-width:760px) 44vw, 20vw"
-                  style={{ objectFit: 'cover', objectPosition: 'center', filter: 'brightness(0.88) contrast(1.1) saturate(0.75)' }}
+                  style={{ objectFit: 'cover', objectPosition: 'center' }}
                   className="cp-img"
                 />
               </div>
@@ -314,8 +310,7 @@ export default function HomePage() {
                   src="/oneshw_1.jpg"
                   alt="Soirée ONESH"
                   fill
-                  sizes="(max-width:760px) 30vw, 14vw"
-                  style={{ objectFit: 'cover', filter: 'brightness(0.78) contrast(1.22) saturate(0.6)' }}
+                  style={{ objectFit: 'cover' }}
                   className="cp-img"
                 />
                 <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg,rgba(200,169,126,0.07) 0%,transparent 60%)', pointerEvents: 'none' }} />
@@ -366,8 +361,7 @@ export default function HomePage() {
                             alt={album.title}
                             width={80}
                             height={60}
-                            sizes="80px"
-                            style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'brightness(0.82)', transition: 'transform 0.5s ease' }}
+                            style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.5s ease' }}
                             className="event-thumb"
                           />
                         ) : (

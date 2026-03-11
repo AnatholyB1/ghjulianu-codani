@@ -26,7 +26,7 @@ export default function AboutPage() {
               alt="Ghjulianu Codani"
               width={600} height={900}
               unoptimized
-              style={{ width: '100%', height: 'auto', objectFit: 'cover', display: 'block', filter: 'brightness(0.85)' }}
+              style={{ width: '100%', height: 'auto', objectFit: 'cover', display: 'block' }}
             />
           </div>
         </ScrollReveal>

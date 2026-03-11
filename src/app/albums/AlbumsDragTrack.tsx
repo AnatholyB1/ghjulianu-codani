@@ -49,7 +49,7 @@ function CategoryPreview({ name, photos }: { name: string; photos: string[] }) {
             }}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'brightness(0.85) saturate(0.9)' }} />
+            <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
         ))}
       </div>
@@ -285,9 +285,7 @@ export default function AlbumsDragTrack({ albums }: { albums: AlbumWithCat[] }) 
               draggable={false}
               loading="lazy"
               className="album-cover"
-              style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: '50% center', filter: 'brightness(0.55) saturate(0.8)', display: 'block' }}
-              onMouseEnter={(e) => { e.currentTarget.style.filter = 'brightness(0.35) saturate(0.7)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.filter = 'brightness(0.55) saturate(0.8)'; }}
+              style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: '50% center', display: 'block' }}
             />
             <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(0deg,rgba(8,8,8,0.85) 0%,rgba(8,8,8,0.1) 55%,transparent 100%)', pointerEvents: 'none' }} />
 

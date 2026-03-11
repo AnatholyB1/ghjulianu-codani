@@ -58,12 +58,10 @@ function PhotoCard({
           width={width}
           height={height}
           draggable={false}
-          sizes="(max-width:600px) calc(50vw - 2rem), (max-width:1100px) calc(33vw - 2rem), 400px"
           style={{
             display:        'block',
             width:          '100%',
             height:         'auto',
-            filter:         'brightness(1) saturate(1)',
             transform:      hov ? 'scale(1.025)' : 'scale(1)',
             transition:     'transform 0.5s cubic-bezier(0.22,1,0.36,1)',
             userSelect:     'none',

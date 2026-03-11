@@ -128,8 +128,6 @@ function PhotoCard({
             height:         'calc(100% + 20%)',
             objectFit:      'cover',
             objectPosition: 'center center',
-            filter:         hov ? 'brightness(1) saturate(1)' : 'brightness(0.88) saturate(0.85)',
-            transition:     'filter 0.4s ease',
             willChange:     'transform',
           }}
         />
@@ -270,7 +268,7 @@ export default function AlbumPageClient({
         <img
           src={album.background_url ?? album.cover_url ?? 'https://picsum.photos/seed/hero/1920/1080'}
           alt={album.title}
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'center', filter: 'brightness(0.45)', background: '#080808' }}
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }}
         />
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(0deg,rgba(8,8,8,0.96) 0%,rgba(8,8,8,0.25) 60%,transparent 100%)' }} />
 

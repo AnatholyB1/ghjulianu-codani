@@ -77,7 +77,6 @@ export default function IntroAnimation({ onDone }: { onDone: () => void }) {
         style={{
           objectFit:      'cover',
           objectPosition: 'center',
-          filter:         'brightness(0.52) saturate(0.7)',
           /* Counter-scale: image starts bigger and settles — parallax feel */
           transform:      entering ? 'scale(1.12)' : 'scale(1)',
           transition:     `transform ${T.IN_DURATION + 400}ms ${EASE_OUT_EXPO}`,
