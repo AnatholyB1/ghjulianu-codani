@@ -21,9 +21,9 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 */
 
 /* ── Shared photo tokens – must match page.tsx ────────────── */
-export const INTRO_CENTER_SRC = '/furtive-109.jpg';
-export const INTRO_LEFT_SRC   = 'https://picsum.photos/seed/intro_left/800/1400';
-export const INTRO_RIGHT_SRC  = 'https://picsum.photos/seed/intro_right/800/1400';
+export const INTRO_CENTER_SRC = '/milieu.jpg';
+export const INTRO_LEFT_SRC   = '/gauche.jpg';
+export const INTRO_RIGHT_SRC  = '/droite.jpg';
 
 type Phase = 'entering' | 'showing' | 'exiting' | 'done';
 

@@ -56,6 +56,8 @@ export default function CartDrawer() {
       await downloadPhoto(photo.src, photo.alt, photo.downloadName);
     }
     setDownloading(false);
+    clear();
+    setOpen(false);
   }
 
   return (

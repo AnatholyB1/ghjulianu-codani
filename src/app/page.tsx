@@ -30,6 +30,8 @@ export default function HomePage() {
   const [showIntro,     setShowIntro]     = useState(false);
   const [heroReady,     setHeroReady]     = useState(false);
   const [recentAlbums,  setRecentAlbums]  = useState<Album[]>([]);
+  const [collageVisible, setCollageVisible] = useState([false, false, false, false]);
+  const collageRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const played = sessionStorage.getItem('intro-played');
@@ -49,6 +51,25 @@ export default function HomePage() {
       .order('created_at', { ascending: false })
       .limit(3)
       .then(({ data }) => { if (data) setRecentAlbums(data as Album[]); });
+  }, []);
+
+  useEffect(() => {
+    const el = collageRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          [0, 1, 2, 3].forEach((i) =>
+            setTimeout(() => setCollageVisible((p) => { const n = [...p]; n[i] = true; return n; }), i * 130)
+          );
+        } else {
+          setCollageVisible([false, false, false, false]);
+        }
+      },
+      { threshold: 0.12 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
   }, []);
 
   function handleIntroDone() {
@@ -208,62 +229,10 @@ export default function HomePage() {
             </ScrollReveal>
           </div>
 
-          {/* ── RIGHT : photos avec parallax ── */}
-          <ScrollReveal direction="right" delay={120} style={{ position: 'relative', alignSelf: 'stretch' }}>
+          {/* ── RIGHT : collage 4 photos ── */}
+          <div ref={collageRef} style={{ position: 'relative', alignSelf: 'stretch' }}>
 
-            {/* Grande photo principale */}
-            <div style={{
-              position:     'relative',
-              overflow:     'hidden',
-              aspectRatio:  '3/4',
-              background:   '#0d0d0d',
-              marginTop:    'clamp(0px,-2vw,-32px)',
-            }}>
-              <Image
-                src="/furtive-108.jpg"
-                alt="Ambiance event"
-                fill
-                sizes="(max-width:900px) 100vw, 45vw"
-                style={{
-                  objectFit:      'cover',
-                  objectPosition: 'center',
-                  filter:         'brightness(0.92) saturate(0.9)',
-                  transition:     'transform 0.8s cubic-bezier(0.22,1,0.36,1)',
-                }}
-                className="presta-img-main"
-              />
-              {/* vignette légère */}
-              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg,transparent 60%,rgba(8,8,8,0.35) 100%)' }} />
-            </div>
-
-            {/* Petite photo décalée en bas à gauche */}
-            <div style={{
-              position:    'absolute',
-              bottom:      'clamp(-1.5rem,-3vw,-2.5rem)',
-              left:        'clamp(-1rem,-3vw,-2rem)',
-              width:       '52%',
-              overflow:    'hidden',
-              aspectRatio: '4/3',
-              background:  '#0d0d0d',
-              border:      '3px solid var(--bg)',
-              boxShadow:   '0 8px 40px rgba(0,0,0,0.7)',
-            }}>
-              <Image
-                src="/furtive-109.jpg"
-                alt="Détail"
-                fill
-                sizes="(max-width:900px) 52vw, 23vw"
-                style={{
-                  objectFit:      'cover',
-                  objectPosition: 'center',
-                  filter:         'brightness(0.9) saturate(0.88)',
-                  transition:     'transform 0.8s cubic-bezier(0.22,1,0.36,1)',
-                }}
-                className="presta-img-secondary"
-              />
-            </div>
-
-            {/* Numéro décoratif */}
+            {/* Label décoratif */}
             <p style={{
               position:      'absolute',
               top:           '-1.2rem',
@@ -273,9 +242,87 @@ export default function HomePage() {
               color:         'rgba(200,169,126,0.35)',
               fontFamily:    'var(--font-space)',
             }}>
-              01 / 01
+              04 / 04
             </p>
-          </ScrollReveal>
+
+            {/*
+              Asymmetric grid:
+              col1(44%) col2(30%) col3(26%)
+              row1: [photo1 span col1-2] [photo2 span row1-2]
+              row2: [photo3 col1]        [photo4 col2]
+            */}
+            <div style={{
+              display:             'grid',
+              gridTemplateColumns: '44% 30% 1fr',
+              gridTemplateRows:    '1fr 1fr',
+              gap:                 '4px',
+              height:              'clamp(360px, 50vw, 540px)',
+            }}>
+
+              {/* Photo 1 — large landscape top-left, spans 2 cols */}
+              <div
+                className={`cp cp-1${collageVisible[0] ? ' cp-in' : ''}`}
+                style={{ gridColumn: '1 / 3', gridRow: '1 / 2', overflow: 'hidden', background: '#0a0a0a', position: 'relative' }}
+              >
+                <Image
+                  src="/furtive-1.jpg"
+                  alt="Club photography"
+                  fill
+                  sizes="(max-width:760px) 74vw, 34vw"
+                  style={{ objectFit: 'cover', objectPosition: 'center 30%', filter: 'brightness(0.85) contrast(1.12) saturate(0.7)' }}
+                  className="cp-img"
+                />
+                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg,transparent 50%,rgba(8,8,8,0.45) 100%)', pointerEvents: 'none' }} />
+              </div>
+
+              {/* Photo 2 — tall portrait right col, spans 2 rows */}
+              <div
+                className={`cp cp-2${collageVisible[1] ? ' cp-in' : ''}`}
+                style={{ gridColumn: '3 / 4', gridRow: '1 / 3', overflow: 'hidden', background: '#0a0a0a' }}
+              >
+                <Image
+                  src="/IMG_1022-2.jpg"
+                  alt="Festival ambiance"
+                  fill
+                  sizes="(max-width:760px) 26vw, 12vw"
+                  style={{ objectFit: 'cover', objectPosition: 'center', filter: 'brightness(0.8) contrast(1.18) saturate(0.65) sepia(0.1)' }}
+                  className="cp-img"
+                />
+              </div>
+
+              {/* Photo 3 — bottom-left */}
+              <div
+                className={`cp cp-3${collageVisible[2] ? ' cp-in' : ''}`}
+                style={{ gridColumn: '1 / 2', gridRow: '2 / 3', overflow: 'hidden', background: '#0a0a0a', position: 'relative' }}
+              >
+                <Image
+                  src="/IMG_1684.jpg"
+                  alt="Moment capturé"
+                  fill
+                  sizes="(max-width:760px) 44vw, 20vw"
+                  style={{ objectFit: 'cover', objectPosition: 'center', filter: 'brightness(0.88) contrast(1.1) saturate(0.75)' }}
+                  className="cp-img"
+                />
+              </div>
+
+              {/* Photo 4 — bottom-center */}
+              <div
+                className={`cp cp-4${collageVisible[3] ? ' cp-in' : ''}`}
+                style={{ gridColumn: '2 / 3', gridRow: '2 / 3', overflow: 'hidden', background: '#0a0a0a', position: 'relative' }}
+              >
+                <Image
+                  src="/oneshw_1.jpg"
+                  alt="Soirée ONESH"
+                  fill
+                  sizes="(max-width:760px) 30vw, 14vw"
+                  style={{ objectFit: 'cover', filter: 'brightness(0.78) contrast(1.22) saturate(0.6)' }}
+                  className="cp-img"
+                />
+                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg,rgba(200,169,126,0.07) 0%,transparent 60%)', pointerEvents: 'none' }} />
+              </div>
+
+            </div>
+          </div>
         </div>
       </section>
 
@@ -402,11 +449,39 @@ export default function HomePage() {
           .prestations-grid { grid-template-columns: 1fr !important; }
           .prestations-grid > *:last-child { margin-top: 4rem; padding-bottom: 3.5rem; }
         }
-        .presta-img-main:hover      { transform: scale(1.04) !important; }
-        .presta-img-secondary:hover { transform: scale(1.06) !important; }
         .event-row:hover .event-title { color: var(--accent) !important; }
         .event-row:hover .event-arrow { transform: translateX(4px); }
         .event-row:hover .event-thumb { transform: scale(1.08); }
+
+        /* ── Collage 4 photos ── */
+        .cp {
+          opacity: 0;
+          transition: opacity 0.75s cubic-bezier(0.22,1,0.36,1), transform 0.75s cubic-bezier(0.22,1,0.36,1);
+        }
+        .cp-1 { transform: translateY(28px); transition-delay: 0ms; }
+        .cp-2 { transform: translateX(22px); transition-delay: 130ms; }
+        .cp-3 { transform: translateY(24px); transition-delay: 260ms; }
+        .cp-4 { transform: translateY(20px); transition-delay: 390ms; }
+
+        .cp-1.cp-in { opacity: 1; transform: translateY(0); }
+        .cp-2.cp-in { opacity: 1; transform: translateX(0); }
+        .cp-3.cp-in { opacity: 1; transform: translateY(0); }
+        .cp-4.cp-in { opacity: 1; transform: translateY(0); }
+
+        .cp-img {
+          transition: transform 0.9s cubic-bezier(0.22,1,0.36,1) !important;
+        }
+        .cp:hover .cp-img { transform: scale(1.06); }
+
+        .cp-1::after {
+          content: '';
+          position: absolute;
+          bottom: 0; left: 0; right: 0;
+          height: 2px;
+          background: linear-gradient(90deg, var(--accent), transparent);
+          opacity: 0.5;
+          z-index: 3;
+        }
       `}</style>
     </>
   );

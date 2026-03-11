@@ -2,10 +2,24 @@
 import ScrollReveal from '@/components/ScrollReveal';
 import Link         from 'next/link';
 import { useT }     from '@/hooks/useT';
+import { useEffect, useState } from 'react';
+
+function useIsMobile(breakpoint = 700) {
+  const [mobile, setMobile] = useState(false);
+  useEffect(() => {
+    const check = () => setMobile(window.innerWidth < breakpoint);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, [breakpoint]);
+  return mobile;
+}
 
 export default function TarifsPage() {
-  const t = useT();
+  const t  = useT();
   const tr = t.tarifs;
+  const mobile = useIsMobile();
+
   return (
     <>
       {/* ── Header ── */}
@@ -30,15 +44,15 @@ export default function TarifsPage() {
           return (
           <ScrollReveal key={p.id} direction="up" delay={i * 60}>
             <div style={{
-              display:       'grid',
-              gridTemplateColumns: '1fr 1fr 1fr',
-              gap:           'clamp(1.5rem,3vw,3rem)',
-              padding:       'clamp(2rem,3.5vw,3rem) 0',
-              borderBottom:  '1px solid var(--border)',
-              alignItems:    'start',
-              background:    badge ? 'linear-gradient(90deg,rgba(200,169,126,0.06) 0%,transparent 100%)' : 'transparent',
-              borderLeft:    badge ? '2px solid rgba(200,169,126,0.35)' : '2px solid transparent',
-              paddingLeft:   badge ? 'clamp(0.8rem,1.5vw,1.2rem)' : '0',
+              display:             'grid',
+              gridTemplateColumns: mobile ? '1fr' : '1fr 1fr 1fr',
+              gap:                 mobile ? '1.2rem' : 'clamp(1.5rem,3vw,3rem)',
+              padding:             'clamp(2rem,3.5vw,3rem) 0',
+              borderBottom:        '1px solid var(--border)',
+              alignItems:          'start',
+              background:          badge ? 'linear-gradient(90deg,rgba(200,169,126,0.06) 0%,transparent 100%)' : 'transparent',
+              borderLeft:          badge ? '2px solid rgba(200,169,126,0.35)' : '2px solid transparent',
+              paddingLeft:         badge ? 'clamp(0.8rem,1.5vw,1.2rem)' : '0',
             }}>
               <div>
                 {badge
@@ -49,14 +63,14 @@ export default function TarifsPage() {
                 <p style={{ fontSize: '0.82rem', letterSpacing: '0.06em', color: 'var(--accent)', marginBottom: '0.25rem', fontFamily: 'var(--font-cormorant),serif', fontStyle: 'italic' }}>{p.photos}</p>
                 <p style={{ fontSize: '0.72rem', letterSpacing: '0.05em', color: 'var(--muted)', fontFamily: 'var(--font-cormorant),serif' }}>{p.duration}</p>
               </div>
-              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.6rem', paddingTop: '1.8rem' }}>
+              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.6rem', paddingTop: mobile ? '0' : '1.8rem' }}>
                 {p.features.map((f) => (
                   <li key={f} style={{ fontSize: '0.72rem', color: 'var(--muted)', lineHeight: 1.6, display: 'flex', gap: '0.55rem' }}>
                     <span style={{ color: 'var(--accent)', flexShrink: 0, marginTop: '0.05em' }}>—</span>{f}
                   </li>
                 ))}
               </ul>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', paddingTop: '1.8rem', gap: '1.2rem' }}>
+              <div style={{ display: 'flex', flexDirection: mobile ? 'row' : 'column', alignItems: mobile ? 'center' : 'flex-end', justifyContent: mobile ? 'space-between' : undefined, paddingTop: mobile ? '0' : '1.8rem', gap: '1.2rem', flexWrap: 'wrap' }}>
                 <p style={{ fontFamily: 'var(--font-cormorant),serif', fontSize: 'clamp(1.4rem,2.5vw,1.8rem)', fontStyle: 'italic', fontWeight: 300, color: 'var(--text)', opacity: 0.5 }}>{tr.quote}</p>
                 <Link
                   href="/contact"
@@ -74,7 +88,7 @@ export default function TarifsPage() {
       {/* ── Sur-mesure ── */}
       <section style={{ padding: 'clamp(2rem,4vw,4rem) clamp(1.5rem,5vw,5rem)', maxWidth: '1100px' }}>
         <ScrollReveal direction="up">
-          <div style={{ border: '1px solid var(--border)', padding: 'clamp(2rem,4vw,3.5rem)', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 'clamp(1.5rem,3vw,3rem)', alignItems: 'start' }}>
+          <div style={{ border: '1px solid var(--border)', padding: 'clamp(2rem,4vw,3.5rem)', display: 'grid', gridTemplateColumns: mobile ? '1fr' : '1fr 1fr 1fr', gap: mobile ? '1.5rem' : 'clamp(1.5rem,3vw,3rem)', alignItems: 'start' }}>
             <div>
               <p style={{ fontSize: '0.5rem', letterSpacing: '0.2em', color: 'var(--muted)', marginBottom: '0.7rem' }}>{tr.formulaLabel}</p>
               <h2 style={{ fontFamily: 'var(--font-cormorant),serif', fontSize: 'clamp(2rem,4vw,3rem)', fontStyle: 'italic', fontWeight: 300, color: 'var(--text)', lineHeight: 1, marginBottom: '1rem' }}>
@@ -90,9 +104,11 @@ export default function TarifsPage() {
                 </li>
               ))}
             </ul>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '1.2rem' }}>
-              <p style={{ fontFamily: 'var(--font-cormorant),serif', fontSize: 'clamp(1.4rem,2.5vw,1.8rem)', fontStyle: 'italic', fontWeight: 300, color: 'var(--text)', opacity: 0.5 }}>{tr.quote}</p>
-              <p style={{ fontSize: '0.72rem', color: 'var(--muted)', lineHeight: 1.7, fontStyle: 'italic', fontFamily: 'var(--font-cormorant),serif', textAlign: 'right', maxWidth: '200px' }}>{tr.customTagline}</p>
+            <div style={{ display: 'flex', flexDirection: mobile ? 'row' : 'column', alignItems: mobile ? 'center' : 'flex-end', justifyContent: mobile ? 'space-between' : undefined, gap: '1.2rem', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: mobile ? 'flex-start' : 'flex-end', gap: '0.5rem' }}>
+                <p style={{ fontFamily: 'var(--font-cormorant),serif', fontSize: 'clamp(1.4rem,2.5vw,1.8rem)', fontStyle: 'italic', fontWeight: 300, color: 'var(--text)', opacity: 0.5 }}>{tr.quote}</p>
+                <p style={{ fontSize: '0.72rem', color: 'var(--muted)', lineHeight: 1.7, fontStyle: 'italic', fontFamily: 'var(--font-cormorant),serif', textAlign: mobile ? 'left' : 'right', maxWidth: '200px' }}>{tr.customTagline}</p>
+              </div>
               <Link href="/contact" style={{ fontSize: '0.58rem', letterSpacing: '0.18em', color: 'var(--accent)', textDecoration: 'none', border: '1px solid var(--accent)', padding: '0.6rem 1.2rem', transition: 'opacity 0.2s', whiteSpace: 'nowrap' }}>
                 {tr.cta}
               </Link>

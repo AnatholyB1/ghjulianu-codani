@@ -22,7 +22,7 @@ export default function AboutPage() {
         <ScrollReveal direction="left" style={{ flex: '0 0 clamp(200px,35%,400px)' }}>
           <div style={{ overflow: 'hidden', aspectRatio: '2/3' }}>
             <Image
-              src="https://picsum.photos/seed/portrait1/600/900"
+              src="/IMG_8028.jpg"
               alt="Ghjulianu Codani"
               width={600} height={900}
               unoptimized
@@ -43,8 +43,14 @@ export default function AboutPage() {
           <p style={{ fontSize: '0.9rem', lineHeight: 1.9, color: 'var(--muted)', marginBottom: '1.5rem' }}>
             {t.about.bio2}
           </p>
+          <p style={{ fontSize: '0.9rem', lineHeight: 1.9, color: 'var(--muted)', marginBottom: '1.5rem' }}>
+            {t.about.bio3}
+          </p>
+          <p style={{ fontSize: '0.9rem', lineHeight: 1.9, color: 'var(--muted)', marginBottom: '1.5rem' }}>
+            {t.about.bio4}<strong style={{ color: 'var(--text)', fontWeight: 400 }}>ONESH, FURTIVE, FIGHTCLUB, UFO RECORDZ</strong>{t.about.bio4b}<strong style={{ color: 'var(--text)', fontWeight: 400 }}>ATRIA RECORDS et TECHNOSHOP</strong>{t.about.bio4c}
+          </p>
           <p style={{ fontSize: '0.9rem', lineHeight: 1.9, color: 'var(--muted)', marginBottom: '2.5rem' }}>
-            {t.about.bio3}<strong style={{ color: 'var(--text)', fontWeight: 400 }}>ONESH, FURTIVE, FIGHTCLUB, UFO RECORDZ</strong>{t.about.bio3b}<strong style={{ color: 'var(--text)', fontWeight: 400 }}>ATRIA RECORDS, TECHNOSHOP</strong>{t.about.bio3c}
+            {t.about.bio5}
           </p>
 
           {/* Prestations tags */}
