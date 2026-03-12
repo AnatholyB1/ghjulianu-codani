@@ -203,9 +203,10 @@ const translations = {
     },
     // ── Footer ──────────────────────────────────────────────
     footer: {
-      mentions: 'Mentions légales',
-      madeBy:   'Site créé par',
-      and:      '&',
+      mentions:  'Mentions légales',
+      privacy:   'Politique de confidentialité',
+      madeBy:    'Site créé par',
+      and:       '&',
     },
 
     // ── BottomBar ────────────────────────────────────────────
@@ -415,9 +416,10 @@ const translations = {
     },
 
     footer: {
-      mentions: 'Legal notice',
-      madeBy:   'Created by',
-      and:      '&',
+      mentions:  'Legal notice',
+      privacy:   'Privacy policy',
+      madeBy:    'Created by',
+      and:       '&',
     },
 
     bottomBar: {

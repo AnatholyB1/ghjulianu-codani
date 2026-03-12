@@ -53,6 +53,22 @@ export default function Footer() {
         >
           {t.footer.mentions}
         </Link>
+        <Link
+          href="/politique-de-confidentialite"
+          style={{
+            fontFamily:    'var(--font-space)',
+            fontSize:      '0.6rem',
+            letterSpacing: '0.1em',
+            color:         'var(--muted)',
+            textDecoration: 'none',
+            textTransform: 'uppercase',
+            transition:    'color 0.2s',
+          }}
+          onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = 'var(--text)')}
+          onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = 'var(--muted)')}
+        >
+          {t.footer.privacy}
+        </Link>
       </div>
 
       {/* Right — crédit studio */}

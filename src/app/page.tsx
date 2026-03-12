@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link  from 'next/link';
 import ScrollReveal    from '@/components/ScrollReveal';
-import IntroAnimation from '@/components/IntroAnimation';
+import IntroAnimation, { INTRO_CENTER_SRC, INTRO_LEFT_SRC, INTRO_RIGHT_SRC } from '@/components/IntroAnimation';
 import { useState, useEffect, useRef } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import type { Album } from '@/lib/db.types';
@@ -29,17 +29,55 @@ export default function HomePage() {
   const t = useT();
   const [showIntro,     setShowIntro]     = useState(false);
   const [heroReady,     setHeroReady]     = useState(false);
+  const [loadProgress,  setLoadProgress]  = useState(0);
+  const [loadingDone,   setLoadingDone]   = useState(false);
+  const [loadingHidden, setLoadingHidden] = useState(false);
   const [recentAlbums,  setRecentAlbums]  = useState<Album[]>([]);
   const [collageVisible, setCollageVisible] = useState([false, false, false, false]);
   const collageRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const played = sessionStorage.getItem('intro-played');
-    if (!played) {
-      setShowIntro(true);
-    } else {
+
+    // Repeat visit: no loading screen, go straight to hero
+    if (played) {
+      setLoadingHidden(true);
       setHeroReady(true);
+      return;
     }
+
+    // First visit: preload all intro + hero images before showing anything
+    const srcs  = [INTRO_CENTER_SRC, INTRO_LEFT_SRC, INTRO_RIGHT_SRC, '/furtive-109.jpg'];
+    let loaded  = 0;
+    const total = srcs.length;
+
+    Promise.all(
+      srcs.map((src) => new Promise<void>((resolve) => {
+        let settled  = false;
+        const finish = () => {
+          if (!settled) {
+            settled = true;
+            loaded++;
+            setLoadProgress(Math.round((loaded / total) * 100));
+            resolve();
+          }
+        };
+        const img   = new window.Image();
+        img.onload  = finish;
+        img.onerror = finish;
+        img.src     = src;
+        if (img.complete) finish();
+      }))
+    ).then(() => {
+      // Brief pause at 100% then fade out
+      setTimeout(() => {
+        setLoadingDone(true);
+        setTimeout(() => {
+          setLoadingHidden(true);
+          setShowIntro(true);
+        }, 480);
+      }, 200);
+    });
   }, []);
 
   useEffect(() => {
@@ -81,6 +119,71 @@ export default function HomePage() {
 
   return (
     <>
+      {/* ── LOADING OVERLAY ── */}
+      {!loadingHidden && (
+        <div
+          aria-label="Chargement en cours"
+          style={{
+            position:       'fixed',
+            inset:          0,
+            zIndex:         10000,
+            background:     '#050505',
+            display:        'flex',
+            flexDirection:  'column',
+            alignItems:     'center',
+            justifyContent: 'center',
+            opacity:        loadingDone ? 0 : 1,
+            transition:     'opacity 0.48s ease',
+            pointerEvents:  loadingDone ? 'none' : 'all',
+          }}
+        >
+          <div style={{ width: '1px', height: '52px', background: 'rgba(255,255,255,0.12)', marginBottom: '1.4rem' }} />
+          <h1
+            style={{
+              fontFamily:    'var(--font-cormorant), serif',
+              fontSize:      'clamp(3rem, 9vw, 7.5rem)',
+              fontWeight:    300,
+              fontStyle:     'italic',
+              letterSpacing: '-0.015em',
+              lineHeight:    0.9,
+              color:         '#E8E4DC',
+              textAlign:     'center',
+              textShadow:    '0 4px 60px rgba(0,0,0,0.9)',
+            }}
+          >
+            Ghjulianu<br />Codani
+          </h1>
+          <p
+            style={{
+              marginTop:     '1.1rem',
+              fontSize:      '0.58rem',
+              letterSpacing: '0.32em',
+              color:         'rgba(232,228,220,0.38)',
+            }}
+          >
+            PHOTOGRAPHE — PARIS || CORSE
+          </p>
+          <div style={{ width: '1px', height: '52px', background: 'rgba(255,255,255,0.12)', marginTop: '1.4rem', marginBottom: '2.5rem' }} />
+          {/* Barre de progression réelle */}
+          <div style={{ width: 'clamp(160px, 20vw, 240px)', height: '1px', background: 'rgba(255,255,255,0.08)', position: 'relative', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${loadProgress}%`, background: 'rgba(200,169,126,0.6)', transition: 'width 0.3s ease' }} />
+          </div>
+          <p
+            style={{
+              marginTop:     '1rem',
+              fontSize:      '0.52rem',
+              letterSpacing: '0.28em',
+              color:         'rgba(232,228,220,0.2)',
+            }}
+          >
+            {'CHARGEMENT '}
+            <span style={{ animation: 'loadingDots 1.4s ease infinite 0s' }}>·</span>
+            <span style={{ animation: 'loadingDots 1.4s ease infinite 0.2s' }}>·</span>
+            <span style={{ animation: 'loadingDots 1.4s ease infinite 0.4s' }}>·</span>
+          </p>
+        </div>
+      )}
+
       {showIntro && <IntroAnimation onDone={handleIntroDone} />}
       {/* ── HERO ── */}
       <section
