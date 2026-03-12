@@ -91,10 +91,10 @@ export default function MentionsLegalesPage() {
           <P>
             <strong>Contact :</strong>{' '}
             <a
-              href="mailto:ghjulianu.codani@gmail.com"
+              href="mailto:ghjulianu.codani2@gmail.com"
               style={{ color: 'var(--accent)', textDecoration: 'none', borderBottom: '1px solid var(--accent)', paddingBottom: '1px' }}
             >
-              ghjulianu.codani@gmail.com
+              ghjulianu.codani2@gmail.com
             </a>
           </P>
           <P>
@@ -187,10 +187,10 @@ export default function MentionsLegalesPage() {
             Pour exercer vos droits ou pour toute question relative à vos données personnelles, vous pouvez contacter
             Ghjulianu Codani à l'adresse{' '}
             <a
-              href="mailto:ghjulianu.codani@gmail.com"
+              href="mailto:ghjulianu.codani2@gmail.com"
               style={{ color: 'var(--accent)', textDecoration: 'none', borderBottom: '1px solid var(--accent)', paddingBottom: '1px' }}
             >
-              ghjulianu.codani@gmail.com
+              ghjulianu.codani2@gmail.com
             </a>.
           </P>
           <P>

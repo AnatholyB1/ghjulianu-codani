@@ -20,20 +20,33 @@ const inputStyle: React.CSSProperties = {
 export default function ContactPage() {
   const t = useT();
   const tc = t.contact;
-  const [sent, setSent] = useState(false);
+  const [sent, setSent]       = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError]     = useState('');
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const fd   = new FormData(e.currentTarget);
-    const name    = fd.get('name');
-    const email   = fd.get('email');
-    const projet  = fd.get('projet');
-    const message = fd.get('message');
-    const mailto  = `mailto:ghjulianu.codani@gmail.com`
-      + `?subject=${tc.mailSubject} – ${projet}`
-      + `&body=Nom : ${name}%0AEmail : ${email}%0AProjet : ${projet}%0A%0A${message}`;
-    window.location.href = mailto;
-    setSent(true);
+    setLoading(true);
+    setError('');
+    const fd           = new FormData(e.currentTarget);
+    const nom          = fd.get('name') as string;
+    const email        = fd.get('email') as string;
+    const type_de_projet = fd.get('projet') as string;
+    const message      = fd.get('message') as string;
+
+    try {
+      const res = await fetch(process.env.NEXT_PUBLIC_CONTACT_WEBHOOK_URL!, {
+        method:  'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ nom, email, message, type_de_projet }),
+      });
+      if (!res.ok) throw new Error(`${res.status}`);
+      setSent(true);
+    } catch {
+      setError('Une erreur est survenue, veuillez réessayer.');
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -70,12 +83,12 @@ export default function ContactPage() {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
             <a
-              href="mailto:ghjulianu.codani@gmail.com"
+              href="mailto:ghjulianu.codani2@gmail.com"
               style={{ fontSize: '0.68rem', letterSpacing: '0.08em', color: 'var(--text)', textDecoration: 'none', opacity: 0.75, transition: 'opacity 0.2s' }}
               onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.opacity = '1'; }}
               onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.opacity = '0.75'; }}
             >
-              ghjulianu.codani@gmail.com
+              ghjulianu.codani2@gmail.com
             </a>
             <a
               href="https://www.instagram.com/ghjulianu.cdn"
@@ -146,16 +159,17 @@ export default function ContactPage() {
 
               <button
                 type="submit"
-                style={{ background: 'var(--accent)', color: '#080808', border: 'none', padding: '0.85rem 2rem', fontSize: '0.63rem', letterSpacing: '0.18em', cursor: 'pointer', alignSelf: 'flex-start', fontFamily: 'inherit', fontWeight: 500, transition: 'opacity 0.2s' }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.opacity = '0.82'; }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.opacity = '1'; }}
+                disabled={loading}
+                style={{ background: 'var(--accent)', color: '#080808', border: 'none', padding: '0.85rem 2rem', fontSize: '0.63rem', letterSpacing: '0.18em', cursor: loading ? 'not-allowed' : 'pointer', alignSelf: 'flex-start', fontFamily: 'inherit', fontWeight: 500, transition: 'opacity 0.2s', opacity: loading ? 0.6 : 1 }}
+                onMouseEnter={(e) => { if (!loading) (e.currentTarget as HTMLElement).style.opacity = '0.82'; }}
+                onMouseLeave={(e) => { if (!loading) (e.currentTarget as HTMLElement).style.opacity = '1'; }}
               >
-                {tc.sendBtn}
+                {loading ? '...' : tc.sendBtn}
               </button>
 
-              <p style={{ fontSize: '0.58rem', color: 'rgba(122,122,116,0.45)', lineHeight: 1.6 }}>
-                {tc.mailHint}
-              </p>
+              {error && (
+                <p style={{ fontSize: '0.65rem', color: '#e07070', lineHeight: 1.6 }}>{error}</p>
+              )}
             </form>
           )}
         </ScrollReveal>

@@ -85,7 +85,7 @@ export default function DonPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
               <p style={{ fontSize: '0.55rem', letterSpacing: '0.16em', color: 'rgba(122,122,116,0.55)' }}>{td.viaPaypal}</p>
               <a
-                href="https://paypal.me/ghjulianucodani"
+                href="https://www.paypal.com/paypalme/ghjulianuc"
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{ ...btnBase, background: 'var(--accent)', color: '#080808' }}
@@ -106,7 +106,7 @@ export default function DonPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
               <p style={{ fontSize: '0.55rem', letterSpacing: '0.16em', color: 'rgba(122,122,116,0.55)' }}>{td.viaLydia}</p>
               <a
-                href="https://lydia-app.com/pay?target=ghjulianu.codani"
+                href="https://pay.lydia.me/l?t=ghjulianuc2ekd"
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{ ...btnBase, background: 'var(--accent)', color: '#080808' }}
