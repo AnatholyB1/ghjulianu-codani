@@ -48,6 +48,18 @@ body {
 /* Image default */
 img { display: block; max-width: 100%; height: auto; }
 
+/* Album drag track images — class specificity (0-1-0) beats img rule (0-0-1) */
+.album-image {
+  position:   absolute;
+  top:        0;
+  left:       -25%;
+  width:      150%;
+  max-width:  none;
+  height:     100%;
+  object-fit: cover;
+  display:    block;
+}
+
 /* Utility: no-scroll on body when lightbox open */
 body.no-scroll { overflow: hidden; }
 
@@ -104,4 +116,9 @@ a, button {
 @keyframes blink {
   0%, 100% { opacity: 1; }
   50%       { opacity: 0; }
+}
+
+/* Albums drag track */
+@media (max-width: 900px) {
+  .image { width: 80vw !important; height: calc(80vw * 1.167) !important; }
 }
