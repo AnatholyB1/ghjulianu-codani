@@ -71,12 +71,15 @@ export async function compressImage(
       const ctx = canvas.getContext('2d')!;
       ctx.drawImage(img, 0, 0, w, h);
 
+      const rawExt   = (original.name.split('.').pop() ?? 'jpg').toLowerCase();
+      const mimeType = rawExt === 'png' ? 'image/png' : 'image/jpeg';
+      const outExt   = rawExt === 'png' ? 'png' : 'jpg';
       const baseName = original.name.replace(/\.[^.]+$/, '');
       canvas.toBlob(
         (blob) => {
           if (!blob) { reject(new Error('Compression échouée')); return; }
           resolve({
-            file:           new File([blob], `${baseName}.webp`, { type: 'image/webp' }),
+            file:           new File([blob], `${baseName}.${outExt}`, { type: mimeType }),
             width:          w,
             height:         h,
             originalSize:   original.size,
@@ -84,7 +87,7 @@ export async function compressImage(
             lqipDataUrl,
           });
         },
-        'image/webp',
+        mimeType,
         quality,
       );
     };

@@ -1,10 +1,29 @@
 'use server';
 
 import { createClient } from '@/utils/supabase/server';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { randomBytes } from 'crypto';
 import { cookies } from 'next/headers';
+
+/** Service role client — bypasses RLS for key verification */
+function createServiceClient() {
+  return createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  );
+}
+
+/**
+ * Generates a 6-character access code mixing lowercase, uppercase,
+ * digits and special characters. 64-char alphabet → no modulo bias.
+ */
+function generateAccessCode(): string {
+  const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#!$';
+  const bytes = randomBytes(6);
+  return Array.from(bytes).map(b => chars[b % chars.length]).join('');
+}
 
 // ── CATEGORIES ────────────────────────────────────────────────
 
@@ -46,7 +65,7 @@ export async function createAlbum(formData: FormData) {
   const cover_url   = (formData.get('cover_url') as string) || null;
   const bg_url      = (formData.get('background_url') as string) || null;
   const is_public   = formData.get('is_public') === 'true';
-  const access_key  = is_public ? null : randomBytes(6).toString('hex');
+  const access_key  = is_public ? null : generateAccessCode();
 
   const { data, error } = await supabase
     .from('albums')
@@ -73,7 +92,7 @@ export async function updateAlbum(id: string, formData: FormData) {
 
   // Fetch current to preserve/generate access_key
   const { data: current } = await supabase.from('albums').select('access_key').eq('id', id).single();
-  const access_key = is_public ? null : (current?.access_key ?? randomBytes(6).toString('hex'));
+  const access_key = is_public ? null : (current?.access_key ?? generateAccessCode());
 
   const { error } = await supabase
     .from('albums')
@@ -116,7 +135,7 @@ export async function reorderAlbums(orderedIds: string[]) {
 
 export async function regenerateAccessKey(id: string) {
   const supabase   = await createClient();
-  const access_key = randomBytes(6).toString('hex');
+  const access_key = generateAccessCode();
   const { error }  = await supabase.from('albums').update({ access_key }).eq('id', id);
   if (error) throw new Error(error.message);
   revalidatePath(`/admin/albums/${id}`);
@@ -212,7 +231,7 @@ export async function uploadFile(bucket: string, file: File): Promise<string> {
 // ── ALBUM ACCESS KEY VERIFICATION ────────────────────────────
 
 export async function verifyAlbumKey(slug: string, key: string): Promise<boolean> {
-  const supabase = await createClient();
+  const supabase = createServiceClient();
   const { data: album } = await supabase
     .from('albums')
     .select('access_key')
@@ -234,7 +253,7 @@ export async function verifyAlbumKey(slug: string, key: string): Promise<boolean
 // ── CLIENT KEY LOOKUP ─────────────────────────────────────
 
 export async function findAlbumByKey(key: string): Promise<{ slug: string; title: string } | null> {
-  const supabase = await createClient();
+  const supabase = createServiceClient();
   const { data: album } = await supabase
     .from('albums')
     .select('slug, title, access_key')
