@@ -9,6 +9,246 @@ import type { Album, AlbumPhoto, Category } from '@/lib/db.types';
 
 type AlbumFull = Album & { category: Category | null; location?: string | null };
 
+/* ── File extension from URL ─────────────────────────────── */
+function extFromUrl(url: string): string {
+  const clean = url.split('?')[0];
+  const match = clean.match(/\.(jpe?g|webp|png|gif|avif)$/i);
+  if (!match) return '.jpg';
+  const ext = match[1].toLowerCase();
+  return '.' + (ext === 'jpeg' ? 'jpg' : ext);
+}
+
+/* ── Parallel download with concurrency limit ────────────── */
+async function downloadWithConcurrency(
+  photos:      AlbumPhoto[],
+  prefix:      string,
+  dirHandle:   FileSystemDirectoryHandle,
+  onProgress:  (done: number) => void,
+  concurrency = 5,
+) {
+  const queue = [...photos.entries()];
+  let done = 0;
+
+  async function worker() {
+    while (queue.length) {
+      const item = queue.shift();
+      if (!item) return;
+      const [i, photo] = item;
+      const ext      = extFromUrl(photo.src);
+      const filename = `${prefix}_${String(i + 1).padStart(3, '0')}${ext}`;
+      const res      = await fetch(photo.src);
+      const blob     = await res.blob();
+      const fh       = await dirHandle.getFileHandle(filename, { create: true });
+      const writable = await fh.createWritable();
+      await writable.write(blob);
+      await writable.close();
+      done++;
+      onProgress(done);
+    }
+  }
+
+  await Promise.all(Array.from({ length: concurrency }, worker));
+}
+
+/* ── Private album download section ─────────────────────── */
+type DlState = 'idle' | 'picking' | 'downloading' | 'done' | 'error' | 'unsupported';
+
+function PrivateDownloadSection({ photos, prefix }: { photos: AlbumPhoto[]; prefix: string }) {
+  const [state, setState] = useState<DlState>('idle');
+  const [done,  setDone]  = useState(0);
+  const total             = photos.length;
+  const progress          = total > 0 ? done / total : 0;
+
+  async function handleDownload() {
+    if (!('showDirectoryPicker' in window)) {
+      setState('unsupported');
+      return;
+    }
+
+    setState('picking');
+    let dirHandle: FileSystemDirectoryHandle;
+    try {
+      dirHandle = await (window as unknown as { showDirectoryPicker: (o: object) => Promise<FileSystemDirectoryHandle> })
+        .showDirectoryPicker({ id: 'album-download', mode: 'readwrite', startIn: 'downloads' });
+    } catch {
+      setState('idle');
+      return;
+    }
+
+    setState('downloading');
+    setDone(0);
+
+    try {
+      await downloadWithConcurrency(photos, prefix, dirHandle, setDone);
+      setState('done');
+      setTimeout(() => { setState('idle'); setDone(0); }, 4000);
+    } catch {
+      setState('error');
+      setTimeout(() => setState('idle'), 3000);
+    }
+  }
+
+  return (
+    <div style={{
+      borderBottom: '1px solid var(--border)',
+      padding:      'clamp(2.5rem,5vw,4rem) clamp(1.5rem,4vw,3rem)',
+      background:   'rgba(200,169,126,0.02)',
+      display:      'flex',
+      gap:          'clamp(2rem,6vw,6rem)',
+      alignItems:   'flex-start',
+      flexWrap:     'wrap',
+    }}>
+
+      {/* ── Explanation ── */}
+      <div style={{ flex: '1 1 280px', maxWidth: '460px' }}>
+        <p style={{
+          fontSize:      '0.55rem',
+          letterSpacing: '0.22em',
+          color:         'var(--accent)',
+          opacity:       0.65,
+          marginBottom:  '0.8rem',
+          fontFamily:    'var(--font-space)',
+        }}>
+          ALBUM PRIVÉ — TÉLÉCHARGEMENT
+        </p>
+
+        <h2 style={{
+          fontFamily:   'var(--font-cormorant),serif',
+          fontSize:     'clamp(1.7rem,4vw,2.6rem)',
+          fontStyle:    'italic',
+          fontWeight:   300,
+          color:        'var(--text)',
+          lineHeight:   1,
+          marginBottom: '1.1rem',
+        }}>
+          Toutes vos photos,<br />en un clic
+        </h2>
+
+        <p style={{
+          fontSize:     '0.75rem',
+          color:        'var(--muted)',
+          lineHeight:   1.85,
+          marginBottom: '1.8rem',
+          maxWidth:     '380px',
+        }}>
+          Téléchargez l&apos;intégralité de cet album directement dans le dossier
+          de votre choix — sans compression, sans perte de qualité.
+          Les fichiers arrivent tels qu&apos;ils ont été publiés.
+        </p>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          {([
+            ['01', `Cliquez sur le bouton ci-contre`],
+            ['02', 'Choisissez votre dossier de destination'],
+            ['03', `Les ${total} photos se téléchargent automatiquement`],
+          ] as [string, string][]).map(([n, text]) => (
+            <div key={n} style={{ display: 'flex', alignItems: 'baseline', gap: '1rem' }}>
+              <span style={{
+                fontFamily: 'var(--font-cormorant),serif',
+                fontSize:   '0.68rem',
+                fontStyle:  'italic',
+                color:      'var(--accent)',
+                opacity:    0.5,
+                minWidth:   '22px',
+              }}>
+                {n}
+              </span>
+              <span style={{ fontSize: '0.7rem', color: 'var(--muted)', letterSpacing: '0.03em', lineHeight: 1.6 }}>
+                {text}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Button + progress ── */}
+      <div style={{
+        flex:          '0 0 auto',
+        display:       'flex',
+        flexDirection: 'column',
+        alignItems:    'flex-start',
+        gap:           '1.2rem',
+        paddingTop:    '0.25rem',
+      }}>
+
+        {state === 'unsupported' ? (
+          <p style={{ fontSize: '0.65rem', color: '#e57373', letterSpacing: '0.05em', maxWidth: '240px', lineHeight: 1.7 }}>
+            Votre navigateur ne supporte pas cette fonctionnalité.<br />
+            <span style={{ opacity: 0.6 }}>Utilisez Chrome ou Edge.</span>
+          </p>
+        ) : state === 'done' ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.7rem' }}>
+            <Check size={15} color='rgba(100,200,120,0.85)' strokeWidth={2.5} />
+            <span style={{ fontSize: '0.62rem', letterSpacing: '0.1em', color: 'rgba(100,200,120,0.85)' }}>
+              {total} photos enregistrées
+            </span>
+          </div>
+        ) : state === 'error' ? (
+          <p style={{ fontSize: '0.65rem', color: '#e57373', letterSpacing: '0.06em' }}>
+            Une erreur est survenue.
+          </p>
+        ) : (
+          <button
+            onClick={handleDownload}
+            disabled={state !== 'idle'}
+            style={{
+              display:       'flex',
+              alignItems:    'center',
+              gap:           '0.75rem',
+              background:    state === 'idle' ? 'var(--accent)' : 'rgba(200,169,126,0.1)',
+              color:         state === 'idle' ? '#080808' : 'var(--accent)',
+              border:        state === 'idle' ? 'none' : '1px solid rgba(200,169,126,0.25)',
+              padding:       '0.95rem 2rem',
+              fontSize:      '0.6rem',
+              letterSpacing: '0.18em',
+              cursor:        state === 'idle' ? 'pointer' : 'default',
+              fontFamily:    'inherit',
+              fontWeight:    500,
+              transition:    'opacity 0.2s',
+            }}
+          >
+            <Download size={14} strokeWidth={2} />
+            {state === 'idle'      ? "TÉLÉCHARGER L'ALBUM"  :
+             state === 'picking'   ? 'CHOISIR UN DOSSIER…'  :
+                                     `${done} / ${total} PHOTOS…`}
+          </button>
+        )}
+
+        {/* Progress bar */}
+        {state === 'downloading' && (
+          <div style={{ width: '240px', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <div style={{ width: '100%', height: '1px', background: 'rgba(200,169,126,0.1)', position: 'relative' }}>
+              <div style={{
+                position:   'absolute',
+                left:       0,
+                top:        0,
+                height:     '100%',
+                width:      `${progress * 100}%`,
+                background: 'var(--accent)',
+                transition: 'width 0.25s ease',
+              }} />
+            </div>
+            <p style={{ fontSize: '0.53rem', letterSpacing: '0.1em', color: 'var(--muted)', opacity: 0.5 }}>
+              {Math.round(progress * 100)}% — {done} fichier{done > 1 ? 's' : ''} enregistré{done > 1 ? 's' : ''}
+            </p>
+          </div>
+        )}
+
+        <p style={{
+          fontSize:      '0.55rem',
+          letterSpacing: '0.05em',
+          color:         'var(--muted)',
+          opacity:       0.35,
+          maxWidth:      '200px',
+          lineHeight:    1.6,
+        }}>
+          Fonctionnalité disponible sur Chrome et Edge
+        </p>
+      </div>
+    </div>
+  );
+}
+
 /* ── Derive short download prefix from album slug ─────────── */
 function downloadPrefix(slug: string): string {
   return slug.replace(/-/g, '').toUpperCase().substring(0, 12);
@@ -306,6 +546,11 @@ export default function AlbumPageClient({
           )}
         </div>
       </section>
+
+      {/* ── Private download section ── */}
+      {!album.is_public && (
+        <PrivateDownloadSection photos={photos} prefix={prefix} />
+      )}
 
       {/* ── CTA top ── */}
       <div>
