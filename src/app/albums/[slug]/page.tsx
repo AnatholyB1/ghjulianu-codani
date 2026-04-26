@@ -1,7 +1,7 @@
 ﻿import type { Metadata }   from 'next';
 import { notFound }        from 'next/navigation';
 import { cookies }         from 'next/headers';
-import { createClient }    from '@/utils/supabase/server';
+import { createClient, createServiceClient } from '@/utils/supabase/server';
 import AlbumPageClient     from './AlbumPageClient';
 import AccessKeyGate       from './AccessKeyGate';
 
@@ -32,7 +32,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function AlbumPage({ params }: Props) {
   const { slug } = await params;
-  const supabase = await createClient();
+  const supabase = createServiceClient();
 
   const { data: album } = await supabase
     .from('albums')
