@@ -50,18 +50,81 @@ async function downloadWithConcurrency(
   await Promise.all(Array.from({ length: concurrency }, worker));
 }
 
+/* ── ZIP fallback (Firefox / Safari) ────────────────────── */
+async function downloadWithZip(
+  photos:     AlbumPhoto[],
+  prefix:     string,
+  onProgress: (done: number) => void,
+  concurrency = 5,
+) {
+  const { default: JSZip } = await import('jszip');
+  const zip   = new JSZip();
+  const queue = [...photos.entries()];
+  let done = 0;
+
+  async function worker() {
+    while (queue.length) {
+      const item = queue.shift();
+      if (!item) return;
+      const [i, photo] = item;
+      const ext      = extFromUrl(photo.src);
+      const filename = `${prefix}_${String(i + 1).padStart(3, '0')}${ext}`;
+      const res      = await fetch(photo.src);
+      const blob     = await res.blob();
+      zip.file(filename, blob);
+      done++;
+      onProgress(done);
+    }
+  }
+
+  await Promise.all(Array.from({ length: concurrency }, worker));
+
+  const blob = await zip.generateAsync({ type: 'blob' });
+  const url  = URL.createObjectURL(blob);
+  const a    = Object.assign(document.createElement('a'), { href: url, download: `${prefix}.zip` });
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 /* ── Private album download section ─────────────────────── */
-type DlState = 'idle' | 'picking' | 'downloading' | 'done' | 'error' | 'unsupported';
+type DlState = 'idle' | 'picking' | 'downloading' | 'done' | 'error';
 
 function PrivateDownloadSection({ photos, prefix }: { photos: AlbumPhoto[]; prefix: string }) {
-  const [state, setState] = useState<DlState>('idle');
-  const [done,  setDone]  = useState(0);
-  const total             = photos.length;
-  const progress          = total > 0 ? done / total : 0;
+  const [state, setState]   = useState<DlState>('idle');
+  const [done,  setDone]    = useState(0);
+  const [usesZip, setUsesZip] = useState(false);
+  const total               = photos.length;
+  const progress            = total > 0 ? done / total : 0;
+
+  // Detect browser capability once on mount
+  useEffect(() => {
+    setUsesZip(!('showDirectoryPicker' in window));
+  }, []);
+
+  const steps: [string, string][] = usesZip
+    ? [
+        ['01', 'Cliquez sur le bouton ci-contre'],
+        ['02', `Les ${total} photos sont regroupées dans un fichier .zip`],
+        ['03', 'Extrayez le zip pour retrouver toutes vos photos'],
+      ]
+    : [
+        ['01', 'Cliquez sur le bouton ci-contre'],
+        ['02', 'Choisissez votre dossier de destination'],
+        ['03', `Les ${total} photos se téléchargent automatiquement`],
+      ];
 
   async function handleDownload() {
-    if (!('showDirectoryPicker' in window)) {
-      setState('unsupported');
+    if (usesZip) {
+      setState('downloading');
+      setDone(0);
+      try {
+        await downloadWithZip(photos, prefix, setDone);
+        setState('done');
+        setTimeout(() => { setState('idle'); setDone(0); }, 4000);
+      } catch {
+        setState('error');
+        setTimeout(() => setState('idle'), 3000);
+      }
       return;
     }
 
@@ -137,11 +200,7 @@ function PrivateDownloadSection({ photos, prefix }: { photos: AlbumPhoto[]; pref
         </p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-          {([
-            ['01', `Cliquez sur le bouton ci-contre`],
-            ['02', 'Choisissez votre dossier de destination'],
-            ['03', `Les ${total} photos se téléchargent automatiquement`],
-          ] as [string, string][]).map(([n, text]) => (
+          {steps.map(([n, text]) => (
             <div key={n} style={{ display: 'flex', alignItems: 'baseline', gap: '1rem' }}>
               <span style={{
                 fontFamily: 'var(--font-cormorant),serif',
@@ -171,16 +230,11 @@ function PrivateDownloadSection({ photos, prefix }: { photos: AlbumPhoto[]; pref
         paddingTop:    '0.25rem',
       }}>
 
-        {state === 'unsupported' ? (
-          <p style={{ fontSize: '0.65rem', color: '#e57373', letterSpacing: '0.05em', maxWidth: '240px', lineHeight: 1.7 }}>
-            Votre navigateur ne supporte pas cette fonctionnalité.<br />
-            <span style={{ opacity: 0.6 }}>Utilisez Chrome ou Edge.</span>
-          </p>
-        ) : state === 'done' ? (
+        {state === 'done' ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.7rem' }}>
             <Check size={15} color='rgba(100,200,120,0.85)' strokeWidth={2.5} />
             <span style={{ fontSize: '0.62rem', letterSpacing: '0.1em', color: 'rgba(100,200,120,0.85)' }}>
-              {total} photos enregistrées
+              {usesZip ? 'Zip téléchargé' : `${total} photos enregistrées`}
             </span>
           </div>
         ) : state === 'error' ? (
@@ -208,9 +262,9 @@ function PrivateDownloadSection({ photos, prefix }: { photos: AlbumPhoto[]; pref
             }}
           >
             <Download size={14} strokeWidth={2} />
-            {state === 'idle'      ? "TÉLÉCHARGER L'ALBUM"  :
-             state === 'picking'   ? 'CHOISIR UN DOSSIER…'  :
-                                     `${done} / ${total} PHOTOS…`}
+            {state === 'idle'        ? (usesZip ? "TÉLÉCHARGER LE ZIP" : "TÉLÉCHARGER L'ALBUM") :
+             state === 'picking'     ? 'CHOISIR UN DOSSIER…' :
+                                       `${done} / ${total} PHOTOS…`}
           </button>
         )}
 
@@ -229,21 +283,13 @@ function PrivateDownloadSection({ photos, prefix }: { photos: AlbumPhoto[]; pref
               }} />
             </div>
             <p style={{ fontSize: '0.53rem', letterSpacing: '0.1em', color: 'var(--muted)', opacity: 0.5 }}>
-              {Math.round(progress * 100)}% — {done} fichier{done > 1 ? 's' : ''} enregistré{done > 1 ? 's' : ''}
+              {Math.round(progress * 100)}%
+              {usesZip
+                ? ` — ${done} photo${done > 1 ? 's' : ''} récupérée${done > 1 ? 's' : ''}`
+                : ` — ${done} fichier${done > 1 ? 's' : ''} enregistré${done > 1 ? 's' : ''}`}
             </p>
           </div>
         )}
-
-        <p style={{
-          fontSize:      '0.55rem',
-          letterSpacing: '0.05em',
-          color:         'var(--muted)',
-          opacity:       0.35,
-          maxWidth:      '200px',
-          lineHeight:    1.6,
-        }}>
-          Fonctionnalité disponible sur Chrome et Edge
-        </p>
       </div>
     </div>
   );
