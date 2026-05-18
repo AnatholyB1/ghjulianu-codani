@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Cormorant_Garamond, Space_Grotesk } from 'next/font/google';
 import './globals.css';
 import SiteShell from '@/components/SiteShell';
+import { Analytics } from '@vercel/analytics/next';
 
 const cormorant = Cormorant_Garamond({
   variable: '--font-cormorant',
@@ -105,6 +106,7 @@ export default function RootLayout({
     <html lang="fr">
       <body className={`${cormorant.variable} ${space.variable}`}>
         <SiteShell>{children}</SiteShell>
+        <Analytics />
       </body>
     </html>
   );
