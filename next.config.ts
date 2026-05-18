@@ -3,6 +3,12 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   reactCompiler: true,
 
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '10mb',
+    },
+  },
+
   images: {
     // Serve AVIF first (20-30 % smaller than WebP at same perceived quality),
     // fall back to WebP for older browsers.
