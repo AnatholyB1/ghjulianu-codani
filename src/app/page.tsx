@@ -8,6 +8,7 @@ import { useState, useEffect, useRef } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import type { Album } from '@/lib/db.types';
 import { useT } from '@/hooks/useT';
+import { useDayNight } from '@/hooks/useDayNight';
 
 /** Wraps matching words with accent colour */
 function HiText({ text, words }: { text: string; words: string[] }) {
@@ -27,6 +28,7 @@ function HiText({ text, words }: { text: string; words: string[] }) {
 
 export default function HomePage() {
   const t = useT();
+  const { mode } = useDayNight();
   const [showIntro,     setShowIntro]     = useState(false);
   const [heroReady,     setHeroReady]     = useState(false);
   const [loadProgress,  setLoadProgress]  = useState(0);
@@ -82,14 +84,18 @@ export default function HomePage() {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase
+    const baseQuery = supabase
       .from('albums')
       .select('id,title,slug,cover_url,created_at,year')
-      .eq('is_public', true)
+      .eq('is_public', true);
+    const filteredQuery = mode === 'day'
+      ? baseQuery.or('is_day.is.null,is_day.eq.true')
+      : baseQuery.or('is_day.is.null,is_day.eq.false');
+    filteredQuery
       .order('created_at', { ascending: false })
       .limit(3)
       .then(({ data }) => { if (data) setRecentAlbums(data as Album[]); });
-  }, []);
+  }, [mode]);
 
   useEffect(() => {
     const el = collageRef.current;
