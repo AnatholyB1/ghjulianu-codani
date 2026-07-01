@@ -105,9 +105,26 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <body className={`${cormorant.variable} ${space.variable}`}>
-        <SiteShell>{children}</SiteShell>
-        <Analytics />
+        <ThemeProvider>
+          <SiteShell>{children}</SiteShell>
+          <Analytics />
+        </ThemeProvider>
       </body>
     </html>
   );
+}
+
+'use client';
+
+import { useDayNight } from '@/hooks/useDayNight';
+import { setMode } from '@/lib/theme';
+import { useLayoutEffect } from 'react';
+
+function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const { mode } = useDayNight();
+  useLayoutEffect(() => {
+    setMode(mode);
+  }, [mode]);
+
+  return <>{children}</>;
 }

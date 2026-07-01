@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useLang } from '@/contexts/LanguageContext';
 import { useT }    from '@/hooks/useT';
+import DayNightToggle from '@/components/DayNightToggle';
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -50,6 +51,8 @@ export default function Navbar() {
           backdropFilter: scrolled ? 'blur(12px)' : 'none',
         }}
       >
+        {/* Day/Night Toggle */}
+        <DayNightToggle />
         {/* Logo / name */}
         <Link
           href="/"
