@@ -1,26 +1,17 @@
 ---
 phase: 02-photo-album-filtering
 verified: 2026-07-01T14:00:00Z
-status: gaps_found
-score: 8/10 must-haves verified
+reverified: 2026-07-01T16:00:00Z
+status: passed
+score: 10/10 must-haves verified
 overrides_applied: 0
-gaps:
-  - truth: "Database indexes created on is_day columns for performance (ROADMAP SC-5)"
-    status: failed
-    reason: "Migration 003 creates indexes on the 'photos' table, but the application queries 'portfolio_photos'. The index on portfolio_photos(is_day) does not exist. The albums index on albums(is_day) is correct. This means portfolio photo queries perform sequential scans."
-    artifacts:
-      - path: "supabase/migrations/20240626000003_add_is_day_indexes.sql"
-        issue: "Creates idx_photos_is_day ON photos(is_day) — 'photos' is not the table queried by the application (application uses 'portfolio_photos')"
-    missing:
-      - "CREATE INDEX IF NOT EXISTS idx_portfolio_photos_is_day ON portfolio_photos(is_day);"
-  - truth: "Default state shows all content when no preference set (or defaults to day) (ROADMAP SC-4)"
-    status: failed
-    reason: "dayNightStore.ts initializes mode to 'night' (not 'day'). A first-time visitor with no localStorage will default to night mode, not day mode. NULL-tagged content appears in both modes, but the parenthetical 'or defaults to day' is not met."
-    artifacts:
-      - path: "src/store/dayNightStore.ts"
-        issue: "mode initial value is 'night' (line 13), not 'day'"
-    missing:
-      - "Change initial mode from 'night' to 'day' in dayNightStore.ts, OR document that night is the intentional default"
+gaps_closed_by:
+  - plan: "02-05"
+    truth: "Database indexes created on is_day columns for performance (ROADMAP SC-5)"
+    resolution: "supabase/migrations/20240626000006_add_portfolio_photos_is_day_index.sql adds idx_portfolio_photos_is_day ON portfolio_photos(is_day)"
+  - plan: "02-06"
+    truth: "Default state shows all content when no preference set (or defaults to day) (ROADMAP SC-4)"
+    resolution: "src/store/dayNightStore.ts initial mode changed from 'night' to 'day'"
 ---
 
 # Phase 2: Photo & Album Filtering — Verification Report
@@ -43,10 +34,10 @@ gaps:
 | SC-1 | Photo gallery displays only photos matching current day/night mode | VERIFIED | `PortfolioGrid.tsx` uses `.or('is_day.is.null,is_day.eq.true')` / `.or('is_day.is.null,is_day.eq.false')` in a `useEffect([mode])` — photos matching the mode (or untagged) are fetched and rendered |
 | SC-2 | Album listing displays only albums matching current day/night mode | VERIFIED | `AlbumsDragTrack.tsx` applies same `.or()` filter on `albums` table in a `useEffect([mode])` |
 | SC-3 | Filtering happens at Supabase query level (not client-side only) | VERIFIED | Both components call `supabase.from(...).or(...)` — the filter is in the PostgREST query sent to Supabase, not applied after fetch |
-| SC-4 | Default state shows all content when no preference set (or defaults to day) | FAILED | `dayNightStore.ts` line 13: `mode: 'night'` — first-time visitors default to night mode. NULL-tagged content (all content per migration 005) appears in both modes, but the "defaults to day" part of SC-4 is not met |
-| SC-5 | Database indexes created on is_day columns for performance | FAILED | Migration 003 creates `idx_photos_is_day ON photos(is_day)` — the `photos` table is NOT the table queried by the application. The app queries `portfolio_photos`. No index exists on `portfolio_photos(is_day)`. The `albums(is_day)` index is correct. |
+| SC-4 | Default state shows all content when no preference set (or defaults to day) | VERIFIED | `dayNightStore.ts` initial state changed to `mode: 'day'` by plan 02-06. First-time visitors now default to day mode. |
+| SC-5 | Database indexes created on is_day columns for performance | VERIFIED | Migration 006 adds `idx_portfolio_photos_is_day ON portfolio_photos(is_day)` by plan 02-05. Both albums and portfolio_photos indexes now exist. |
 
-**Roadmap score: 3/5 success criteria VERIFIED**
+**Roadmap score: 5/5 success criteria VERIFIED**
 
 #### From Plan Frontmatter Must-Haves (plan-01 through plan-04)
 
