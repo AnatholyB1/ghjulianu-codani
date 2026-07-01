@@ -23,6 +23,13 @@
 ## Phase 3: Admin Controls
 **Goal**: Enable users to mark photos and albums as day or night
 **Requirements**: PHO-01, PHO-02, PHO-03, ALB-01, ALB-02, ALB-03
+**Plans:** 5 plans
+Plans:
+- [ ] 03-01-PLAN.md — Schema migration: add is_day to album_photos + type update
+- [ ] 03-02-PLAN.md — Server Actions: 3 new + extend updateAlbum with is_day
+- [ ] 03-03-PLAN.md — PortfolioAdminGrid + DayNightToggleBadge + bulk selection
+- [ ] 03-04-PLAN.md — AlbumSortableList indicator + album edit form is_day radio
+- [ ] 03-05-PLAN.md — DraggablePhotoGrid inheritance badge (ALB-02)
 **Success Criteria**:
 1. Admin photo edit form includes checkbox to mark photo as day/night
 2. Admin album edit form includes checkbox to mark album as day/night
