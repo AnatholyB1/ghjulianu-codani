@@ -18,13 +18,9 @@ export const useDayNightStore = create<DayNightState>()(
         dayNightBroadcastChannel.send('DAY_NIGHT_UPDATE', { mode });
       },
       toggleMode: () => {
-        set((state) => {
-          const newMode = state.mode === 'day' ? 'night' : 'day';
-          set({ mode: newMode });
-          // Broadcast the change to other tabs
-          dayNightBroadcastChannel.send('DAY_NIGHT_UPDATE', { mode: newMode });
-          return { mode: newMode };
-        });
+        const newMode = get().mode === 'day' ? 'night' : 'day';
+        set({ mode: newMode });
+        dayNightBroadcastChannel.send('DAY_NIGHT_UPDATE', { mode: newMode });
       },
     }),
     {
@@ -37,5 +33,5 @@ export const useDayNightStore = create<DayNightState>()(
 // Subscribe to broadcast channel to receive updates from other tabs
 dayNightBroadcastChannel.subscribe('DAY_NIGHT_UPDATE', ({ mode }) => {
   // Only update if the mode is different to avoid loops
-  useDayNightStore.getState().mode !== mode && useDayNightStore.setMode(mode);
+  useDayNightStore.getState().mode !== mode && useDayNightStore.getState().setMode(mode);
 });

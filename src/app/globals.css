@@ -1,5 +1,26 @@
 @import "tailwindcss";
 
+@property --bg {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #080808;
+}
+@property --text {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #E8E4DC;
+}
+@property --surface {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #0e0e0e;
+}
+@property --muted {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #7a7a74;
+}
+
 :root {
   --bg:        #080808;
   --surface:   #0e0e0e;
