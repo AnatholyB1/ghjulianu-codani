@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import { dayNightBroadcastChannel } from '@/lib/broadcastChannel';
 
 interface DayNightState {
@@ -25,7 +25,7 @@ export const useDayNightStore = create<DayNightState>()(
     }),
     {
       name: 'day-night-storage',
-      getStorage: () => localStorage,
+      storage: createJSONStorage(() => localStorage),
     }
   )
 );

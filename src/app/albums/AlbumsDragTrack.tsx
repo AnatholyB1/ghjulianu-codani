@@ -1,20 +1,43 @@
-﻿'use client';
+'use client';
 
 import Link     from 'next/link';
 import { useState, useRef, useEffect } from 'react';
 import type { Album, Category } from '@/lib/db.types';
 import { useT } from '@/hooks/useT';
+import { createClient } from '@/utils/supabase/client';
+import { useDayNight } from '@/hooks/useDayNight';
 
 type AlbumWithCat = Album & { category: Category | null };
 
-export default function AlbumsDragTrack({ albums }: { albums: AlbumWithCat[] }) {
+export default function AlbumsDragTrack() {
   const t = useT();
+  const { mode } = useDayNight();
+  const [albums, setAlbums] = useState<AlbumWithCat[]>([]);
   const [cat, setCat] = useState<string>('all');
   const trackRef    = useRef<HTMLDivElement>(null);
   const hasDragged  = useRef(false);
   const imgTargetRef = useRef(0);
   const imgCurrentRef = useRef(0);
   const rafRef = useRef<number>(0);
+
+  /* Fetch albums from Supabase filtered by day/night mode */
+  useEffect(() => {
+    const supabase = createClient();
+    let query = supabase
+      .from('albums')
+      .select('*, category:categories(*)')
+      .order('sort_order', { ascending: false });
+
+    if (mode === 'day') {
+      query = query.or('is_day.is.null,is_day.eq.true');
+    } else {
+      query = query.or('is_day.is.null,is_day.eq.false');
+    }
+
+    query.then(({ data }) => {
+      setAlbums(data ?? []);
+    });
+  }, [mode]);
 
   const filtered = cat === 'all'
     ? albums
@@ -159,35 +182,41 @@ export default function AlbumsDragTrack({ albums }: { albums: AlbumWithCat[] }) 
           transform: 'translate(0%, -50%)',
         }}
       >
-        {filtered.map((album) => (
-          <Link
-            key={album.id}
-            href={`/albums/${album.slug}`}
-            draggable={false}
-            onClick={(e) => { if (hasDragged.current) e.preventDefault(); }}
-            style={{ position: 'relative', flexShrink: 0, display: 'block', width: '48vmin', height: '58vmin', overflow: 'hidden', textDecoration: 'none' }}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              className="image album-image"
-              src={album.cover_url ?? 'https://picsum.photos/seed/default/600/900'}
-              alt={album.title}
+        {filtered.length === 0 ? (
+          <div className="text-center py-8 text-sm opacity-60">
+            No albums available in this mode yet
+          </div>
+        ) : (
+          filtered.map((album) => (
+            <Link
+              key={album.id}
+              href={`/albums/${album.slug}`}
               draggable={false}
-              style={{
-                transform:     'translateX(0%)',
-                pointerEvents: 'none',
-                willChange:    'transform',
-              }}
-            />
-            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(0deg,rgba(8,8,8,0.8) 0%,transparent 55%)', pointerEvents: 'none' }} />
-            <div style={{ position: 'absolute', bottom: '1.2rem', left: '1.2rem', right: '1.2rem', pointerEvents: 'none' }}>
-              <h2 style={{ fontFamily: 'var(--font-cormorant),serif', fontSize: 'clamp(1rem,2.5vmin,1.6rem)', fontStyle: 'italic', fontWeight: 400, color: 'var(--text)', lineHeight: 1.1, margin: 0 }}>
-                {album.title}
-              </h2>
-              {!album.is_public && <span style={{ fontSize: '0.75rem', color: '#c8a97e' }}>🔒</span>}
-            </div>
-          </Link>
-        ))}
+              onClick={(e) => { if (hasDragged.current) e.preventDefault(); }}
+              style={{ position: 'relative', flexShrink: 0, display: 'block', width: '48vmin', height: '58vmin', overflow: 'hidden', textDecoration: 'none' }}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                className="image album-image"
+                src={album.cover_url ?? 'https://picsum.photos/seed/default/600/900'}
+                alt={album.title}
+                draggable={false}
+                style={{
+                  transform:     'translateX(0%)',
+                  pointerEvents: 'none',
+                  willChange:    'transform',
+                }}
+              />
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(0deg,rgba(8,8,8,0.8) 0%,transparent 55%)', pointerEvents: 'none' }} />
+              <div style={{ position: 'absolute', bottom: '1.2rem', left: '1.2rem', right: '1.2rem', pointerEvents: 'none' }}>
+                <h2 style={{ fontFamily: 'var(--font-cormorant),serif', fontSize: 'clamp(1rem,2.5vmin,1.6rem)', fontStyle: 'italic', fontWeight: 400, color: 'var(--text)', lineHeight: 1.1, margin: 0 }}>
+                  {album.title}
+                </h2>
+                {!album.is_public && <span style={{ fontSize: '0.75rem', color: '#c8a97e' }}>🔒</span>}
+              </div>
+            </Link>
+          ))
+        )}
       </div>
     </div>
   );
