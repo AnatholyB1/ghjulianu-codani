@@ -67,7 +67,9 @@ Reduced to a minimal synchronous Server Component:
 
 ## Deviations from Plan
 
-None — plan executed exactly as written.
+### Merge Required (pre-task)
+
+The worktree was created from commit `07b9ecf` (before Phase 1 and 02-01 work). Files needed by this plan (`useDayNight.ts`, `dayNightStore.ts`, updated `db.types.ts`) were not present. `git merge master --no-edit` was run to bring the worktree up to date before executing tasks. This is normal worktree setup behavior, not a code deviation.
 
 ## Known Stubs
 
