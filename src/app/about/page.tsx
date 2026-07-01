@@ -78,7 +78,7 @@ function btnStyle(v: 'solid' | 'outline') {
     padding: '0.7rem 1.6rem', fontSize: '0.63rem', letterSpacing: '0.16em',
     textDecoration: 'none', cursor: 'pointer', transition: 'all 0.25s ease',
     ...(v === 'solid'
-      ? { background: 'var(--text)', color: '#080808' }
-      : { background: 'transparent', color: 'var(--text)', border: '1px solid rgba(255,255,255,0.25)' }),
+      ? { background: 'var(--text)', color: 'var(--bg)' }
+      : { background: 'transparent', color: 'var(--text)', border: '1px solid var(--btn-border)' }),
   } as const;
 }

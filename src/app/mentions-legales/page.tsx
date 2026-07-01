@@ -14,7 +14,7 @@ const Section = ({ title, children }: { title: string; children: React.ReactNode
         fontFamily:    'var(--font-space)',
         fontSize:      '0.65rem',
         letterSpacing: '0.18em',
-        color:         'var(--accent)',
+        color:         'var(--accent-text)',
         textTransform: 'uppercase',
         marginBottom:  '1.2rem',
       }}
@@ -92,7 +92,7 @@ export default function MentionsLegalesPage() {
             <strong>Contact :</strong>{' '}
             <a
               href="mailto:ghjulianu.codani2@gmail.com"
-              style={{ color: 'var(--accent)', textDecoration: 'none', borderBottom: '1px solid var(--accent)', paddingBottom: '1px' }}
+              style={{ color: 'var(--accent-text)', textDecoration: 'none', borderBottom: '1px solid var(--accent-text)', paddingBottom: '1px' }}
             >
               ghjulianu.codani2@gmail.com
             </a>
@@ -103,7 +103,7 @@ export default function MentionsLegalesPage() {
               href="https://instagram.com/ghjulianu.cdn"
               target="_blank"
               rel="noopener noreferrer"
-              style={{ color: 'var(--accent)', textDecoration: 'none', borderBottom: '1px solid var(--accent)', paddingBottom: '1px' }}
+              style={{ color: 'var(--accent-text)', textDecoration: 'none', borderBottom: '1px solid var(--accent-text)', paddingBottom: '1px' }}
             >
               @ghjulianu.cdn
             </a>
@@ -121,7 +121,7 @@ export default function MentionsLegalesPage() {
               href="https://vercel.com"
               target="_blank"
               rel="noopener noreferrer"
-              style={{ color: 'var(--accent)', textDecoration: 'none', borderBottom: '1px solid var(--accent)', paddingBottom: '1px' }}
+              style={{ color: 'var(--accent-text)', textDecoration: 'none', borderBottom: '1px solid var(--accent-text)', paddingBottom: '1px' }}
             >
               vercel.com
             </a>
@@ -136,7 +136,7 @@ export default function MentionsLegalesPage() {
               href="https://selenium-studio.com"
               target="_blank"
               rel="noopener noreferrer"
-              style={{ color: 'var(--accent)', textDecoration: 'none', borderBottom: '1px solid var(--accent)', paddingBottom: '1px' }}
+              style={{ color: 'var(--accent-text)', textDecoration: 'none', borderBottom: '1px solid var(--accent-text)', paddingBottom: '1px' }}
             >
               Selenium Studio
             </a>
@@ -145,7 +145,7 @@ export default function MentionsLegalesPage() {
               href="https://anatholy-bricon.com/services"
               target="_blank"
               rel="noopener noreferrer"
-              style={{ color: 'var(--accent)', textDecoration: 'none', borderBottom: '1px solid var(--accent)', paddingBottom: '1px' }}
+              style={{ color: 'var(--accent-text)', textDecoration: 'none', borderBottom: '1px solid var(--accent-text)', paddingBottom: '1px' }}
             >
               Anatholy Bricon
             </a>.
@@ -188,7 +188,7 @@ export default function MentionsLegalesPage() {
             Ghjulianu Codani à l'adresse{' '}
             <a
               href="mailto:ghjulianu.codani2@gmail.com"
-              style={{ color: 'var(--accent)', textDecoration: 'none', borderBottom: '1px solid var(--accent)', paddingBottom: '1px' }}
+              style={{ color: 'var(--accent-text)', textDecoration: 'none', borderBottom: '1px solid var(--accent-text)', paddingBottom: '1px' }}
             >
               ghjulianu.codani2@gmail.com
             </a>.

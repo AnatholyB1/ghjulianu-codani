@@ -152,7 +152,7 @@ export default function Lightbox({ photos, index, onClose, onNext, onPrev, showC
           style={{
             background:    inCart ? 'rgba(100,200,120,0.18)' : 'rgba(200,169,126,0.18)',
             border:        `1px solid ${inCart ? 'rgba(100,200,120,0.5)' : 'rgba(200,169,126,0.5)'}`,
-            color:         inCart ? 'rgb(120,220,140)' : 'var(--accent)',
+            color:         inCart ? 'rgb(120,220,140)' : 'var(--accent-text)',
             padding:       '0.35rem 0.85rem',
             fontSize:      '0.6rem',
             letterSpacing: '0.14em',

@@ -167,7 +167,7 @@ function PrivateDownloadSection({ photos, prefix }: { photos: AlbumPhoto[]; pref
         <p style={{
           fontSize:      '0.55rem',
           letterSpacing: '0.22em',
-          color:         'var(--accent)',
+          color:         'var(--accent-text)',
           opacity:       0.65,
           marginBottom:  '0.8rem',
           fontFamily:    'var(--font-space)',
@@ -206,7 +206,7 @@ function PrivateDownloadSection({ photos, prefix }: { photos: AlbumPhoto[]; pref
                 fontFamily: 'var(--font-cormorant),serif',
                 fontSize:   '0.68rem',
                 fontStyle:  'italic',
-                color:      'var(--accent)',
+                color:      'var(--accent-text)',
                 opacity:    0.5,
                 minWidth:   '22px',
               }}>
@@ -250,7 +250,7 @@ function PrivateDownloadSection({ photos, prefix }: { photos: AlbumPhoto[]; pref
               alignItems:    'center',
               gap:           '0.75rem',
               background:    state === 'idle' ? 'var(--accent)' : 'rgba(200,169,126,0.1)',
-              color:         state === 'idle' ? '#080808' : 'var(--accent)',
+              color:         state === 'idle' ? '#080808' : 'var(--accent-text)',
               border:        state === 'idle' ? 'none' : '1px solid rgba(200,169,126,0.25)',
               padding:       '0.95rem 2rem',
               fontSize:      '0.6rem',
@@ -493,7 +493,7 @@ function CtaBanner() {
         <span style={{ fontFamily: 'var(--font-cormorant),serif', fontSize: 'clamp(0.9rem,2vw,1.05rem)', fontStyle: 'italic', fontWeight: 300, color: 'var(--text)', lineHeight: 1.4 }}>
           Vous souhaitez obtenir des photos en haute qualité ?
         </span>
-        <span style={{ fontSize: '0.65rem', color: 'var(--accent)', fontFamily: 'var(--font-cormorant),serif', fontStyle: 'italic', opacity: 0.9 }}>
+        <span style={{ fontSize: '0.65rem', color: 'var(--accent-text)', fontFamily: 'var(--font-cormorant),serif', fontStyle: 'italic', opacity: 0.9 }}>
           1&nbsp;€,&nbsp;2&nbsp;€,&nbsp;5&nbsp;€ — ou plus, à la hauteur de vos moyens
         </span>
       </div>
@@ -559,22 +559,22 @@ export default function AlbumPageClient({
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(0deg,rgba(8,8,8,0.96) 0%,rgba(8,8,8,0.25) 60%,transparent 100%)' }} />
 
         <div style={{ position: 'relative', zIndex: 2, padding: 'clamp(2rem,5vw,4rem)' }}>
-          <p style={{ fontSize: '0.6rem', letterSpacing: '0.18em', color: 'var(--muted)', marginBottom: '1rem' }}>
-            <Link href="/albums" style={{ color: 'var(--muted)', textDecoration: 'none' }}>ALBUMS</Link>
+          <p style={{ fontSize: '0.6rem', letterSpacing: '0.18em', color: '#7a7a74', marginBottom: '1rem' }}>
+            <Link href="/albums" style={{ color: '#7a7a74', textDecoration: 'none' }}>ALBUMS</Link>
             {' → '}
-            <span style={{ color: 'var(--text)' }}>{album.title}</span>
+            <span style={{ color: '#E8E4DC' }}>{album.title}</span>
           </p>
 
-          <h1 style={{ fontFamily: 'var(--font-cormorant),serif', fontSize: 'clamp(2.5rem,7vw,5.5rem)', fontStyle: 'italic', fontWeight: 300, lineHeight: 0.95, color: 'var(--text)', animation: 'fadeInUp 0.9s cubic-bezier(0.22,1,0.36,1) 0.1s both' }}>
+          <h1 style={{ fontFamily: 'var(--font-cormorant),serif', fontSize: 'clamp(2.5rem,7vw,5.5rem)', fontStyle: 'italic', fontWeight: 300, lineHeight: 0.95, color: '#E8E4DC', animation: 'fadeInUp 0.9s cubic-bezier(0.22,1,0.36,1) 0.1s both' }}>
             {album.title}
           </h1>
 
           <div style={{ display: 'flex', gap: '1.5rem', marginTop: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
-            <p style={{ fontSize: '0.62rem', letterSpacing: '0.14em', color: 'var(--muted)' }}>{dateStr}</p>
+            <p style={{ fontSize: '0.62rem', letterSpacing: '0.14em', color: '#7a7a74' }}>{dateStr}</p>
             {album.location && (
               <>
-                <span style={{ width: '1px', height: '14px', background: 'var(--border)' }} />
-                <p style={{ fontSize: '0.62rem', letterSpacing: '0.14em', color: 'var(--muted)' }}>{album.location}</p>
+                <span style={{ width: '1px', height: '14px', background: 'rgba(255,255,255,0.12)' }} />
+                <p style={{ fontSize: '0.62rem', letterSpacing: '0.14em', color: '#7a7a74' }}>{album.location}</p>
               </>
             )}
             {album.category && (

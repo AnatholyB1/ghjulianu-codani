@@ -125,7 +125,7 @@ export default function DonPage() {
 
             <p style={{ fontSize: '0.75rem', color: 'var(--muted)', lineHeight: 1.7 }}>
               {td.contactHint}{' '}
-              <Link href="/contact" style={{ color: 'var(--accent)', textDecoration: 'none', borderBottom: '1px solid var(--accent)', paddingBottom: '1px' }}>
+              <Link href="/contact" style={{ color: 'var(--accent-text)', textDecoration: 'none', borderBottom: '1px solid var(--accent-text)', paddingBottom: '1px' }}>
                 {td.contactLink}
               </Link>
             </p>

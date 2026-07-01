@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Cormorant_Garamond, Space_Grotesk } from 'next/font/google';
 import './globals.css';
 import SiteShell from '@/components/SiteShell';
+import ThemeProvider from '@/components/ThemeProvider';
 import { Analytics } from '@vercel/analytics/next';
 
 const cormorant = Cormorant_Garamond({
@@ -112,19 +113,4 @@ export default function RootLayout({
       </body>
     </html>
   );
-}
-
-'use client';
-
-import { useDayNight } from '@/hooks/useDayNight';
-import { setMode } from '@/lib/theme';
-import { useLayoutEffect } from 'react';
-
-function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const { mode } = useDayNight();
-  useLayoutEffect(() => {
-    setMode(mode);
-  }, [mode]);
-
-  return <>{children}</>;
 }

@@ -75,7 +75,7 @@ export default function ContactPage() {
 
           {tc.availableItems.map((item) => (
             <p key={item} style={{ fontSize: '0.8rem', color: 'var(--muted)', lineHeight: 1.9, display: 'flex', gap: '0.75rem' }}>
-              <span style={{ color: 'var(--accent)', flexShrink: 0 }}>—</span>{item}
+              <span style={{ color: 'var(--accent-text)', flexShrink: 0 }}>—</span>{item}
             </p>
           ))}
 
@@ -110,7 +110,7 @@ export default function ContactPage() {
           <Link
             href="/tarifs"
             style={{ display: 'inline-flex', marginTop: '2rem', fontSize: '0.58rem', letterSpacing: '0.18em', color: 'var(--muted)', textDecoration: 'none', borderBottom: '1px solid var(--border)', paddingBottom: '2px', transition: 'color 0.2s' }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = 'var(--accent)'; }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = 'var(--accent-text)'; }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = 'var(--muted)'; }}
           >
             {tc.seeTarifs}
@@ -140,9 +140,9 @@ export default function ContactPage() {
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                 <label style={{ fontSize: '0.56rem', letterSpacing: '0.18em', color: 'var(--muted)' }}>{tc.projectLabel}</label>
-                <select name="projet" style={{ ...inputStyle, appearance: 'none', cursor: 'pointer', background: '#111111', color: 'var(--text)' }}>
-                  <option value="" style={{ background: '#111111', color: 'var(--text)' }}>{tc.projectPlaceholder}</option>
-                  {tc.projets.map((p) => <option key={p} value={p} style={{ background: '#111111', color: 'var(--text)' }}>{p}</option>)}
+                <select name="projet" style={{ ...inputStyle, appearance: 'none', cursor: 'pointer', background: 'var(--surface)', color: 'var(--text)' }}>
+                  <option value="" style={{ background: 'var(--surface)', color: 'var(--text)' }}>{tc.projectPlaceholder}</option>
+                  {tc.projets.map((p) => <option key={p} value={p} style={{ background: 'var(--surface)', color: 'var(--text)' }}>{p}</option>)}
                 </select>
               </div>
 

@@ -94,8 +94,8 @@ export default function Footer() {
             transition:     'border-color 0.2s, color 0.2s',
           }}
           onMouseEnter={(e) => {
-            (e.currentTarget as HTMLElement).style.color = 'var(--accent)';
-            (e.currentTarget as HTMLElement).style.borderColor = 'var(--accent)';
+            (e.currentTarget as HTMLElement).style.color = 'var(--accent-text)';
+            (e.currentTarget as HTMLElement).style.borderColor = 'var(--accent-text)';
           }}
           onMouseLeave={(e) => {
             (e.currentTarget as HTMLElement).style.color = 'var(--text)';
@@ -117,8 +117,8 @@ export default function Footer() {
             transition:     'border-color 0.2s, color 0.2s',
           }}
           onMouseEnter={(e) => {
-            (e.currentTarget as HTMLElement).style.color = 'var(--accent)';
-            (e.currentTarget as HTMLElement).style.borderColor = 'var(--accent)';
+            (e.currentTarget as HTMLElement).style.color = 'var(--accent-text)';
+            (e.currentTarget as HTMLElement).style.borderColor = 'var(--accent-text)';
           }}
           onMouseLeave={(e) => {
             (e.currentTarget as HTMLElement).style.color = 'var(--text)';

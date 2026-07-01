@@ -18,7 +18,7 @@ function HiText({ text, words }: { text: string; words: string[] }) {
     <>
       {parts.map((p, i) =>
         words.some((w) => w.toLowerCase() === p.toLowerCase())
-          ? <span key={i} style={{ color: 'var(--accent)', fontStyle: 'italic' }}>{p}</span>
+          ? <span key={i} style={{ color: 'var(--accent-text)', fontStyle: 'italic' }}>{p}</span>
           : <span key={i}>{p}</span>
       )}
     </>
@@ -295,7 +295,7 @@ export default function HomePage() {
                   const colonIdx = item.indexOf(' :');
                   return (
                     <li key={item} style={{ display: 'flex', gap: '0.85rem', alignItems: 'baseline' }}>
-                      <span style={{ color: 'var(--accent)', fontSize: '0.55rem', flexShrink: 0 }}>—</span>
+                      <span style={{ color: 'var(--accent-text)', fontSize: '0.55rem', flexShrink: 0 }}>—</span>
                       <span style={{ fontSize: '0.8rem', color: 'var(--muted)', lineHeight: 1.75 }}>
                         {colonIdx > -1 ? (
                           <><span style={{ color: 'var(--text)', fontWeight: 500 }}>{item.slice(0, colonIdx)}</span>{item.slice(colonIdx)}</>
@@ -318,13 +318,13 @@ export default function HomePage() {
                   fontSize:       '0.6rem',
                   letterSpacing:  '0.18em',
                   background:     '#111',
-                  color:          'var(--text)',
+                  color:          'var(--btn-text)',
                   border:         '1px solid var(--border)',
                   textDecoration: 'none',
                   transition:     'border-color 0.2s, color 0.2s',
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.22)'; e.currentTarget.style.color = '#fff'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border)';           e.currentTarget.style.color = 'var(--text)'; }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--btn-border)'; e.currentTarget.style.color = 'var(--btn-text)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border)';     e.currentTarget.style.color = 'var(--btn-text)'; }}
               >
                 {t.home.seeRates}
               </Link>
@@ -498,7 +498,7 @@ export default function HomePage() {
                       </span>
 
                       {/* Arrow */}
-                      <span style={{ fontSize: '0.9rem', color: 'var(--accent)', flexShrink: 0, transition: 'transform 0.2s' }} className="event-arrow">
+                      <span style={{ fontSize: '0.9rem', color: 'var(--accent-text)', flexShrink: 0, transition: 'transform 0.2s' }} className="event-arrow">
                         →
                       </span>
                     </div>
@@ -524,13 +524,13 @@ export default function HomePage() {
                   fontSize:       '0.6rem',
                   letterSpacing:  '0.18em',
                   background:     '#111',
-                  color:          'var(--text)',
+                  color:          'var(--btn-text)',
                   border:         '1px solid var(--border)',
                   textDecoration: 'none',
                   transition:     'border-color 0.2s, color 0.2s',
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.22)'; e.currentTarget.style.color = '#fff'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border)';           e.currentTarget.style.color = 'var(--text)'; }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--btn-border)'; e.currentTarget.style.color = 'var(--btn-text)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border)';     e.currentTarget.style.color = 'var(--btn-text)'; }}
               >
                 {t.home.seeAllAlbums}
               </Link>
@@ -546,7 +546,7 @@ export default function HomePage() {
           .prestations-grid { grid-template-columns: 1fr !important; }
           .prestations-grid > *:last-child { margin-top: 4rem; padding-bottom: 3.5rem; }
         }
-        .event-row:hover .event-title { color: var(--accent) !important; }
+        .event-row:hover .event-title { color: var(--accent-text) !important; }
         .event-row:hover .event-arrow { transform: translateX(4px); }
         .event-row:hover .event-thumb { transform: scale(1.08); }
 
@@ -595,7 +595,7 @@ function ctaStyle(variant: 'solid' | 'outline') {
     cursor:         'pointer',
     transition:     'all 0.25s ease',
     ...(variant === 'solid'
-      ? { background: 'var(--text)', color: '#080808' }
-      : { background: 'transparent', color: 'var(--text)', border: '1px solid rgba(255,255,255,0.3)' }),
+      ? { background: 'var(--text)', color: 'var(--bg)' }
+      : { background: 'transparent', color: 'var(--text)', border: '1px solid var(--btn-border)' }),
   } as const;
 }

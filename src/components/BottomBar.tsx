@@ -35,7 +35,7 @@ export default function BottomBar() {
         justifyContent: 'space-between',
         padding:    '0 2rem',
         minHeight:  '52px',
-        background: 'rgba(8,8,8,0.9)',
+        background: 'var(--bottombar-bg)',
         borderTop:  '1px solid var(--border)',
         backdropFilter: 'blur(14px)',
         transform:  visible ? 'translateY(0)' : 'translateY(100%)',
@@ -59,9 +59,9 @@ export default function BottomBar() {
         <Link
           href="/don"
           style={{
-            color:          'var(--accent)',
+            color:          'var(--accent-text)',
             textDecoration: 'none',
-            borderBottom:   '1px solid var(--accent)',
+            borderBottom:   '1px solid var(--accent-text)',
             paddingBottom:  '1px',
             display:        'inline-flex',
             alignItems:     'center',

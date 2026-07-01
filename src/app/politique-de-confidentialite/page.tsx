@@ -14,7 +14,7 @@ const Section = ({ title, children }: { title: string; children: React.ReactNode
         fontFamily:    'var(--font-space)',
         fontSize:      '0.65rem',
         letterSpacing: '0.18em',
-        color:         'var(--accent)',
+        color:         'var(--accent-text)',
         textTransform: 'uppercase',
         marginBottom:  '1.2rem',
       }}
@@ -102,7 +102,7 @@ export default function PolitiqueConfidentialitePage() {
             <strong>Contact :</strong>{' '}
             <a
               href="mailto:ghjulianu.codani2@gmail.com"
-              style={{ color: 'var(--accent)', textDecoration: 'none', borderBottom: '1px solid var(--accent)', paddingBottom: '1px' }}
+              style={{ color: 'var(--accent-text)', textDecoration: 'none', borderBottom: '1px solid var(--accent-text)', paddingBottom: '1px' }}
             >
               ghjulianu.codani2@gmail.com
             </a>
@@ -180,7 +180,7 @@ export default function PolitiqueConfidentialitePage() {
             Pour exercer l'un de ces droits, contactez :{' '}
             <a
               href="mailto:ghjulianu.codani2@gmail.com"
-              style={{ color: 'var(--accent)', textDecoration: 'none', borderBottom: '1px solid var(--accent)', paddingBottom: '1px' }}
+              style={{ color: 'var(--accent-text)', textDecoration: 'none', borderBottom: '1px solid var(--accent-text)', paddingBottom: '1px' }}
             >
               ghjulianu.codani2@gmail.com
             </a>
