@@ -664,17 +664,17 @@ function getBadgeState(photoIsDay: boolean | null, albumIsDay: boolean | null) {
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **`radioLabel` font-size conflict**
    - What we know: `radioLabel` constant in `albums/[id]/page.tsx` uses `fontSize: '0.7rem'`. UI-SPEC canonicalizes it to `0.62rem`. The constant is shared with VISIBILITÉ radios.
    - What's unclear: Whether to update the existing constant (changing VISIBILITÉ appearance) or define a new `radioLabelSm` just for the MODE JOUR/NUIT row.
-   - Recommendation: Define a new `radioLabelSm` with `fontSize: '0.62rem'` for the Phase 3 row only. This preserves existing VISIBILITÉ radio appearance without risk of visual regression.
+   - RESOLVED: Define a new `radioLabelSm` with `fontSize: '0.62rem'` for the Phase 3 row only. This preserves existing VISIBILITÉ radio appearance without risk of visual regression.
 
 2. **`revalidatePath` scope for album photo override**
    - What we know: `updateAlbumPhotoDay` must call `revalidatePath(\`/admin/albums/${albumId}\`)` so the admin grid re-renders. The public album slug page is `/albums/[slug]` — we don't have `slug` in the Server Action, only `albumId`.
    - What's unclear: Whether Phase 3 needs to revalidate the public album page too (since album photo is_day only affects Phase 3's admin display, not Phase 2's public filtering which operates at album level).
-   - Recommendation: Revalidate `/admin/albums/${albumId}` only. The public album photo view is not filtered by is_day (Phase 2 filters at album level, not album_photos level). No public revalidation needed for album photo overrides.
+   - RESOLVED: Revalidate `/admin/albums/${albumId}` only. The public album photo view is not filtered by is_day (Phase 2 filters at album level, not album_photos level). No public revalidation needed for album photo overrides.
 
 ---
 
