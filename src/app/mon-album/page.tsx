@@ -121,7 +121,7 @@ export default function MonAlbumPage() {
           <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
             {tc.helpItems.map((item, i) => (
               <li key={i} style={{ display: 'flex', gap: '0.75rem', fontSize: '0.72rem', color: 'var(--muted)', lineHeight: 1.6 }}>
-                <span style={{ color: 'var(--accent)', flexShrink: 0, fontFamily: 'var(--font-cormorant), serif', fontStyle: 'italic' }}>—</span>
+                <span style={{ color: 'var(--accent-text)', flexShrink: 0, fontFamily: 'var(--font-cormorant), serif', fontStyle: 'italic' }}>—</span>
                 {item}
               </li>
             ))}

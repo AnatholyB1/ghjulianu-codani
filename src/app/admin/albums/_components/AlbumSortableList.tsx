@@ -2,6 +2,7 @@
 
 import { useState, useRef, useTransition } from 'react';
 import Link from 'next/link';
+import { Sun, Moon } from 'lucide-react';
 import type { Album, Category } from '@/lib/db.types';
 import { reorderAlbums, deleteAlbum } from '../../actions';
 import ConfirmButton from '../../_components/ConfirmButton';
@@ -126,6 +127,19 @@ export default function AlbumSortableList({ initialAlbums }: { initialAlbums: Al
                 <span style={{ ...tag, color: album.is_public ? '#6dbf7a' : '#c8a97e' }}>
                   {album.is_public ? '● PUBLIC' : '🔒 PRIVÉ'}
                 </span>
+                {album.is_day === true && (
+                  <span style={{ ...tag, color: '#c8a97e', display: 'flex', alignItems: 'center' }}>
+                    <Sun size={9} />
+                  </span>
+                )}
+                {album.is_day === false && (
+                  <span style={{ ...tag, color: '#8090b0', display: 'flex', alignItems: 'center' }}>
+                    <Moon size={9} />
+                  </span>
+                )}
+                {album.is_day === null && (
+                  <span style={{ ...tag, color: 'rgba(122,122,116,0.4)' }}>—</span>
+                )}
                 <span style={{ ...tag, color: 'rgba(122,122,116,0.4)' }}>#{album.sort_order}</span>
               </div>
             </div>

@@ -89,6 +89,8 @@ export async function updateAlbum(id: string, formData: FormData) {
   const cover_url   = (formData.get('cover_url') as string) || null;
   const bg_url      = (formData.get('background_url') as string) || null;
   const is_public   = formData.get('is_public') === 'true';
+  const isDayRaw = formData.get('is_day') as string | null;
+  const is_day = isDayRaw === 'true' ? true : isDayRaw === 'false' ? false : null;
 
   // Fetch current to preserve/generate access_key
   const { data: current } = await supabase.from('albums').select('access_key').eq('id', id).single();
@@ -96,11 +98,12 @@ export async function updateAlbum(id: string, formData: FormData) {
 
   const { error } = await supabase
     .from('albums')
-    .update({ title, year, location, category_id, description, cover_url, background_url: bg_url, is_public, access_key })
+    .update({ title, year, location, category_id, description, cover_url, background_url: bg_url, is_public, access_key, is_day })
     .eq('id', id);
 
   if (error) throw new Error(error.message);
   revalidatePath('/admin/albums');
+  revalidatePath('/admin/albums/' + id);
   revalidatePath('/albums');
 }
 
@@ -214,6 +217,34 @@ export async function deletePortfolioPhoto(id: string) {
   if (error) throw new Error(error.message);
   revalidatePath('/admin/portfolio');
   revalidatePath('/portfolio');
+}
+
+// -- DAY/NIGHT TAGGING --
+
+export async function updatePortfolioPhotoDay(id: string, isDay: boolean | null) {
+  const supabase = await createClient();
+  const { error } = await supabase.from('portfolio_photos').update({ is_day: isDay }).eq('id', id);
+  if (error) throw new Error(error.message);
+  revalidatePath('/admin/portfolio');
+  revalidatePath('/portfolio');
+}
+
+export async function bulkUpdatePortfolioPhotoDay(ids: string[], isDay: boolean | null) {
+  if (ids.length === 0) return;
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const validIds = ids.filter(id => uuidRegex.test(id));
+  const supabase = await createClient();
+  const { error } = await supabase.from('portfolio_photos').update({ is_day: isDay }).in('id', validIds);
+  if (error) throw new Error(error.message);
+  revalidatePath('/admin/portfolio');
+  revalidatePath('/portfolio');
+}
+
+export async function updateAlbumPhotoDay(id: string, albumId: string, isDay: boolean | null) {
+  const supabase = await createClient();
+  const { error } = await supabase.from('album_photos').update({ is_day: isDay }).eq('id', id);
+  if (error) throw new Error(error.message);
+  revalidatePath('/admin/albums/' + albumId);
 }
 
 // ── UPLOAD ────────────────────────────────────────────────────

@@ -32,9 +32,9 @@ export default function NotFound() {
         style={{
           fontSize:      '0.65rem',
           letterSpacing: '0.16em',
-          color:         'var(--accent)',
+          color:         'var(--accent-text)',
           textDecoration: 'none',
-          borderBottom:  '1px solid var(--accent)',
+          borderBottom:  '1px solid var(--accent-text)',
           paddingBottom: '2px',
           marginTop:     '1rem',
         }}

@@ -1,4 +1,4 @@
-'use client';
+﻿﻿'use client';
 
 import Image from 'next/image';
 import Link  from 'next/link';
@@ -8,6 +8,7 @@ import { useState, useEffect, useRef } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import type { Album } from '@/lib/db.types';
 import { useT } from '@/hooks/useT';
+import { useDayNight } from '@/hooks/useDayNight';
 
 /** Wraps matching words with accent colour */
 function HiText({ text, words }: { text: string; words: string[] }) {
@@ -18,7 +19,7 @@ function HiText({ text, words }: { text: string; words: string[] }) {
     <>
       {parts.map((p, i) =>
         words.some((w) => w.toLowerCase() === p.toLowerCase())
-          ? <span key={i} style={{ color: 'var(--accent)', fontStyle: 'italic' }}>{p}</span>
+          ? <span key={i} style={{ color: 'var(--accent-text)', fontStyle: 'italic' }}>{p}</span>
           : <span key={i}>{p}</span>
       )}
     </>
@@ -27,12 +28,14 @@ function HiText({ text, words }: { text: string; words: string[] }) {
 
 export default function HomePage() {
   const t = useT();
+  const { mode } = useDayNight();
   const [showIntro,     setShowIntro]     = useState(false);
   const [heroReady,     setHeroReady]     = useState(false);
   const [loadProgress,  setLoadProgress]  = useState(0);
   const [loadingDone,   setLoadingDone]   = useState(false);
   const [loadingHidden, setLoadingHidden] = useState(false);
   const [recentAlbums,  setRecentAlbums]  = useState<Album[]>([]);
+  const [albumsFading,  setAlbumsFading]  = useState(false);
   const [collageVisible, setCollageVisible] = useState([false, false, false, false]);
   const collageRef = useRef<HTMLDivElement>(null);
 
@@ -81,15 +84,32 @@ export default function HomePage() {
   }, []);
 
   useEffect(() => {
-    const supabase = createClient();
-    supabase
-      .from('albums')
-      .select('id,title,slug,cover_url,created_at,year')
-      .eq('is_public', true)
-      .order('created_at', { ascending: false })
-      .limit(3)
-      .then(({ data }) => { if (data) setRecentAlbums(data as Album[]); });
-  }, []);
+    let cancelled = false;
+    setAlbumsFading(true);
+
+    const timeout = setTimeout(async () => {
+      const supabase = createClient();
+      const baseQuery = supabase
+        .from('albums')
+        .select('id,title,slug,cover_url,created_at,year')
+        .eq('is_public', true);
+      const filteredQuery = mode === 'day'
+        ? baseQuery.or('is_day.is.null,is_day.eq.true')
+        : baseQuery.or('is_day.is.null,is_day.eq.false');
+      const { data } = await filteredQuery
+        .order('created_at', { ascending: false })
+        .limit(3);
+      if (!cancelled) {
+        if (data) setRecentAlbums(data as Album[]);
+        setAlbumsFading(false);
+      }
+    }, 300);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timeout);
+    };
+  }, [mode]);
 
   useEffect(() => {
     const el = collageRef.current;
@@ -203,7 +223,7 @@ export default function HomePage() {
           priority
           style={{ objectFit: 'cover', objectPosition: 'center' }}
         />
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(0deg,rgba(8,8,8,0.95) 0%,rgba(8,8,8,0.18) 50%,transparent 100%)' }} />
+        <div style={{ position: 'absolute', inset: 0, background: mode === 'day' ? 'linear-gradient(0deg,rgba(8,8,8,0.75) 0%,rgba(8,8,8,0.12) 50%,transparent 100%)' : 'linear-gradient(0deg,rgba(8,8,8,0.95) 0%,rgba(8,8,8,0.18) 50%,transparent 100%)' }} />
 
         <div style={{ position: 'relative', zIndex: 2, padding: 'clamp(2rem,5vw,5rem)', maxWidth: '820px' }}>
           <h1
@@ -214,7 +234,7 @@ export default function HomePage() {
               fontStyle:     'italic',
               lineHeight:    0.92,
               letterSpacing: '-0.01em',
-              color:         'var(--text)',
+              color:         '#E8E4DC',
               animation:     heroReady ? 'fadeInUp 0.9s cubic-bezier(0.16,1,0.3,1) 0.05s both' : 'none',
               opacity:       heroReady ? undefined : 0,
             }}
@@ -226,7 +246,7 @@ export default function HomePage() {
 
           <p style={{
             marginTop: '1.5rem', fontSize: '0.7rem', letterSpacing: '0.22em',
-            color: 'var(--muted)',
+            color: 'rgba(232,228,220,0.6)',
             animation: heroReady ? 'fadeInUp 0.9s cubic-bezier(0.16,1,0.3,1) 0.22s both' : 'none',
             opacity:   heroReady ? undefined : 0,
           }}>
@@ -250,8 +270,8 @@ export default function HomePage() {
           animation: heroReady ? 'fadeIn 1s ease 0.7s both' : 'none',
           opacity:   heroReady ? undefined : 0,
         }}>
-          <span style={{ fontSize: '0.58rem', letterSpacing: '0.18em', color: 'var(--muted)', writingMode: 'vertical-rl' }}>{t.home.scroll}</span>
-          <div style={{ width: '1px', height: '48px', background: 'linear-gradient(to bottom,var(--muted),transparent)' }} />
+          <span style={{ fontSize: '0.58rem', letterSpacing: '0.18em', color: 'rgba(232,228,220,0.5)', writingMode: 'vertical-rl' }}>{t.home.scroll}</span>
+          <div style={{ width: '1px', height: '48px', background: 'linear-gradient(to bottom,rgba(232,228,220,0.5),transparent)' }} />
         </div>
       </section>
 
@@ -295,7 +315,7 @@ export default function HomePage() {
                   const colonIdx = item.indexOf(' :');
                   return (
                     <li key={item} style={{ display: 'flex', gap: '0.85rem', alignItems: 'baseline' }}>
-                      <span style={{ color: 'var(--accent)', fontSize: '0.55rem', flexShrink: 0 }}>—</span>
+                      <span style={{ color: 'var(--accent-text)', fontSize: '0.55rem', flexShrink: 0 }}>—</span>
                       <span style={{ fontSize: '0.8rem', color: 'var(--muted)', lineHeight: 1.75 }}>
                         {colonIdx > -1 ? (
                           <><span style={{ color: 'var(--text)', fontWeight: 500 }}>{item.slice(0, colonIdx)}</span>{item.slice(colonIdx)}</>
@@ -318,13 +338,13 @@ export default function HomePage() {
                   fontSize:       '0.6rem',
                   letterSpacing:  '0.18em',
                   background:     '#111',
-                  color:          'var(--text)',
+                  color:          'var(--btn-text)',
                   border:         '1px solid var(--border)',
                   textDecoration: 'none',
                   transition:     'border-color 0.2s, color 0.2s',
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.22)'; e.currentTarget.style.color = '#fff'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border)';           e.currentTarget.style.color = 'var(--text)'; }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--btn-border)'; e.currentTarget.style.color = 'var(--btn-text)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border)';     e.currentTarget.style.color = 'var(--btn-text)'; }}
               >
                 {t.home.seeRates}
               </Link>
@@ -432,7 +452,7 @@ export default function HomePage() {
             <p style={{ fontSize: '0.62rem', letterSpacing: '0.22em', color: 'var(--muted)', marginBottom: '2.5rem' }}>{t.home.latestEvents}</p>
           </ScrollReveal>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0', transition: 'opacity 0.3s ease', opacity: albumsFading ? 0 : 1, willChange: albumsFading ? 'opacity' : 'auto' }}>
             {recentAlbums.map((album, i) => {
               const label = album.year
                 ? album.year
@@ -498,7 +518,7 @@ export default function HomePage() {
                       </span>
 
                       {/* Arrow */}
-                      <span style={{ fontSize: '0.9rem', color: 'var(--accent)', flexShrink: 0, transition: 'transform 0.2s' }} className="event-arrow">
+                      <span style={{ fontSize: '0.9rem', color: 'var(--accent-text)', flexShrink: 0, transition: 'transform 0.2s' }} className="event-arrow">
                         →
                       </span>
                     </div>
@@ -524,13 +544,13 @@ export default function HomePage() {
                   fontSize:       '0.6rem',
                   letterSpacing:  '0.18em',
                   background:     '#111',
-                  color:          'var(--text)',
+                  color:          'var(--btn-text)',
                   border:         '1px solid var(--border)',
                   textDecoration: 'none',
                   transition:     'border-color 0.2s, color 0.2s',
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.22)'; e.currentTarget.style.color = '#fff'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border)';           e.currentTarget.style.color = 'var(--text)'; }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--btn-border)'; e.currentTarget.style.color = 'var(--btn-text)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border)';     e.currentTarget.style.color = 'var(--btn-text)'; }}
               >
                 {t.home.seeAllAlbums}
               </Link>
@@ -546,7 +566,7 @@ export default function HomePage() {
           .prestations-grid { grid-template-columns: 1fr !important; }
           .prestations-grid > *:last-child { margin-top: 4rem; padding-bottom: 3.5rem; }
         }
-        .event-row:hover .event-title { color: var(--accent) !important; }
+        .event-row:hover .event-title { color: var(--accent-text) !important; }
         .event-row:hover .event-arrow { transform: translateX(4px); }
         .event-row:hover .event-thumb { transform: scale(1.08); }
 
@@ -595,7 +615,7 @@ function ctaStyle(variant: 'solid' | 'outline') {
     cursor:         'pointer',
     transition:     'all 0.25s ease',
     ...(variant === 'solid'
-      ? { background: 'var(--text)', color: '#080808' }
-      : { background: 'transparent', color: 'var(--text)', border: '1px solid rgba(255,255,255,0.3)' }),
+      ? { background: '#E8E4DC', color: '#080808' }
+      : { background: 'transparent', color: '#E8E4DC', border: '1px solid rgba(232,228,220,0.45)' }),
   } as const;
 }

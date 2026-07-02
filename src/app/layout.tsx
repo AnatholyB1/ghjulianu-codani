@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import { Cormorant_Garamond, Space_Grotesk } from 'next/font/google';
 import './globals.css';
 import SiteShell from '@/components/SiteShell';
+import ThemeProvider from '@/components/ThemeProvider';
+import WelcomeModalLoader from '@/components/WelcomeModalLoader';
 import { Analytics } from '@vercel/analytics/next';
 
 const cormorant = Cormorant_Garamond({
@@ -103,10 +105,30 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="fr">
+    <html lang="fr" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try {
+  var s = localStorage.getItem('day-night-storage');
+  if (s) {
+    var parsed = JSON.parse(s);
+    if (parsed && parsed.state && parsed.state.mode === 'day') {
+      document.documentElement.classList.add('day');
+    }
+  }
+} catch(e) {}`,
+          }}
+        />
+        <link rel="preload" as="video" href="/transitions/day-to-night.mp4" type="video/mp4" />
+        <link rel="preload" as="video" href="/transitions/night-to-day.mp4" type="video/mp4" />
+      </head>
       <body className={`${cormorant.variable} ${space.variable}`}>
-        <SiteShell>{children}</SiteShell>
-        <Analytics />
+        <ThemeProvider>
+          <SiteShell>{children}</SiteShell>
+          <WelcomeModalLoader />
+          <Analytics />
+        </ThemeProvider>
       </body>
     </html>
   );

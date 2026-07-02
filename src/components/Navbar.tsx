@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useLang } from '@/contexts/LanguageContext';
 import { useT }    from '@/hooks/useT';
+import DayNightToggle from '@/components/DayNightToggle';
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -45,11 +46,13 @@ export default function Navbar() {
           justifyContent: 'space-between',
           padding:    '0 2rem',
           transition: 'background 0.4s ease, border-color 0.4s ease',
-          background: scrolled ? 'rgba(8,8,8,0.92)' : 'transparent',
+          background: scrolled ? 'var(--navbar-scrolled-bg)' : 'transparent',
           borderBottom: scrolled ? '1px solid var(--border)' : '1px solid transparent',
           backdropFilter: scrolled ? 'blur(12px)' : 'none',
         }}
       >
+        {/* Day/Night Toggle */}
+        <DayNightToggle />
         {/* Logo / name */}
         <Link
           href="/"
@@ -85,7 +88,7 @@ export default function Navbar() {
                 style={{
                   fontSize:      '0.62rem',
                   letterSpacing: '0.14em',
-                  color:         active ? '#080808' : 'var(--accent)',
+                  color:         active ? '#080808' : 'var(--accent-text)',
                   textDecoration: 'none',
                   background:    active ? 'var(--accent)' : 'transparent',
                   border:        '1px solid var(--accent)',
@@ -100,7 +103,7 @@ export default function Navbar() {
                 }}
                 onMouseLeave={(e) => {
                   const el = e.currentTarget as HTMLElement;
-                  if (!active) { el.style.background = 'transparent'; el.style.color = 'var(--accent)'; }
+                  if (!active) { el.style.background = 'transparent'; el.style.color = 'var(--accent-text)'; }
                 }}
               >
                 {link.label}
@@ -114,12 +117,12 @@ export default function Navbar() {
                 style={{
                   fontSize:      '0.68rem',
                   letterSpacing: '0.14em',
-                  color:         active ? 'var(--accent)' : 'var(--text)',
+                  color:         active ? 'var(--accent-text)' : 'var(--text)',
                   textDecoration: 'none',
                   opacity:       active ? 1 : 0.7,
                   transition:    'color 0.2s, opacity 0.2s',
                   paddingBottom: '2px',
-                  borderBottom:  active ? '1px solid var(--accent)' : '1px solid transparent',
+                  borderBottom:  active ? '1px solid var(--accent-text)' : '1px solid transparent',
                 }}
                 onMouseEnter={(e) => {
                   if (!active) {
@@ -149,7 +152,7 @@ export default function Navbar() {
                   cursor:        'pointer',
                   fontSize:      '0.62rem',
                   letterSpacing: '0.14em',
-                  color:         lang === l ? 'var(--accent)' : 'rgba(122,122,116,0.7)',
+                  color:         lang === l ? 'var(--accent-text)' : 'rgba(122,122,116,0.7)',
                   fontFamily:    'var(--font-space), sans-serif',
                   fontWeight:    lang === l ? 600 : 400,
                   padding:       '3px 8px',
@@ -200,7 +203,7 @@ export default function Navbar() {
         </button>
       </header>
 
-      {/* Mobile menu overlay */}
+      {/* Mobile menu overlay — always dark background, accent reads fine */}
       <div
         style={{
           position:   'fixed',
@@ -228,7 +231,7 @@ export default function Navbar() {
                 fontFamily:    'var(--font-space), sans-serif',
                 fontSize:      '0.65rem',
                 letterSpacing: '0.16em',
-                color:         mActive ? '#080808' : 'var(--accent)',
+                color:         mActive ? '#080808' : '#c8a97e',
                 textDecoration: 'none',
                 background:    mActive ? 'var(--accent)' : 'transparent',
                 border:        '1px solid var(--accent)',
@@ -242,7 +245,7 @@ export default function Navbar() {
                 fontSize:      'clamp(1.6rem, 6vw, 2.4rem)',
                 fontStyle:     'italic',
                 letterSpacing: '0.05em',
-                color:         mActive ? 'var(--accent)' : 'var(--text)',
+                color:         mActive ? '#c8a97e' : '#E8E4DC',
                 textDecoration: 'none',
                 opacity:       menuOpen ? 1 : 0,
                 transform:     menuOpen ? 'translateY(0)' : 'translateY(20px)',
@@ -262,8 +265,8 @@ export default function Navbar() {
               onClick={() => setLang(l)}
               style={{
                 background:    lang === l ? 'var(--accent)' : 'transparent',
-                border:        '1px solid var(--border)',
-                color:         lang === l ? '#080808' : 'var(--muted)',
+                border:        '1px solid rgba(255,255,255,0.12)',
+                color:         lang === l ? '#080808' : '#7a7a74',
                 cursor:        'pointer',
                 fontSize:      '0.65rem',
                 letterSpacing: '0.14em',

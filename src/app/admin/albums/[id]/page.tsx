@@ -3,6 +3,7 @@ import { notFound }                                         from 'next/navigatio
 import { updateAlbum, deleteAlbum, regenerateAccessKey } from '../../actions';
 import type { Category }                                     from '@/lib/db.types';
 import Link                                                 from 'next/link';
+import { Sun, Moon }                                        from 'lucide-react';
 import ConfirmButton                                        from '../../_components/ConfirmButton';
 import ImageUploadField                                     from '../../_components/ImageUploadField';
 import AddAlbumPhotoForm                                    from '../../_components/AddAlbumPhotoForm';
@@ -96,6 +97,25 @@ export default async function EditAlbumPage({ params }: { params: Promise<{ id: 
                 </label>
               </div>
             </Row>
+            <Row label="MODE JOUR/NUIT">
+              <div style={{ display: 'flex', gap: '1.5rem' }}>
+                <label style={radioLabelSm}>
+                  <input type="radio" name="is_day" value="true" defaultChecked={album.is_day === true} />
+                  <Sun size={10} style={{ color: '#c8a97e' }} />
+                  <span>JOUR</span>
+                </label>
+                <label style={radioLabelSm}>
+                  <input type="radio" name="is_day" value="false" defaultChecked={album.is_day === false} />
+                  <Moon size={10} style={{ color: '#8090b0' }} />
+                  <span>NUIT</span>
+                </label>
+                <label style={radioLabelSm}>
+                  <input type="radio" name="is_day" value="" defaultChecked={album.is_day === null} />
+                  <span style={{ color: '#7a7a74' }}>—</span>
+                  <span>NON TAGUÉ</span>
+                </label>
+              </div>
+            </Row>
             <button type="submit" style={btnPrimary}>ENREGISTRER</button>
           </form>
 
@@ -119,7 +139,7 @@ export default async function EditAlbumPage({ params }: { params: Promise<{ id: 
           <AddAlbumPhotoForm albumId={id} />
 
           {/* Drag-to-reorder photo grid */}
-          <DraggablePhotoGrid photos={photos ?? []} albumId={id} />
+          <DraggablePhotoGrid photos={photos ?? []} albumId={id} albumIsDay={album.is_day} />
         </div>
       </div>
     </>
@@ -145,4 +165,5 @@ const inputS:     React.CSSProperties = { width: '100%', background: 'transparen
 const btnPrimary: React.CSSProperties = { background: '#E8E4DC', color: '#080808', border: 'none', padding: '0.7rem 1.2rem', fontSize: '0.62rem', letterSpacing: '0.14em', cursor: 'pointer', fontFamily: 'inherit' };
 const btnOutline: React.CSSProperties = { background: 'transparent', border: '1px solid rgba(255,255,255,0.15)', color: '#E8E4DC', padding: '0.35rem 0.8rem', fontSize: '0.62rem', letterSpacing: '0.1em', cursor: 'pointer', fontFamily: 'inherit', textDecoration: 'none', display: 'inline-block' };
 const btnDelete:  React.CSSProperties = { background: 'transparent', border: '1px solid rgba(200,80,80,0.3)', color: '#e07070', padding: '0.35rem 0.8rem', fontSize: '0.62rem', letterSpacing: '0.1em', cursor: 'pointer', fontFamily: 'inherit' };
-const radioLabel: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.7rem', color: '#E8E4DC', cursor: 'pointer', letterSpacing: '0.1em' };
+const radioLabel:   React.CSSProperties = { display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.7rem', color: '#E8E4DC', cursor: 'pointer', letterSpacing: '0.1em' };
+const radioLabelSm: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.62rem', color: '#E8E4DC', cursor: 'pointer', letterSpacing: '0.1em' };

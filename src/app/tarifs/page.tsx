@@ -31,7 +31,7 @@ export default function TarifsPage() {
           </h1>
           <p style={{ marginTop: '1.2rem', fontSize: '0.8rem', color: 'var(--muted)', maxWidth: '480px', lineHeight: 1.8 }}>
             {tr.desc}{' '}
-            <Link href="/contact" style={{ color: 'var(--accent)', textDecoration: 'none', borderBottom: '1px solid var(--accent)', paddingBottom: '1px' }}>{tr.descLink}</Link>
+            <Link href="/contact" style={{ color: 'var(--accent-text)', textDecoration: 'none', borderBottom: '1px solid var(--accent-text)', paddingBottom: '1px' }}>{tr.descLink}</Link>
             {' '}{tr.descEnd}
           </p>
         </ScrollReveal>
@@ -56,17 +56,17 @@ export default function TarifsPage() {
             }}>
               <div>
                 {badge
-                  ? <p style={{ fontSize: '0.5rem', letterSpacing: '0.22em', color: 'var(--accent)', marginBottom: '0.7rem', background: 'rgba(200,169,126,0.12)', border: '1px solid rgba(200,169,126,0.3)', borderRadius: '2px', display: 'inline-block', padding: '2px 8px', boxShadow: '0 0 10px rgba(200,169,126,0.18)' }}>{badge}</p>
+                  ? <p style={{ fontSize: '0.5rem', letterSpacing: '0.22em', color: 'var(--accent-text)', marginBottom: '0.7rem', background: 'rgba(200,169,126,0.12)', border: '1px solid rgba(200,169,126,0.3)', borderRadius: '2px', display: 'inline-block', padding: '2px 8px', boxShadow: '0 0 10px rgba(200,169,126,0.18)' }}>{badge}</p>
                   : <p style={{ fontSize: '0.5rem', letterSpacing: '0.2em', color: 'transparent', marginBottom: '0.7rem', userSelect: 'none' }}>·</p>
                 }
                 <h2 style={{ fontFamily: 'var(--font-cormorant),serif', fontSize: 'clamp(2rem,4vw,3rem)', fontStyle: 'italic', fontWeight: 300, color: 'var(--text)', lineHeight: 1, marginBottom: '1rem' }}>{p.id}</h2>
-                <p style={{ fontSize: '0.82rem', letterSpacing: '0.06em', color: 'var(--accent)', marginBottom: '0.25rem', fontFamily: 'var(--font-cormorant),serif', fontStyle: 'italic' }}>{p.photos}</p>
+                <p style={{ fontSize: '0.82rem', letterSpacing: '0.06em', color: 'var(--accent-text)', marginBottom: '0.25rem', fontFamily: 'var(--font-cormorant),serif', fontStyle: 'italic' }}>{p.photos}</p>
                 <p style={{ fontSize: '0.72rem', letterSpacing: '0.05em', color: 'var(--muted)', fontFamily: 'var(--font-cormorant),serif' }}>{p.duration}</p>
               </div>
               <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.6rem', paddingTop: mobile ? '0' : '1.8rem' }}>
                 {p.features.map((f) => (
                   <li key={f} style={{ fontSize: '0.72rem', color: 'var(--muted)', lineHeight: 1.6, display: 'flex', gap: '0.55rem' }}>
-                    <span style={{ color: 'var(--accent)', flexShrink: 0, marginTop: '0.05em' }}>—</span>{f}
+                    <span style={{ color: 'var(--accent-text)', flexShrink: 0, marginTop: '0.05em' }}>—</span>{f}
                   </li>
                 ))}
               </ul>
@@ -74,7 +74,7 @@ export default function TarifsPage() {
                 <p style={{ fontFamily: 'var(--font-cormorant),serif', fontSize: 'clamp(1.4rem,2.5vw,1.8rem)', fontStyle: 'italic', fontWeight: 300, color: 'var(--text)', opacity: 0.5 }}>{tr.quote}</p>
                 <Link
                   href="/contact"
-                  style={{ fontSize: '0.58rem', letterSpacing: '0.18em', color: badge ? 'var(--accent)' : 'var(--text)', textDecoration: 'none', border: `1px solid ${badge ? 'var(--accent)' : 'var(--border)'}`, padding: '0.6rem 1.2rem', transition: 'opacity 0.2s', whiteSpace: 'nowrap' }}
+                  style={{ fontSize: '0.58rem', letterSpacing: '0.18em', color: badge ? 'var(--accent-text)' : 'var(--text)', textDecoration: 'none', border: `1px solid ${badge ? 'var(--accent)' : 'var(--border)'}`, padding: '0.6rem 1.2rem', transition: 'opacity 0.2s', whiteSpace: 'nowrap' }}
                 >
                   {tr.cta}
                 </Link>
@@ -100,7 +100,7 @@ export default function TarifsPage() {
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
               {tr.customFeatures.map((f) => (
                 <li key={f} style={{ fontSize: '0.72rem', color: 'var(--muted)', lineHeight: 1.6, display: 'flex', gap: '0.55rem' }}>
-                  <span style={{ color: 'var(--accent)', flexShrink: 0 }}>—</span>{f}
+                  <span style={{ color: 'var(--accent-text)', flexShrink: 0 }}>—</span>{f}
                 </li>
               ))}
             </ul>
@@ -109,7 +109,7 @@ export default function TarifsPage() {
                 <p style={{ fontFamily: 'var(--font-cormorant),serif', fontSize: 'clamp(1.4rem,2.5vw,1.8rem)', fontStyle: 'italic', fontWeight: 300, color: 'var(--text)', opacity: 0.5 }}>{tr.quote}</p>
                 <p style={{ fontSize: '0.72rem', color: 'var(--muted)', lineHeight: 1.7, fontStyle: 'italic', fontFamily: 'var(--font-cormorant),serif', textAlign: mobile ? 'left' : 'right', maxWidth: '200px' }}>{tr.customTagline}</p>
               </div>
-              <Link href="/contact" style={{ fontSize: '0.58rem', letterSpacing: '0.18em', color: 'var(--accent)', textDecoration: 'none', border: '1px solid var(--accent)', padding: '0.6rem 1.2rem', transition: 'opacity 0.2s', whiteSpace: 'nowrap' }}>
+              <Link href="/contact" style={{ fontSize: '0.58rem', letterSpacing: '0.18em', color: 'var(--accent-text)', textDecoration: 'none', border: '1px solid var(--accent)', padding: '0.6rem 1.2rem', transition: 'opacity 0.2s', whiteSpace: 'nowrap' }}>
                 {tr.cta}
               </Link>
             </div>

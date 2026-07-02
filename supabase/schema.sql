@@ -22,11 +22,17 @@ CREATE TABLE IF NOT EXISTS albums (
   location        TEXT,        -- lieu de l'événement
   cover_url       TEXT,        -- miniature (card)
   background_url  TEXT,        -- hero / fond
+  is_day          BOOLEAN     DEFAULT TRUE,
   is_public       BOOLEAN     DEFAULT TRUE,
   access_key      TEXT,        -- non-null si album privé
   sort_order      INTEGER     DEFAULT 0,
   created_at      TIMESTAMPTZ DEFAULT NOW(),
   updated_at      TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE TABLE IF NOT EXISTS photos (
+  id          UUID        DEFAULT gen_random_uuid() PRIMARY KEY,
+  is_day      BOOLEAN     DEFAULT TRUE,
+  created_at  TIMESTAMPTZ DEFAULT NOW
 );
 
 -- 3. Photos d'un album
@@ -37,6 +43,7 @@ CREATE TABLE IF NOT EXISTS album_photos (
   width       INTEGER     DEFAULT 1200,
   height      INTEGER     DEFAULT 800,
   alt         TEXT,
+  is_day      BOOLEAN     DEFAULT TRUE,
   sort_order  INTEGER     DEFAULT 0,
   created_at  TIMESTAMPTZ DEFAULT NOW()
 );
@@ -48,6 +55,7 @@ CREATE TABLE IF NOT EXISTS portfolio_photos (
   width       INTEGER     DEFAULT 1200,
   height      INTEGER     DEFAULT 800,
   alt         TEXT,
+  is_day      BOOLEAN     DEFAULT TRUE,
   sort_order  INTEGER     DEFAULT 0,
   created_at  TIMESTAMPTZ DEFAULT NOW()
 );

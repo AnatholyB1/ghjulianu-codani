@@ -17,6 +17,7 @@ export interface Album {
   location:       string | null;
   cover_url:      string | null;
   background_url: string | null;
+  is_day:         boolean | null;
   is_public:      boolean;
   access_key:     string | null;
   sort_order:     number;
@@ -34,6 +35,7 @@ export interface AlbumPhoto {
   width:      number;
   height:     number;
   alt:        string | null;
+  is_day:     boolean | null;
   sort_order: number;
   created_at: string;
 }
@@ -44,6 +46,7 @@ export interface PortfolioPhoto {
   width:      number;
   height:     number;
   alt:        string | null;
+  is_day:     boolean | null;
   sort_order: number;
   created_at: string;
 }
