@@ -56,6 +56,25 @@ Plans:
 
 **Goal**: Add animations, accessibility improvements, and refine user experience
 **Requirements**: ANI-01, ACC-01, ACC-02, ACC-03, PER-01, PER-02, PER-03
+**Plans:** 7 plans
+Plans:
+
+**Wave 1** *(parallel — no cross-dependencies)*
+
+- [ ] 04-01-PLAN.md — Hydration flash fix + iconSwap keyframe + prefers-reduced-motion CSS + prefersReducedMotion utility
+- [ ] 04-02-PLAN.md — Higgsfield AI video generation: day-to-night.mp4 + night-to-day.mp4
+- [ ] 04-03-PLAN.md — Content fade animations: PortfolioGrid, AlbumsDragTrack, page.tsx recentAlbums
+
+**Wave 2** *(depends on 04-01 + 04-02)*
+
+- [ ] 04-04-PLAN.md — Toggle icon animation + VideoTransitionOverlay + DayNightToggle wiring
+- [ ] 04-05-PLAN.md — WelcomeModal component + layout.tsx dynamic import
+
+**Wave 3** *(depends on Wave 2 completion)*
+
+- [ ] 04-06-PLAN.md — Accessibility hardening: ARIA verification, focus trap, keyboard nav, contrast check
+- [ ] 04-07-PLAN.md — Performance validation: EXPLAIN ANALYZE + bundle size delta
+
 **Success Criteria**:
 
 1. Smooth animated transitions when switching between modes (300-500ms)
