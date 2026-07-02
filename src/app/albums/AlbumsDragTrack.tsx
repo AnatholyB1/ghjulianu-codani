@@ -1,102 +1,89 @@
 'use client';
 
-import Link     from 'next/link';
+import Link from 'next/link';
 import { useState, useRef, useEffect } from 'react';
 import type { Album, Category } from '@/lib/db.types';
 import { useT } from '@/hooks/useT';
 import { createClient } from '@/utils/supabase/client';
-import { useDayNight } from '@/hooks/useDayNight';
 
 type AlbumWithCat = Album & { category: Category | null };
 
 export default function AlbumsDragTrack() {
   const t = useT();
-  const { mode } = useDayNight();
-  const [albums, setAlbums] = useState<AlbumWithCat[]>([]);
-  const [cat, setCat] = useState<string>('all');
-  const [fading, setFading] = useState(false);
-  const trackRef    = useRef<HTMLDivElement>(null);
-  const hasDragged  = useRef(false);
-  const imgTargetRef = useRef(0);
-  const imgCurrentRef = useRef(0);
-  const rafRef = useRef<number>(0);
+  const [allAlbums, setAllAlbums] = useState<AlbumWithCat[]>([]);
+  const [loading, setLoading]     = useState(true);
+  const [nightCat, setNightCat]   = useState<string>('all');
+  const [dayCat, setDayCat]       = useState<string>('all');
 
-  /* Card gradient: dark scrim in night mode, light scrim in day mode.
-     Text uses var(--text) which is light in night (#E8E4DC) and dark in day (#1a1a1a),
-     so the scrim must match: dark on dark-bg, light on light-bg. */
-  const cardGradient = mode === 'day'
-    ? 'linear-gradient(0deg,rgba(250,250,250,0.88) 0%,transparent 55%)'
-    : 'linear-gradient(0deg,rgba(8,8,8,0.8) 0%,transparent 55%)';
+  // Two independent tracks
+  const nightTrackRef = useRef<HTMLDivElement>(null);
+  const dayTrackRef   = useRef<HTMLDivElement>(null);
 
-  /* Fetch albums from Supabase filtered by day/night mode */
+  // Track locking: hover sets hovered, mousedown locks it for the drag duration
+  const hoveredTrackRef = useRef<HTMLDivElement | null>(null);
+  const lockedTrackRef  = useRef<HTMLDivElement | null>(null);
+  const hasDragged      = useRef(false);
+
+  // Per-track image parallax state
+  const nightImgTarget  = useRef(0);
+  const nightImgCurrent = useRef(0);
+  const dayImgTarget    = useRef(0);
+  const dayImgCurrent   = useRef(0);
+
+  /* Fetch all albums on mount (no day/night filter — two rows handle split) */
   useEffect(() => {
-    let cancelled = false;
-    setFading(true);
+    const supabase = createClient();
+    supabase
+      .from('albums')
+      .select('*, category:categories(*)')
+      .order('sort_order', { ascending: false })
+      .then(({ data }) => {
+        setAllAlbums(data ?? []);
+        setLoading(false);
+      });
+  }, []);
 
-    if (trackRef.current) {
-      trackRef.current.style.transform = 'translate(0%, -50%)';
-      trackRef.current.dataset.percentage = '0';
-      trackRef.current.dataset.prevPercentage = '0';
-    }
+  /* Split by is_day — null appears in both rows */
+  const nightAlbums = allAlbums.filter((a) => a.is_day === false || a.is_day === null);
+  const dayAlbums   = allAlbums.filter((a) => a.is_day === true  || a.is_day === null);
 
-    const timeout = setTimeout(async () => {
-      const supabase = createClient();
-      let query = supabase
-        .from('albums')
-        .select('*, category:categories(*)')
-        .order('sort_order', { ascending: false });
-
-      if (mode === 'day') {
-        query = query.or('is_day.is.null,is_day.eq.true');
-      } else {
-        query = query.or('is_day.is.null,is_day.eq.false');
-      }
-
-      const { data } = await query;
-      if (!cancelled) {
-        setAlbums(data ?? []);
-        setFading(false);
-      }
-    }, 300);
-
-    return () => {
-      cancelled = true;
-      clearTimeout(timeout);
-    };
-  }, [mode]);
-
-  const filtered = cat === 'all'
-    ? albums
-    : albums.filter((a) => a.category?.slug === cat);
-
-  const categories = Array.from(
-    new Map(
-      albums.filter((a) => a.category).map((a) => [a.category!.slug, a.category!])
-    ).values()
+  const nightCategories = Array.from(
+    new Map(nightAlbums.filter((a) => a.category).map((a) => [a.category!.slug, a.category!])).values()
+  );
+  const dayCategories = Array.from(
+    new Map(dayAlbums.filter((a) => a.category).map((a) => [a.category!.slug, a.category!])).values()
   );
 
-  /* ── Exact reference JS (camillemormal.com) ─────────────────
-     window.on* assignment: guarantees no other listener clashes.
-  ─────────────────────────────────────────────────────────────*/
-  useEffect(() => {
-    const track = trackRef.current;
-    if (!track) return;
+  const filteredNight = nightCat === 'all' ? nightAlbums : nightAlbums.filter((a) => a.category?.slug === nightCat);
+  const filteredDay   = dayCat   === 'all' ? dayAlbums   : dayAlbums.filter((a) => a.category?.slug === dayCat);
 
+  /* ── Drag handlers ──────────────────────────────────────────── */
+  useEffect(() => {
     const handleOnDown = (clientX: number) => {
+      // Lock to whatever track is currently hovered
+      lockedTrackRef.current = hoveredTrackRef.current;
+      const track = lockedTrackRef.current;
+      if (!track) return;
       track.dataset.mouseDownAt = String(clientX);
       hasDragged.current = false;
     };
 
     const handleOnUp = () => {
-      track.dataset.mouseDownAt    = '0';
-      track.dataset.prevPercentage = track.dataset.percentage ?? '0';
+      const track = lockedTrackRef.current;
+      if (track) {
+        track.dataset.prevPercentage = track.dataset.percentage ?? '0';
+        track.dataset.mouseDownAt    = '0';
+      }
+      lockedTrackRef.current = null;
     };
 
     const handleOnMove = (clientX: number) => {
-      if (track.dataset.mouseDownAt === '0') return;
+      const track = lockedTrackRef.current;
+      if (!track || !track.dataset.mouseDownAt || track.dataset.mouseDownAt === '0') return;
 
-      const mouseDelta                  = parseFloat(track.dataset.mouseDownAt!) - clientX;
-      const maxDelta                    = window.innerWidth / 2;
+      const mouseDelta = parseFloat(track.dataset.mouseDownAt) - clientX;
+      // maxDelta = full window width → half the speed of the original (/2)
+      const maxDelta                    = window.innerWidth;
       const percentage                  = (mouseDelta / maxDelta) * -100;
       const nextPercentageUnconstrained = parseFloat(track.dataset.prevPercentage ?? '0') + percentage;
       const nextPercentage              = Math.max(Math.min(nextPercentageUnconstrained, 0), -100);
@@ -104,13 +91,17 @@ export default function AlbumsDragTrack() {
       if (Math.abs(mouseDelta) > 4) hasDragged.current = true;
 
       track.dataset.percentage = String(nextPercentage);
-
       track.animate(
         { transform: `translate(${nextPercentage}%, -50%)` },
         { duration: 1200, fill: 'forwards' }
       );
 
-      imgTargetRef.current = nextPercentage * 0.25;
+      const imgTarget = nextPercentage * 0.25;
+      if (track === nightTrackRef.current) {
+        nightImgTarget.current = imgTarget;
+      } else {
+        dayImgTarget.current = imgTarget;
+      }
     };
 
     window.onmousedown  = (e) => handleOnDown(e.clientX);
@@ -120,18 +111,27 @@ export default function AlbumsDragTrack() {
     window.onmousemove  = (e) => handleOnMove(e.clientX);
     window.ontouchmove  = (e) => handleOnMove(e.touches[0].clientX);
 
-    /* rAF loop — smooth lerp for image parallax, no WAAPI conflicts */
+    /* rAF loop — smooth lerp for image parallax on both tracks */
+    let rafId: number;
     const tick = () => {
-      imgCurrentRef.current += (imgTargetRef.current - imgCurrentRef.current) * 0.12;
-      const track = trackRef.current;
-      if (track) {
-        for (const img of track.getElementsByClassName('image') as HTMLCollectionOf<HTMLElement>) {
-          (img as HTMLElement).style.transform = `translateX(${imgCurrentRef.current}%)`;
+      nightImgCurrent.current += (nightImgTarget.current - nightImgCurrent.current) * 0.12;
+      dayImgCurrent.current   += (dayImgTarget.current   - dayImgCurrent.current)   * 0.12;
+
+      const nTrack = nightTrackRef.current;
+      const dTrack = dayTrackRef.current;
+      if (nTrack) {
+        for (const img of nTrack.getElementsByClassName('image') as HTMLCollectionOf<HTMLElement>) {
+          img.style.transform = `translateX(${nightImgCurrent.current}%)`;
         }
       }
-      rafRef.current = requestAnimationFrame(tick);
+      if (dTrack) {
+        for (const img of dTrack.getElementsByClassName('image') as HTMLCollectionOf<HTMLElement>) {
+          img.style.transform = `translateX(${dayImgCurrent.current}%)`;
+        }
+      }
+      rafId = requestAnimationFrame(tick);
     };
-    rafRef.current = requestAnimationFrame(tick);
+    rafId = requestAnimationFrame(tick);
 
     return () => {
       window.onmousedown  = null;
@@ -140,127 +140,191 @@ export default function AlbumsDragTrack() {
       window.ontouchend   = null;
       window.onmousemove  = null;
       window.ontouchmove  = null;
-      cancelAnimationFrame(rafRef.current);
+      cancelAnimationFrame(rafId);
     };
   }, []);
 
   /* Reset track position when category changes */
   useEffect(() => {
-    const track = trackRef.current;
+    const track = nightTrackRef.current;
     if (!track) return;
     track.dataset.mouseDownAt    = '0';
     track.dataset.prevPercentage = '0';
     track.dataset.percentage     = '0';
     track.animate({ transform: 'translate(0%, -50%)' }, { duration: 0, fill: 'forwards' });
-    imgTargetRef.current  = 0;
-    imgCurrentRef.current = 0;
-  }, [cat]);
+    nightImgTarget.current  = 0;
+    nightImgCurrent.current = 0;
+  }, [nightCat]);
+
+  useEffect(() => {
+    const track = dayTrackRef.current;
+    if (!track) return;
+    track.dataset.mouseDownAt    = '0';
+    track.dataset.prevPercentage = '0';
+    track.dataset.percentage     = '0';
+    track.animate({ transform: 'translate(0%, -50%)' }, { duration: 0, fill: 'forwards' });
+    dayImgTarget.current  = 0;
+    dayImgCurrent.current = 0;
+  }, [dayCat]);
+
+  /* ── Shared row renderer ─────────────────────────────────────── */
+  function renderRow(
+    trackRef: React.RefObject<HTMLDivElement | null>,
+    albums: AlbumWithCat[],
+    categories: Category[],
+    cat: string,
+    setCat: (v: string) => void,
+    sectionLabel: string,
+  ) {
+    return (
+      <div
+        onMouseEnter={() => { hoveredTrackRef.current = trackRef.current; }}
+        onTouchStart={() => { hoveredTrackRef.current = trackRef.current; }}
+        style={{
+          height:           'calc((100vh - var(--navbar-h)) / 2)',
+          width:            '100vw',
+          overflow:         'hidden',
+          background:       'var(--bg)',
+          position:         'relative',
+          userSelect:       'none',
+          WebkitUserSelect: 'none',
+          touchAction:      'none',
+          borderBottom:     '1px solid var(--border)',
+        }}
+      >
+        {/* Section label + category filters */}
+        <div style={{
+          position: 'absolute',
+          top:      'clamp(0.6rem,1.2vw,1rem)',
+          left:     'clamp(1.5rem,3vw,3rem)',
+          zIndex:   10,
+          display:  'flex',
+          alignItems: 'center',
+          gap:      '1rem',
+        }}>
+          <span style={{ fontSize: '0.5rem', letterSpacing: '0.22em', color: 'var(--muted)', flexShrink: 0 }}>
+            {sectionLabel}
+          </span>
+          <div style={{ display: 'flex', gap: '0.2rem' }}>
+            <button
+              onMouseDown={(e) => e.stopPropagation()}
+              onClick={() => setCat('all')}
+              style={{
+                background:    cat === 'all' ? 'var(--text)' : 'transparent',
+                color:         cat === 'all' ? 'var(--bg)'   : 'var(--muted)',
+                border:        '1px solid var(--border)',
+                padding:       '0.28rem 0.8rem',
+                fontSize:      '0.55rem',
+                letterSpacing: '0.14em',
+                cursor:        'pointer',
+                transition:    'all 0.25s',
+              }}
+            >
+              {t.albums.all}
+            </button>
+            {categories.map((c) => (
+              <button
+                key={c.slug}
+                onMouseDown={(e) => e.stopPropagation()}
+                onClick={() => setCat(c.slug)}
+                style={{
+                  background:    cat === c.slug ? 'var(--text)' : 'transparent',
+                  color:         cat === c.slug ? 'var(--bg)'   : 'var(--muted)',
+                  border:        '1px solid var(--border)',
+                  padding:       '0.28rem 0.8rem',
+                  fontSize:      '0.55rem',
+                  letterSpacing: '0.14em',
+                  cursor:        'pointer',
+                  transition:    'all 0.25s',
+                }}
+              >
+                {c.name.toUpperCase()}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Image track */}
+        <div
+          ref={trackRef}
+          data-mouse-down-at="0"
+          data-prev-percentage="0"
+          data-percentage="0"
+          style={{
+            display:   'flex',
+            gap:       '2vmin',
+            position:  'absolute',
+            left:      '50%',
+            top:       '50%',
+            transform: 'translate(0%, -50%)',
+          }}
+        >
+          {albums.length === 0 ? (
+            <div style={{ color: 'var(--muted)', fontSize: '0.62rem', letterSpacing: '0.1em', padding: '2rem 1rem', whiteSpace: 'nowrap' }}>
+              Aucun album disponible
+            </div>
+          ) : (
+            albums.map((album) => (
+              <Link
+                key={album.id}
+                href={`/albums/${album.slug}`}
+                draggable={false}
+                onClick={(e) => { if (hasDragged.current) e.preventDefault(); }}
+                style={{
+                  position:      'relative',
+                  flexShrink:    0,
+                  display:       'block',
+                  overflow:      'hidden',
+                  textDecoration: 'none',
+                  /* 9:16 portrait cover — height fills most of the row */
+                  height:        'calc((100vh - var(--navbar-h)) / 2 - 4.5rem)',
+                  aspectRatio:   '9 / 16',
+                }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  className="image"
+                  src={album.cover_url ?? 'https://picsum.photos/seed/default/600/900'}
+                  alt={album.title}
+                  draggable={false}
+                  style={{
+                    width:         '100%',
+                    height:        '100%',
+                    objectFit:     'cover',
+                    objectPosition: 'center',
+                    transform:     'translateX(0%)',
+                    pointerEvents: 'none',
+                    willChange:    'transform',
+                    display:       'block',
+                  }}
+                />
+                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(0deg,rgba(8,8,8,0.75) 0%,transparent 55%)', pointerEvents: 'none' }} />
+                <div style={{ position: 'absolute', bottom: '0.8rem', left: '0.8rem', right: '0.8rem', pointerEvents: 'none' }}>
+                  <h2 style={{ fontFamily: 'var(--font-cormorant),serif', fontSize: 'clamp(0.85rem,2vmin,1.3rem)', fontStyle: 'italic', fontWeight: 400, color: '#E8E4DC', lineHeight: 1.1, margin: 0 }}>
+                    {album.title}
+                  </h2>
+                  {!album.is_public && <span style={{ fontSize: '0.7rem', color: '#c8a97e' }}>🔒</span>}
+                </div>
+              </Link>
+            ))
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div style={{ height: 'calc(100vh - var(--navbar-h))', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)', color: 'var(--muted)', fontSize: '0.62rem', letterSpacing: '0.18em' }}>
+        CHARGEMENT…
+      </div>
+    );
+  }
 
   return (
-    <div style={{
-      height:           'calc(100vh - var(--navbar-h))',
-      width:            '100vw',
-      overflow:         'hidden',
-      background:       'var(--bg)',
-      position:         'relative',
-      userSelect:       'none',
-      WebkitUserSelect: 'none',
-      touchAction:      'none',
-      transition:       'opacity 0.3s ease',
-      opacity:          fading ? 0 : 1,
-      willChange:       fading ? 'opacity' : 'auto',
-    }}>
-      <div
-        aria-live="polite"
-        aria-atomic="true"
-        style={{
-          position:   'absolute',
-          width:      1,
-          height:     1,
-          overflow:   'hidden',
-          clip:       'rect(0,0,0,0)',
-          whiteSpace: 'nowrap',
-        }}
-      >
-        {fading ? 'Chargement du contenu...' : `${albums.length} photos chargées`}
-      </div>
-
-      {/* Category filters */}
-      <div style={{ position: 'absolute', top: 'clamp(1.5rem,3vw,2.5rem)', left: 'clamp(1.5rem,3vw,3rem)', zIndex: 10, display: 'flex', gap: '0.2rem' }}>
-        <button
-          onMouseDown={(e) => e.stopPropagation()}
-          onClick={() => setCat('all')}
-          style={{ background: cat === 'all' ? 'var(--text)' : 'transparent', color: cat === 'all' ? 'var(--bg)' : 'var(--muted)', border: '1px solid var(--border)', padding: '0.45rem 1.2rem', fontSize: '0.62rem', letterSpacing: '0.14em', cursor: 'pointer', transition: 'all 0.25s' }}
-        >
-          {t.albums.all}
-        </button>
-        {categories.map((c) => (
-          <button
-            key={c.slug}
-            onMouseDown={(e) => e.stopPropagation()}
-            onClick={() => setCat(c.slug)}
-            style={{ background: cat === c.slug ? 'var(--text)' : 'transparent', color: cat === c.slug ? 'var(--bg)' : 'var(--muted)', border: '1px solid var(--border)', padding: '0.45rem 1.2rem', fontSize: '0.62rem', letterSpacing: '0.14em', cursor: 'pointer', transition: 'all 0.25s' }}
-          >
-            {c.name.toUpperCase()}
-          </button>
-        ))}
-      </div>
-
-      <p style={{ position: 'absolute', bottom: 'clamp(1.5rem,3vw,2.5rem)', left: '50%', transform: 'translateX(-50%)', zIndex: 10, fontSize: '0.58rem', letterSpacing: '0.18em', color: 'var(--muted)', opacity: 0.45, pointerEvents: 'none', whiteSpace: 'nowrap' }}>
-        {t.albums.drag}
-      </p>
-
-      {/* Image track — mirrors reference #image-track exactly */}
-      <div
-        ref={trackRef}
-        data-mouse-down-at="0"
-        data-prev-percentage="0"
-        data-percentage="0"
-        style={{
-          display:   'flex',
-          gap:       '4vmin',
-          position:  'absolute',
-          left:      '50%',
-          top:       '50%',
-          transform: 'translate(0%, -50%)',
-        }}
-      >
-        {filtered.length === 0 ? (
-          <div className="text-center py-8 text-sm opacity-60">
-            No albums available in this mode yet
-          </div>
-        ) : (
-          filtered.map((album) => (
-            <Link
-              key={album.id}
-              href={`/albums/${album.slug}`}
-              draggable={false}
-              onClick={(e) => { if (hasDragged.current) e.preventDefault(); }}
-              style={{ position: 'relative', flexShrink: 0, display: 'block', width: '48vmin', height: '58vmin', overflow: 'hidden', textDecoration: 'none' }}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                className="image album-image"
-                src={album.cover_url ?? 'https://picsum.photos/seed/default/600/900'}
-                alt={album.title}
-                draggable={false}
-                style={{
-                  transform:     'translateX(0%)',
-                  pointerEvents: 'none',
-                  willChange:    'transform',
-                }}
-              />
-              <div style={{ position: 'absolute', inset: 0, background: cardGradient, pointerEvents: 'none' }} />
-              <div style={{ position: 'absolute', bottom: '1.2rem', left: '1.2rem', right: '1.2rem', pointerEvents: 'none' }}>
-                <h2 style={{ fontFamily: 'var(--font-cormorant),serif', fontSize: 'clamp(1rem,2.5vmin,1.6rem)', fontStyle: 'italic', fontWeight: 400, color: 'var(--text)', lineHeight: 1.1, margin: 0 }}>
-                  {album.title}
-                </h2>
-                {!album.is_public && <span style={{ fontSize: '0.75rem', color: '#c8a97e' }}>🔒</span>}
-              </div>
-            </Link>
-          ))
-        )}
-      </div>
+    <div style={{ height: 'calc(100vh - var(--navbar-h))', width: '100vw', overflow: 'hidden', background: 'var(--bg)' }}>
+      {renderRow(nightTrackRef, filteredNight, nightCategories, nightCat, setNightCat, 'NUIT')}
+      {renderRow(dayTrackRef,   filteredDay,   dayCategories,   dayCat,   setDayCat,   'JOUR')}
     </div>
   );
 }

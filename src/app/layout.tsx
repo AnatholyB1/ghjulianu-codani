@@ -3,7 +3,6 @@ import { Cormorant_Garamond, Space_Grotesk } from 'next/font/google';
 import './globals.css';
 import SiteShell from '@/components/SiteShell';
 import ThemeProvider from '@/components/ThemeProvider';
-import WelcomeModalLoader from '@/components/WelcomeModalLoader';
 import { Analytics } from '@vercel/analytics/next';
 
 const cormorant = Cormorant_Garamond({
@@ -110,11 +109,13 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html: `try {
-  var s = localStorage.getItem('day-night-storage');
-  if (s) {
-    var parsed = JSON.parse(s);
-    if (parsed && parsed.state && parsed.state.mode === 'day') {
-      document.documentElement.classList.add('day');
+  if (window.location.pathname === '/portfolio') {
+    var s = localStorage.getItem('day-night-storage');
+    if (s) {
+      var parsed = JSON.parse(s);
+      if (parsed && parsed.state && parsed.state.mode === 'day') {
+        document.documentElement.classList.add('day');
+      }
     }
   }
 } catch(e) {}`,
@@ -126,7 +127,6 @@ export default function RootLayout({
       <body className={`${cormorant.variable} ${space.variable}`}>
         <ThemeProvider>
           <SiteShell>{children}</SiteShell>
-          <WelcomeModalLoader />
           <Analytics />
         </ThemeProvider>
       </body>

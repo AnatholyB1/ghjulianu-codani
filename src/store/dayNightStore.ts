@@ -11,7 +11,7 @@ interface DayNightState {
 export const useDayNightStore = create<DayNightState>()(
   persist(
     (set, get) => ({
-      mode: 'day',
+      mode: 'night',
       setMode: (mode) => {
         set({ mode });
         // Broadcast the change to other tabs

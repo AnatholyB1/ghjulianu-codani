@@ -89,14 +89,10 @@ export default function HomePage() {
 
     const timeout = setTimeout(async () => {
       const supabase = createClient();
-      const baseQuery = supabase
+      const { data } = await supabase
         .from('albums')
         .select('id,title,slug,cover_url,created_at,year')
-        .eq('is_public', true);
-      const filteredQuery = mode === 'day'
-        ? baseQuery.or('is_day.is.null,is_day.eq.true')
-        : baseQuery.or('is_day.is.null,is_day.eq.false');
-      const { data } = await filteredQuery
+        .eq('is_public', true)
         .order('created_at', { ascending: false })
         .limit(3);
       if (!cancelled) {
@@ -109,7 +105,7 @@ export default function HomePage() {
       cancelled = true;
       clearTimeout(timeout);
     };
-  }, [mode]);
+  }, []);
 
   useEffect(() => {
     const el = collageRef.current;

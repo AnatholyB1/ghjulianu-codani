@@ -20,7 +20,7 @@ export default function VideoTransitionOverlay({ src, onComplete, message }: Vid
     return () => cancelAnimationFrame(t);
   }, []);
 
-  // Typewriter: start after fade-in settles (400ms), then ~45ms/char
+  // Typewriter: start quickly (80ms), then ~12ms/char so it finishes well before video ends
   useEffect(() => {
     if (!message) return;
     let cancelled = false;
@@ -31,9 +31,9 @@ export default function VideoTransitionOverlay({ src, onComplete, message }: Vid
         i++;
         setTyped(message.slice(0, i));
         if (i >= message.length) clearInterval(tick);
-      }, 45);
+      }, 12);
       return () => clearInterval(tick);
-    }, 400);
+    }, 80);
     return () => { cancelled = true; clearTimeout(delay); };
   }, [message]);
 
@@ -57,6 +57,7 @@ export default function VideoTransitionOverlay({ src, onComplete, message }: Vid
         autoPlay
         muted
         playsInline
+        onCanPlay={(e) => { (e.target as HTMLVideoElement).playbackRate = 3; }}
         onEnded={handleEnded}
         onError={handleError}
         style={videoFill}
