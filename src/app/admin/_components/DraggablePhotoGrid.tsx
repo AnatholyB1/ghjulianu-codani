@@ -197,8 +197,8 @@ export default function DraggablePhotoGrid({ photos: initial, albumId, albumIsDa
                       aria-label="Définir un jour/nuit explicite"
                     >
                       {badgeState.value === true
-                        ? <Sun size={10} style={{ color: 'rgba(200,169,126,0.5)' }} />
-                        : <Moon size={10} style={{ color: 'rgba(120,140,180,0.5)' }} />
+                        ? <Sun size={10} style={{ color: 'rgba(200,169,126,0.75)' }} />
+                        : <Moon size={10} style={{ color: 'rgba(120,140,180,0.75)' }} />
                       }
                       <span style={{ fontSize: '0.58rem' }}>1</span>
                     </button>
@@ -280,8 +280,8 @@ const badgeInherited: React.CSSProperties = {
   position: 'absolute',
   bottom: 3,
   right: 3,
-  background: 'transparent',
-  border: '1px solid rgba(255,255,255,0.06)',
+  background: 'rgba(0,0,0,0.5)',
+  border: '1px solid rgba(255,255,255,0.2)',
   borderRadius: 2,
   padding: '2px 4px',
   fontSize: '0.58rem',
@@ -289,7 +289,7 @@ const badgeInherited: React.CSSProperties = {
   alignItems: 'center',
   gap: '0.25rem',
   cursor: 'pointer',
-  opacity: 0.7,
+  opacity: 0.85,
 }
 
 const badgeReset: React.CSSProperties = {

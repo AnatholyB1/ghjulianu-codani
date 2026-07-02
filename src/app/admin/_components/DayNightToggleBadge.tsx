@@ -82,6 +82,7 @@ const base: React.CSSProperties = {
 const btnNull: React.CSSProperties = {
   ...base,
   background: 'transparent',
+  border: '1px solid rgba(255,255,255,0.15)',
 }
 
 const pillDay: React.CSSProperties = {
