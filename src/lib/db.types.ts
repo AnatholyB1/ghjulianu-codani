@@ -35,6 +35,7 @@ export interface AlbumPhoto {
   width:      number;
   height:     number;
   alt:        string | null;
+  is_day:     boolean | null;
   sort_order: number;
   created_at: string;
 }
