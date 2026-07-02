@@ -28,12 +28,12 @@
 
 **Goal**: Enable users to mark photos and albums as day or night
 **Requirements**: PHO-01, PHO-02, PHO-03, ALB-01, ALB-02, ALB-03
-**Plans:** 5 plans
+**Plans:** 2/5 plans executed
 Plans:
 **Wave 1**
 
-- [ ] 03-01-PLAN.md — Schema migration: add is_day to album_photos + type update
-- [ ] 03-02-PLAN.md — Server Actions: 3 new + extend updateAlbum with is_day
+- [x] 03-01-PLAN.md — Schema migration: add is_day to album_photos + type update
+- [x] 03-02-PLAN.md — Server Actions: 3 new + extend updateAlbum with is_day
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
