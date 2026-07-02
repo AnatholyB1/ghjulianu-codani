@@ -56,7 +56,7 @@ Plans:
 
 **Goal**: Add animations, accessibility improvements, and refine user experience
 **Requirements**: ANI-01, ACC-01, ACC-02, ACC-03, PER-01, PER-02, PER-03
-**Plans:** 5/7 plans executed
+**Plans:** 7/7 plans executed ✅
 Plans:
 
 **Wave 1** *(parallel — no cross-dependencies)*
@@ -72,8 +72,8 @@ Plans:
 
 **Wave 3** *(depends on Wave 2 completion)*
 
-- [ ] 04-06-PLAN.md — Accessibility hardening: ARIA verification, focus trap, keyboard nav, contrast check
-- [ ] 04-07-PLAN.md — Performance validation: EXPLAIN ANALYZE + bundle size delta
+- [x] 04-06-PLAN.md — Accessibility hardening: ARIA verification, focus trap, keyboard nav, contrast check
+- [x] 04-07-PLAN.md — Performance validation: EXPLAIN ANALYZE + bundle size delta
 
 **Success Criteria**:
 
