@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useDayNight } from '@/hooks/useDayNight';
 import { Moon, Sun } from 'lucide-react';
 import { prefersReducedMotion } from '@/lib/prefersReducedMotion';
@@ -9,6 +9,8 @@ import VideoTransitionOverlay from '@/components/VideoTransitionOverlay';
 export default function DayNightToggle() {
   const { mode, toggleMode } = useDayNight();
   const [showOverlay, setShowOverlay] = useState(false);
+  // Capture transition values at click time — before React batches mode + overlay state
+  const pendingOverlay = useRef<{ src: string; message: string } | null>(null);
 
   // Determine which icon to show based on current mode
   const IsMoon = mode === 'night';
@@ -17,20 +19,19 @@ export default function DayNightToggle() {
   // Tooltip text based on current mode
   const tooltip = IsMoon ? 'Switch to day mode' : 'Switch to night mode';
 
-  // Video src determined from mode BEFORE toggle (current mode before switch)
-  const overlaySrc =
-    mode === 'day' ? '/transitions/day-to-night.mp4' : '/transitions/night-to-day.mp4';
-
-  const overlayMessage =
-    mode === 'day'
-      ? 'Passage en mode nuit — Retrouvez le nightlife dans Portfolio et Albums'
-      : 'Passage en mode jour — Retrouvez les shootings dans Portfolio et Albums';
-
   function handleToggle() {
     if (prefersReducedMotion()) {
       toggleMode();
       return;
     }
+    // Read mode NOW (before any state update) to get the correct src/message
+    pendingOverlay.current = {
+      src: mode === 'day' ? '/transitions/day-to-night.mp4' : '/transitions/night-to-day.mp4',
+      message:
+        mode === 'day'
+          ? 'Passage en mode nuit — Retrouvez le nightlife dans Portfolio et Albums'
+          : 'Passage en mode jour — Retrouvez les shootings dans Portfolio et Albums',
+    };
     setShowOverlay(true);
     toggleMode();
   }
@@ -84,10 +85,10 @@ export default function DayNightToggle() {
           <Icon size={20} strokeWidth={1.5} />
         </span>
       </button>
-      {showOverlay && (
+      {showOverlay && pendingOverlay.current && (
         <VideoTransitionOverlay
-          src={overlaySrc}
-          message={overlayMessage}
+          src={pendingOverlay.current.src}
+          message={pendingOverlay.current.message}
           onComplete={() => setShowOverlay(false)}
         />
       )}
