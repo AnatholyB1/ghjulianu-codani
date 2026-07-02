@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(gsd-new-milestone)",
+      "Skill(gsd-discuss-phase)",
+      "Skill(gsd-plan-phase)",
+      "Skill(gsd-execute-phase)",
+      "Bash(clear:*)"
+    ]
+  },
+  "remote": {
+    "defaultEnvironmentId": "env_01Jsc4r7S8xyNQ4Cf7seQuQp"
+  }
+}

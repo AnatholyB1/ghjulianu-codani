@@ -1,4 +1,4 @@
-'use client';
+﻿﻿'use client';
 
 import Image from 'next/image';
 import Link  from 'next/link';
@@ -223,7 +223,7 @@ export default function HomePage() {
           priority
           style={{ objectFit: 'cover', objectPosition: 'center' }}
         />
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(0deg,rgba(8,8,8,0.95) 0%,rgba(8,8,8,0.18) 50%,transparent 100%)' }} />
+        <div style={{ position: 'absolute', inset: 0, background: mode === 'day' ? 'linear-gradient(0deg,rgba(8,8,8,0.75) 0%,rgba(8,8,8,0.12) 50%,transparent 100%)' : 'linear-gradient(0deg,rgba(8,8,8,0.95) 0%,rgba(8,8,8,0.18) 50%,transparent 100%)' }} />
 
         <div style={{ position: 'relative', zIndex: 2, padding: 'clamp(2rem,5vw,5rem)', maxWidth: '820px' }}>
           <h1
@@ -234,7 +234,7 @@ export default function HomePage() {
               fontStyle:     'italic',
               lineHeight:    0.92,
               letterSpacing: '-0.01em',
-              color:         'var(--text)',
+              color:         '#E8E4DC',
               animation:     heroReady ? 'fadeInUp 0.9s cubic-bezier(0.16,1,0.3,1) 0.05s both' : 'none',
               opacity:       heroReady ? undefined : 0,
             }}
@@ -246,7 +246,7 @@ export default function HomePage() {
 
           <p style={{
             marginTop: '1.5rem', fontSize: '0.7rem', letterSpacing: '0.22em',
-            color: 'var(--muted)',
+            color: 'rgba(232,228,220,0.6)',
             animation: heroReady ? 'fadeInUp 0.9s cubic-bezier(0.16,1,0.3,1) 0.22s both' : 'none',
             opacity:   heroReady ? undefined : 0,
           }}>
@@ -270,8 +270,8 @@ export default function HomePage() {
           animation: heroReady ? 'fadeIn 1s ease 0.7s both' : 'none',
           opacity:   heroReady ? undefined : 0,
         }}>
-          <span style={{ fontSize: '0.58rem', letterSpacing: '0.18em', color: 'var(--muted)', writingMode: 'vertical-rl' }}>{t.home.scroll}</span>
-          <div style={{ width: '1px', height: '48px', background: 'linear-gradient(to bottom,var(--muted),transparent)' }} />
+          <span style={{ fontSize: '0.58rem', letterSpacing: '0.18em', color: 'rgba(232,228,220,0.5)', writingMode: 'vertical-rl' }}>{t.home.scroll}</span>
+          <div style={{ width: '1px', height: '48px', background: 'linear-gradient(to bottom,rgba(232,228,220,0.5),transparent)' }} />
         </div>
       </section>
 
@@ -615,7 +615,7 @@ function ctaStyle(variant: 'solid' | 'outline') {
     cursor:         'pointer',
     transition:     'all 0.25s ease',
     ...(variant === 'solid'
-      ? { background: 'var(--text)', color: 'var(--bg)' }
-      : { background: 'transparent', color: 'var(--text)', border: '1px solid var(--btn-border)' }),
+      ? { background: '#E8E4DC', color: '#080808' }
+      : { background: 'transparent', color: '#E8E4DC', border: '1px solid rgba(232,228,220,0.45)' }),
   } as const;
 }
