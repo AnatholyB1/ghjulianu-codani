@@ -14,29 +14,55 @@ export default function AlbumsDragTrack() {
   const { mode } = useDayNight();
   const [albums, setAlbums] = useState<AlbumWithCat[]>([]);
   const [cat, setCat] = useState<string>('all');
+  const [fading, setFading] = useState(false);
   const trackRef    = useRef<HTMLDivElement>(null);
   const hasDragged  = useRef(false);
   const imgTargetRef = useRef(0);
   const imgCurrentRef = useRef(0);
   const rafRef = useRef<number>(0);
 
+  /* Card gradient: dark scrim in night mode, light scrim in day mode.
+     Text uses var(--text) which is light in night (#E8E4DC) and dark in day (#1a1a1a),
+     so the scrim must match: dark on dark-bg, light on light-bg. */
+  const cardGradient = mode === 'day'
+    ? 'linear-gradient(0deg,rgba(250,250,250,0.88) 0%,transparent 55%)'
+    : 'linear-gradient(0deg,rgba(8,8,8,0.8) 0%,transparent 55%)';
+
   /* Fetch albums from Supabase filtered by day/night mode */
   useEffect(() => {
-    const supabase = createClient();
-    let query = supabase
-      .from('albums')
-      .select('*, category:categories(*)')
-      .order('sort_order', { ascending: false });
+    let cancelled = false;
+    setFading(true);
 
-    if (mode === 'day') {
-      query = query.or('is_day.is.null,is_day.eq.true');
-    } else {
-      query = query.or('is_day.is.null,is_day.eq.false');
+    if (trackRef.current) {
+      trackRef.current.style.transform = 'translate(0%, -50%)';
+      trackRef.current.dataset.percentage = '0';
+      trackRef.current.dataset.prevPercentage = '0';
     }
 
-    query.then(({ data }) => {
-      setAlbums(data ?? []);
-    });
+    const timeout = setTimeout(async () => {
+      const supabase = createClient();
+      let query = supabase
+        .from('albums')
+        .select('*, category:categories(*)')
+        .order('sort_order', { ascending: false });
+
+      if (mode === 'day') {
+        query = query.or('is_day.is.null,is_day.eq.true');
+      } else {
+        query = query.or('is_day.is.null,is_day.eq.false');
+      }
+
+      const { data } = await query;
+      if (!cancelled) {
+        setAlbums(data ?? []);
+        setFading(false);
+      }
+    }, 300);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timeout);
+    };
   }, [mode]);
 
   const filtered = cat === 'all'
@@ -140,14 +166,31 @@ export default function AlbumsDragTrack() {
       userSelect:       'none',
       WebkitUserSelect: 'none',
       touchAction:      'none',
+      transition:       'opacity 0.3s ease',
+      opacity:          fading ? 0 : 1,
+      willChange:       fading ? 'opacity' : 'auto',
     }}>
+      <div
+        aria-live="polite"
+        aria-atomic="true"
+        style={{
+          position:   'absolute',
+          width:      1,
+          height:     1,
+          overflow:   'hidden',
+          clip:       'rect(0,0,0,0)',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        {fading ? 'Chargement du contenu...' : `${albums.length} photos chargées`}
+      </div>
 
       {/* Category filters */}
       <div style={{ position: 'absolute', top: 'clamp(1.5rem,3vw,2.5rem)', left: 'clamp(1.5rem,3vw,3rem)', zIndex: 10, display: 'flex', gap: '0.2rem' }}>
         <button
           onMouseDown={(e) => e.stopPropagation()}
           onClick={() => setCat('all')}
-          style={{ background: cat === 'all' ? 'var(--text)' : 'transparent', color: cat === 'all' ? '#080808' : 'var(--muted)', border: '1px solid var(--border)', padding: '0.45rem 1.2rem', fontSize: '0.62rem', letterSpacing: '0.14em', cursor: 'pointer', transition: 'all 0.25s' }}
+          style={{ background: cat === 'all' ? 'var(--text)' : 'transparent', color: cat === 'all' ? 'var(--bg)' : 'var(--muted)', border: '1px solid var(--border)', padding: '0.45rem 1.2rem', fontSize: '0.62rem', letterSpacing: '0.14em', cursor: 'pointer', transition: 'all 0.25s' }}
         >
           {t.albums.all}
         </button>
@@ -156,7 +199,7 @@ export default function AlbumsDragTrack() {
             key={c.slug}
             onMouseDown={(e) => e.stopPropagation()}
             onClick={() => setCat(c.slug)}
-            style={{ background: cat === c.slug ? 'var(--text)' : 'transparent', color: cat === c.slug ? '#080808' : 'var(--muted)', border: '1px solid var(--border)', padding: '0.45rem 1.2rem', fontSize: '0.62rem', letterSpacing: '0.14em', cursor: 'pointer', transition: 'all 0.25s' }}
+            style={{ background: cat === c.slug ? 'var(--text)' : 'transparent', color: cat === c.slug ? 'var(--bg)' : 'var(--muted)', border: '1px solid var(--border)', padding: '0.45rem 1.2rem', fontSize: '0.62rem', letterSpacing: '0.14em', cursor: 'pointer', transition: 'all 0.25s' }}
           >
             {c.name.toUpperCase()}
           </button>
@@ -207,7 +250,7 @@ export default function AlbumsDragTrack() {
                   willChange:    'transform',
                 }}
               />
-              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(0deg,rgba(8,8,8,0.8) 0%,transparent 55%)', pointerEvents: 'none' }} />
+              <div style={{ position: 'absolute', inset: 0, background: cardGradient, pointerEvents: 'none' }} />
               <div style={{ position: 'absolute', bottom: '1.2rem', left: '1.2rem', right: '1.2rem', pointerEvents: 'none' }}>
                 <h2 style={{ fontFamily: 'var(--font-cormorant),serif', fontSize: 'clamp(1rem,2.5vmin,1.6rem)', fontStyle: 'italic', fontWeight: 400, color: 'var(--text)', lineHeight: 1.1, margin: 0 }}>
                   {album.title}
