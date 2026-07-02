@@ -1,9 +1,12 @@
 import type { Metadata } from 'next';
 import { Cormorant_Garamond, Space_Grotesk } from 'next/font/google';
+import dynamic from 'next/dynamic';
 import './globals.css';
 import SiteShell from '@/components/SiteShell';
 import ThemeProvider from '@/components/ThemeProvider';
 import { Analytics } from '@vercel/analytics/next';
+
+const WelcomeModal = dynamic(() => import('@/components/WelcomeModal'), { ssr: false });
 
 const cormorant = Cormorant_Garamond({
   variable: '--font-cormorant',
@@ -125,6 +128,7 @@ export default function RootLayout({
       <body className={`${cormorant.variable} ${space.variable}`}>
         <ThemeProvider>
           <SiteShell>{children}</SiteShell>
+          <WelcomeModal />
           <Analytics />
         </ThemeProvider>
       </body>
