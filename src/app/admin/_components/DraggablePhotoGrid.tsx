@@ -1,14 +1,24 @@
 'use client';
 
 import { useState, useTransition }          from 'react';
+import { Sun, Moon }                         from 'lucide-react';
 import ConfirmButton                          from './ConfirmButton';
-import { deleteAlbumPhoto, reorderAlbumPhotos } from '../actions';
+import { deleteAlbumPhoto, reorderAlbumPhotos, updateAlbumPhotoDay } from '../actions';
 import type { AlbumPhoto }                   from '@/lib/db.types';
 
 interface Props {
   photos:     AlbumPhoto[];
   albumId:    string;
   albumIsDay?: boolean | null;
+}
+
+function getBadgeState(
+  photoIsDay: boolean | null,
+  albumIsDay: boolean | null | undefined
+): { type: 'inherited'; value: boolean } | { type: 'explicit'; value: boolean } | null {
+  if (photoIsDay !== null) return { type: 'explicit', value: photoIsDay }
+  if (albumIsDay != null) return { type: 'inherited', value: albumIsDay }
+  return null
 }
 
 /**
@@ -19,11 +29,13 @@ interface Props {
  * - Position numbers are shown in the corner of each card.
  * - Delete still works per-card.
  */
-export default function DraggablePhotoGrid({ photos: initial, albumId }: Props) {
+export default function DraggablePhotoGrid({ photos: initial, albumId, albumIsDay }: Props) {
   const [photos,    setPhotos]   = useState<AlbumPhoto[]>(initial);
   const [dragId,    setDragId]   = useState<string | null>(null);
   const [overId,    setOverId]   = useState<string | null>(null);
   const [isPending, startTrans]  = useTransition();
+  const [badgePending, startBadgeTrans] = useTransition();
+  const [resetPhotoId, setResetPhotoId] = useState<string | null>(null);
 
   /* ── drag handlers ───────────────────────────────────────── */
   function onDragStart(id: string) {
@@ -62,6 +74,24 @@ export default function DraggablePhotoGrid({ photos: initial, albumId }: Props) 
   function onDragEnd() {
     setDragId(null);
     setOverId(null);
+  }
+
+  /* ── badge handlers ──────────────────────────────────────── */
+  function handleBadgeClick(photoId: string, newValue: boolean | null) {
+    const prev = photos.find(p => p.id === photoId)?.is_day ?? null;
+    setPhotos(prevPhotos => prevPhotos.map(p => p.id === photoId ? { ...p, is_day: newValue } : p));
+    startBadgeTrans(async () => {
+      try {
+        await updateAlbumPhotoDay(photoId, albumId, newValue);
+      } catch {
+        setPhotos(p => p.map(ph => ph.id === photoId ? { ...ph, is_day: prev } : ph));
+      }
+    });
+  }
+
+  function handleResetToAlbum(photoId: string) {
+    handleBadgeClick(photoId, null);
+    setResetPhotoId(null);
   }
 
   /* ── render ──────────────────────────────────────────────── */
@@ -152,6 +182,61 @@ export default function DraggablePhotoGrid({ photos: initial, albumId }: Props) 
                   ✕
                 </ConfirmButton>
               </div>
+
+              {/* inheritance badge */}
+              {(() => {
+                const badgeState = getBadgeState(photo.is_day, albumIsDay)
+                if (!badgeState) return null
+
+                if (badgeState.type === 'inherited') {
+                  const oppositeValue = albumIsDay === true ? false : true
+                  return (
+                    <button
+                      style={{ ...badgeInherited, ...(badgePending ? { opacity: 0.5, pointerEvents: 'none' } : {}) }}
+                      onClick={() => handleBadgeClick(photo.id, oppositeValue)}
+                      aria-label="Définir un jour/nuit explicite"
+                    >
+                      {badgeState.value === true
+                        ? <Sun size={10} style={{ color: 'rgba(200,169,126,0.5)' }} />
+                        : <Moon size={10} style={{ color: 'rgba(120,140,180,0.5)' }} />
+                      }
+                      <span style={{ fontSize: '0.58rem' }}>1</span>
+                    </button>
+                  )
+                }
+
+                // explicit override
+                if (resetPhotoId === photo.id) {
+                  return (
+                    <button
+                      style={{ ...badgeReset, ...(badgePending ? { opacity: 0.5, pointerEvents: 'none' } : {}) }}
+                      aria-label="Réinitialiser au mode album"
+                    >
+                      <span style={{ fontSize: '0.58rem' }}>ALBUM ↩</span>
+                    </button>
+                  )
+                }
+
+                return (
+                  <button
+                    style={{
+                      ...(badgeState.value === true ? badgeDay : badgeNight),
+                      ...(badgePending ? { opacity: 0.5, pointerEvents: 'none' } : {})
+                    }}
+                    onClick={() => {
+                      setResetPhotoId(photo.id)
+                      setTimeout(() => handleResetToAlbum(photo.id), 1500)
+                    }}
+                    aria-label="Réinitialiser au mode album"
+                  >
+                    {badgeState.value === true
+                      ? <Sun size={10} style={{ color: '#c8a97e' }} />
+                      : <Moon size={10} style={{ color: '#8090b0' }} />
+                    }
+                    <span style={{ fontSize: '0.58rem' }}>!</span>
+                  </button>
+                )
+              })()}
             </div>
           );
         })}
@@ -169,3 +254,46 @@ const hint: React.CSSProperties = {
   letterSpacing: '0.14em',
   color:         '#5a5a54',
 };
+
+const badgeDay: React.CSSProperties = {
+  position: 'absolute',
+  bottom: 3,
+  right: 3,
+  background: 'rgba(200,169,126,0.15)',
+  border: '1px solid rgba(200,169,126,0.35)',
+  borderRadius: 2,
+  padding: '2px 4px',
+  fontSize: '0.58rem',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '0.25rem',
+  cursor: 'pointer',
+}
+
+const badgeNight: React.CSSProperties = {
+  ...badgeDay,
+  background: 'rgba(120,140,180,0.15)',
+  border: '1px solid rgba(120,140,180,0.35)',
+}
+
+const badgeInherited: React.CSSProperties = {
+  position: 'absolute',
+  bottom: 3,
+  right: 3,
+  background: 'transparent',
+  border: '1px solid rgba(255,255,255,0.06)',
+  borderRadius: 2,
+  padding: '2px 4px',
+  fontSize: '0.58rem',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '0.25rem',
+  cursor: 'pointer',
+  opacity: 0.7,
+}
+
+const badgeReset: React.CSSProperties = {
+  ...badgeInherited,
+  color: '#e07070',
+  opacity: 1,
+}
