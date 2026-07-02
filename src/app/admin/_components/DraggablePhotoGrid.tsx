@@ -6,8 +6,9 @@ import { deleteAlbumPhoto, reorderAlbumPhotos } from '../actions';
 import type { AlbumPhoto }                   from '@/lib/db.types';
 
 interface Props {
-  photos:  AlbumPhoto[];
-  albumId: string;
+  photos:     AlbumPhoto[];
+  albumId:    string;
+  albumIsDay?: boolean | null;
 }
 
 /**
