@@ -35,6 +35,7 @@ export default function HomePage() {
   const [loadingDone,   setLoadingDone]   = useState(false);
   const [loadingHidden, setLoadingHidden] = useState(false);
   const [recentAlbums,  setRecentAlbums]  = useState<Album[]>([]);
+  const [albumsFading,  setAlbumsFading]  = useState(false);
   const [collageVisible, setCollageVisible] = useState([false, false, false, false]);
   const collageRef = useRef<HTMLDivElement>(null);
 
@@ -83,18 +84,31 @@ export default function HomePage() {
   }, []);
 
   useEffect(() => {
-    const supabase = createClient();
-    const baseQuery = supabase
-      .from('albums')
-      .select('id,title,slug,cover_url,created_at,year')
-      .eq('is_public', true);
-    const filteredQuery = mode === 'day'
-      ? baseQuery.or('is_day.is.null,is_day.eq.true')
-      : baseQuery.or('is_day.is.null,is_day.eq.false');
-    filteredQuery
-      .order('created_at', { ascending: false })
-      .limit(3)
-      .then(({ data }) => { if (data) setRecentAlbums(data as Album[]); });
+    let cancelled = false;
+    setAlbumsFading(true);
+
+    const timeout = setTimeout(async () => {
+      const supabase = createClient();
+      const baseQuery = supabase
+        .from('albums')
+        .select('id,title,slug,cover_url,created_at,year')
+        .eq('is_public', true);
+      const filteredQuery = mode === 'day'
+        ? baseQuery.or('is_day.is.null,is_day.eq.true')
+        : baseQuery.or('is_day.is.null,is_day.eq.false');
+      const { data } = await filteredQuery
+        .order('created_at', { ascending: false })
+        .limit(3);
+      if (!cancelled) {
+        if (data) setRecentAlbums(data as Album[]);
+        setAlbumsFading(false);
+      }
+    }, 300);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timeout);
+    };
   }, [mode]);
 
   useEffect(() => {
@@ -438,7 +452,7 @@ export default function HomePage() {
             <p style={{ fontSize: '0.62rem', letterSpacing: '0.22em', color: 'var(--muted)', marginBottom: '2.5rem' }}>{t.home.latestEvents}</p>
           </ScrollReveal>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0', transition: 'opacity 0.3s ease', opacity: albumsFading ? 0 : 1, willChange: albumsFading ? 'opacity' : 'auto' }}>
             {recentAlbums.map((album, i) => {
               const label = album.year
                 ? album.year
