@@ -28,7 +28,7 @@
 
 **Goal**: Enable users to mark photos and albums as day or night
 **Requirements**: PHO-01, PHO-02, PHO-03, ALB-01, ALB-02, ALB-03
-**Plans:** 2/5 plans executed
+**Plans:** 4/5 plans executed
 Plans:
 **Wave 1**
 
@@ -37,8 +37,8 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 03-03-PLAN.md — PortfolioAdminGrid + DayNightToggleBadge + bulk selection
-- [ ] 03-04-PLAN.md — AlbumSortableList indicator + album edit form is_day radio
+- [x] 03-03-PLAN.md — PortfolioAdminGrid + DayNightToggleBadge + bulk selection
+- [x] 03-04-PLAN.md — AlbumSortableList indicator + album edit form is_day radio
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
