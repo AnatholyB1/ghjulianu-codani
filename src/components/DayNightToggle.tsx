@@ -21,6 +21,11 @@ export default function DayNightToggle() {
   const overlaySrc =
     mode === 'day' ? '/transitions/day-to-night.mp4' : '/transitions/night-to-day.mp4';
 
+  const overlayMessage =
+    mode === 'day'
+      ? 'Passage en mode nuit — Retrouvez le nightlife dans Portfolio et Albums'
+      : 'Passage en mode jour — Retrouvez les shootings dans Portfolio et Albums';
+
   function handleToggle() {
     if (prefersReducedMotion()) {
       toggleMode();
@@ -82,6 +87,7 @@ export default function DayNightToggle() {
       {showOverlay && (
         <VideoTransitionOverlay
           src={overlaySrc}
+          message={overlayMessage}
           onComplete={() => setShowOverlay(false)}
         />
       )}

@@ -128,15 +128,27 @@ export default function WelcomeModal() {
           Ghjulianu Codani
         </h2>
         <p id="welcome-desc" style={modalHeadline}>
-          Ce portfolio existe en deux versions : JOUR et NUIT
+          Ce portfolio existe en deux versions
         </p>
         <div style={modalBtnRow}>
-          <button style={modalBtnDay} onClick={handleJour}>
-            JOUR
-          </button>
-          <button style={modalBtnNight} onClick={handleNuit}>
-            NUIT
-          </button>
+          <div style={modalBtnWrapper}>
+            <button style={modalBtnDay} onClick={handleJour}>
+              JOUR
+            </button>
+            <p style={modalBtnDesc}>
+              Shooting personnel & marques<br />
+              <span style={modalBtnHint}>Portfolio · Albums</span>
+            </p>
+          </div>
+          <div style={modalBtnWrapper}>
+            <button style={modalBtnNight} onClick={handleNuit}>
+              NUIT
+            </button>
+            <p style={{ ...modalBtnDesc, color: 'rgba(232,228,220,0.55)' }}>
+              Nightlife & événementiel<br />
+              <span style={modalBtnHint}>Portfolio · Albums</span>
+            </p>
+          </div>
         </div>
       </div>
     </div>
@@ -169,8 +181,27 @@ const modalHeadline: React.CSSProperties = {
 };
 
 const modalBtnRow: React.CSSProperties = {
-  display: 'flex', gap: '1rem', justifyContent: 'center',
+  display: 'flex', gap: '2rem', justifyContent: 'center',
   marginTop: '2rem',
+};
+
+const modalBtnWrapper: React.CSSProperties = {
+  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem',
+};
+
+const modalBtnDesc: React.CSSProperties = {
+  fontSize: '0.58rem',
+  color: 'rgba(232,228,220,0.65)',
+  letterSpacing: '0.06em',
+  lineHeight: 1.6,
+  textAlign: 'center',
+  margin: 0,
+  fontFamily: 'inherit',
+};
+
+const modalBtnHint: React.CSSProperties = {
+  color: 'rgba(232,228,220,0.38)',
+  letterSpacing: '0.12em',
 };
 
 const modalBtnDay: React.CSSProperties = {
