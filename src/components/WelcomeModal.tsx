@@ -10,9 +10,9 @@ export default function WelcomeModal() {
   const modalRef = useRef<HTMLDivElement>(null);
   const { setMode } = useDayNight();
 
-  // First-visit gate + intro animation guard
+  // First-visit gate — only shows on first visit to /portfolio
   useEffect(() => {
-    const welcomed = localStorage.getItem('ghjulianu-welcomed');
+    const welcomed = localStorage.getItem('ghjulianu-portfolio-welcomed');
     if (welcomed) return;
 
     const showModal = () => {
@@ -20,15 +20,9 @@ export default function WelcomeModal() {
       setShow(true);
     };
 
-    // Guard against showing simultaneously with IntroAnimation
-    const introDone = sessionStorage.getItem('intro-played');
-    if (introDone) {
-      showModal();
-    } else {
-      // First ever visit: delay 3000ms to let IntroAnimation finish (~2.5s)
-      const t = setTimeout(showModal, 3000);
-      return () => clearTimeout(t);
-    }
+    // Short delay to let the portfolio page render first
+    const t = setTimeout(showModal, 600);
+    return () => clearTimeout(t);
   }, []);
 
   // Body scroll lock
@@ -71,7 +65,7 @@ export default function WelcomeModal() {
   }, [show]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function dismiss() {
-    localStorage.setItem('ghjulianu-welcomed', '1');
+    localStorage.setItem('ghjulianu-portfolio-welcomed', '1');
     setShow(false);
   }
 
