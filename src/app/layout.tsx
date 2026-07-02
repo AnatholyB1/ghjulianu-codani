@@ -104,7 +104,24 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="fr">
+    <html lang="fr" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try {
+  var s = localStorage.getItem('day-night-storage');
+  if (s) {
+    var parsed = JSON.parse(s);
+    if (parsed && parsed.state && parsed.state.mode === 'day') {
+      document.documentElement.classList.add('day');
+    }
+  }
+} catch(e) {}`,
+          }}
+        />
+        <link rel="preload" as="video" href="/transitions/day-to-night.mp4" type="video/mp4" />
+        <link rel="preload" as="video" href="/transitions/night-to-day.mp4" type="video/mp4" />
+      </head>
       <body className={`${cormorant.variable} ${space.variable}`}>
         <ThemeProvider>
           <SiteShell>{children}</SiteShell>
