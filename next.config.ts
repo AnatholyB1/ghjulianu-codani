@@ -21,6 +21,12 @@ const nextConfig: NextConfig = {
         hostname: 'zxjmhvjokdynhssporyf.supabase.co',
         pathname: '/storage/v1/object/public/**',
       },
+      {
+        // Fallback placeholder used when an album has no cover/background yet.
+        protocol: 'https',
+        hostname: 'picsum.photos',
+        pathname: '/**',
+      },
     ],
 
     // Wider set of breakpoints so srcset covers every viewport size.
