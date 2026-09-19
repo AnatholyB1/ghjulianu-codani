@@ -103,10 +103,10 @@ export async function compressImage(
 /** Max dimensions + quality preset per Supabase bucket */
 export function getBucketPreset(bucket: string): CompressionOptions {
   switch (bucket) {
-    case 'album-covers':      return { maxWidth: 900,  maxHeight: 1200, quality: 0.88 };
+    case 'album-covers':      return { maxWidth: 900,  maxHeight: 1200, quality: 0.92 };
     case 'album-backgrounds': return { maxWidth: 1920, maxHeight: 1080, quality: 0.85 };
-    case 'album-photos':      return { maxWidth: 2400, maxHeight: 2400, quality: 0.84 };
-    case 'portfolio-photos':  return { maxWidth: 2400, maxHeight: 2400, quality: 0.84 };
+    case 'album-photos':      return { maxWidth: 3000, maxHeight: 3000, quality: 0.86 };
+    case 'portfolio-photos':  return { maxWidth: 3000, maxHeight: 3000, quality: 0.86 };
     default:                  return { maxWidth: 2400, maxHeight: 2400, quality: 0.85 };
   }
 }
