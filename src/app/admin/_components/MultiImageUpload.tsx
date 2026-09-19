@@ -79,7 +79,8 @@ export default function MultiImageUpload({ bucket, onUpload, onComplete }: Props
     setRunning(true);
 
     const preset = getBucketPreset(bucket);
-    for (const item of pending) {
+
+    async function processItem(item: FileItem) {
       // Step 1 — compress
       setItems((prev) => prev.map((i) => i.id === item.id ? { ...i, status: 'compressing' } : i));
       let compressed: Awaited<ReturnType<typeof compressImage>>;
@@ -87,7 +88,7 @@ export default function MultiImageUpload({ bucket, onUpload, onComplete }: Props
         compressed = await compressImage(item.file, preset);
       } catch {
         setItems((prev) => prev.map((i) => i.id === item.id ? { ...i, status: 'error', error: 'Compression échouée' } : i));
-        continue;
+        return;
       }
       const savedPct = Math.round((1 - compressed.compressedSize / compressed.originalSize) * 100);
 
@@ -101,6 +102,12 @@ export default function MultiImageUpload({ bucket, onUpload, onComplete }: Props
         const msg = e instanceof Error ? e.message : 'Erreur upload';
         setItems((prev) => prev.map((i) => i.id === item.id ? { ...i, status: 'error', error: msg } : i));
       }
+    }
+
+    const CONCURRENCY = 3;
+    for (let i = 0; i < pending.length; i += CONCURRENCY) {
+      const batch = pending.slice(i, i + CONCURRENCY);
+      await Promise.all(batch.map(processItem));
     }
 
     setRunning(false);
