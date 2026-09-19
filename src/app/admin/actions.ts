@@ -253,7 +253,9 @@ export async function uploadFile(bucket: string, file: File): Promise<string> {
   const supabase = await createClient();
   const ext      = file.name.split('.').pop();
   const path     = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-  const { error } = await supabase.storage.from(bucket).upload(path, file, { upsert: false });
+  // Each path is timestamp+random and never overwritten (upsert: false), so the
+  // object is immutable — cache it for a year instead of Supabase's 1h default.
+  const { error } = await supabase.storage.from(bucket).upload(path, file, { upsert: false, cacheControl: '31536000' });
   if (error) throw new Error(error.message);
   const { data } = supabase.storage.from(bucket).getPublicUrl(path);
   return data.publicUrl;

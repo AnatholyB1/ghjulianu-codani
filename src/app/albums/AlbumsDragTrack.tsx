@@ -1,6 +1,7 @@
 'use client';
 
-import Link from 'next/link';
+import Link  from 'next/link';
+import Image from 'next/image';
 import { useState, useRef, useEffect } from 'react';
 import type { Album, Category } from '@/lib/db.types';
 import { useT } from '@/hooks/useT';
@@ -281,21 +282,19 @@ export default function AlbumsDragTrack() {
                   aspectRatio:   '9 / 16',
                 }}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                <Image
                   className="image"
                   src={album.cover_url ?? 'https://picsum.photos/seed/default/600/900'}
                   alt={album.title}
                   draggable={false}
+                  fill
+                  sizes="(max-width: 700px) 40vw, 220px"
                   style={{
-                    width:         '100%',
-                    height:        '100%',
                     objectFit:     'cover',
                     objectPosition: 'center',
                     transform:     'translateX(0%)',
                     pointerEvents: 'none',
                     willChange:    'transform',
-                    display:       'block',
                   }}
                 />
                 <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(0deg,rgba(8,8,8,0.75) 0%,transparent 55%)', pointerEvents: 'none' }} />

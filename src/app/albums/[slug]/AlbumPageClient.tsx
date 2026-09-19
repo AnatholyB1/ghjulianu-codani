@@ -1,6 +1,7 @@
 ﻿'use client';
 
 import Link         from 'next/link';
+import Image        from 'next/image';
 import { useState, useEffect, useRef } from 'react';
 import { Check, ShoppingCart, MousePointer2, Download, ArrowRight } from 'lucide-react';
 import Lightbox     from '@/components/Lightbox';
@@ -400,14 +401,14 @@ function PhotoCard({
       onMouseLeave={() => setHov(false)}
     >
       <div onClick={onClick} style={{ overflow: 'hidden', display: 'block' }}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <Image
           ref={imgRef}
           src={src}
           alt={alt ?? label}
           width={width}
           height={height}
           loading="lazy"
+          sizes="(max-width: 700px) 50vw, (max-width: 1200px) 33vw, 300px"
           style={{
             display:        'block',
             width:          '100%',
@@ -550,11 +551,13 @@ export default function AlbumPageClient({
       <section
         style={{ position: 'relative', height: 'clamp(340px, 55vh, 620px)', overflow: 'hidden', display: 'flex', alignItems: 'flex-end' }}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <Image
           src={album.background_url ?? album.cover_url ?? 'https://picsum.photos/seed/hero/1920/1080'}
           alt={album.title}
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }}
+          fill
+          priority
+          sizes="100vw"
+          style={{ objectFit: 'cover', objectPosition: 'center' }}
         />
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(0deg,rgba(8,8,8,0.96) 0%,rgba(8,8,8,0.25) 60%,transparent 100%)' }} />
 
