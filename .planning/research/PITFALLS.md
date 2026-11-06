@@ -1,75 +1,91 @@
-# Project Research — Pitfalls for Day/Night Photo Filtering
+# Pitfalls Research — v1.1 Email-gated downloads, newsletter, KPIs
 
-## Common Mistakes When Adding Day/Night Features
+**Domain:** Photo portfolio (Next.js + Supabase + Vercel, French audience, RGPD)
+**Researched:** 2026-11-07
+**Confidence:** MEDIUM (training knowledge only; no live doc check. Verify items marked VERIFY.)
 
-### Data Modeling Issues
-- **Boolean vs Enum**: Using boolean limits future expansion (dawn/dusk, golden hour, etc.)
-  - Prevention: Consider using enum ('day', 'night', 'unknown') or separate timestamp fields
-- **Null Values**: Forgetting to set default values causing NULLs in database
-  - Prevention: Always specify DEFAULT values in migrations
-- **Index Missing**: Not adding database indexes leading to slow queries on large galleries
-  - Prevention: Add indexes during migration, test with production-like data sizes
+## Critical Pitfalls
 
-### State Management Problems
-- **Stale State**: Not synchronizing state between tabs/windows
-  - Prevention: Use localStorage change events or broadcast channel API
-- **Hydration Mismatch**: SSR/CSR mismatch when checking localStorage on mount
-  - Prevention: Initialize state on client-only or use useEffect with proper guards
-- **Over-fetching**: Loading all photos then filtering client-side wasting bandwidth
-  - Prevention: Filter at database level for initial loads
+### 1. Bundling download + newsletter consent (RGPD/ePrivacy)
+- Sending the link is a service need; newsletter opt-in must be a SEPARATE, OPTIONAL, UNTICKED checkbox. Required/pre-ticked opt-in = invalid consent (RGPD art. 4(11), 7(4)).
+- Store `consent_newsletter`, `consent_at`, `consent_text_version`, hashed IP/source as proof. Never add download-only emails to the newsletter list.
+- **Product decision:** newsletter opt-in optional (recommended).
+- Phase: email-gate + newsletter (before UI).
 
-### UI/UX Pitfalls
-- **Inconsistent State**: Theme doesn't match photo filter mode
-  - Prevention: Create single source of truth that controls both
-- **Accessibility**: Toggle not keyboard accessible or missing screen reader labels
-  - Prevention: Use proper button/role attributes, test with screen readers
-- **Motion Sensitivity**: Animations triggering vestibular disorders
-  - Prevention: Respect `prefers-reduced-motion` media query
-- **Flash of Incorrect Theme**: Showing wrong theme during hydration
-  - Prevention: Store preference in HTML attribute or use server-side detection
+### 2. No / broken double opt-in
+- Row starts `pending`; confirmation email with single-use hashed expiring token; `confirmed` only on click.
+- Email scanners prefetch GET links: GET shows a confirm button, state change via POST. Idempotent confirm endpoint.
+- Phase: newsletter.
 
-### Performance Bottlenecks
-- **Unnecessary Re-renders**: Context updates causing entire photo grid to re-render
-  - Prevention: Memoize context value, split context if needed
-- **Large Initial Load**: Still loading all photos even when filtered
-  - Prevention: Ensure database queries actually limit results
-- **Animation Performance**: JS-based animations blocking main thread
-  - Prevention: Use CSS transitions/transforms or FLIP technique
+### 3. Missing unsubscribe / legal mentions
+- HMAC-signed per-recipient unsubscribe token, `List-Unsubscribe` + `List-Unsubscribe-Post: List-Unsubscribe=One-Click` headers (Gmail/Yahoo bulk-sender rules), sender identity, privacy-policy link.
+- Keep hashed-email suppression entry; retention ~3 years from last contact (CNIL, VERIFY).
+- Privacy policy page belongs in the FIRST phase.
 
-### Integration Specific Risks
-- **Admin Inconsistency**: Different ways to set day/night in different admin screens
-  - Prevention: Create shared component/form field for day/night selection
-- **Mobile Experience**: Toggle hard to reach or too small on touch devices
-  - Prevention: Ensure minimum 44x44pt touch target, consider placement
-- **Conflict with Existing Features**: Interfering with search, sort, or filter features
-  - Prevention: Design day/night as orthogonal filter that combines with others
-- **Backup/Migration Issues**: Forgetting to migrate existing data
-  - Prevention: Create comprehensive migration scripts with validation
+### 4. Deliverability set up late
+- Verify domain in Resend first on a subdomain (e.g. mail.domain.fr); SPF, DKIM, DMARC (p=none then tighten). DNS propagation = lead time.
+- Separate transactional (download link) and marketing (newsletter) senders. HTML + plain text. Test Gmail/Outlook/Orange/Free.
 
-### Testing Oversights
-- **Edge Cases**: Not testing null/undefined values in day/night fields
-- **Performance**: Not testing with large datasets (1000+ photos)
-- **Accessibility**: Not testing with screen readers or keyboard navigation
-- **Dark/Light Transitions**: Not testing rapid toggling
-- **Server Components**: Issues with client-only state in Server Components
+### 5. No bounce/complaint handling
+- Resend webhook (bounced, complained, delivery_delayed), Svix signature verification, idempotent; mark `suppressed`. VERIFY event names.
 
-### Prevention Strategies
-1. **Data First**: Complete database migration and validation before UI work
-2. **Feature Flags**: Roll out behind flag for testing
-3. **Component Isolation**: Build toggle/theme switching logic from presentation
-4. **Comprehensive Testing**: Unit tests for filters, integration tests for flows
-5. **Performance Budgets**: Set limits on query times and bundle impact
-6. **Accessibility Audit**: Check with axe or similar tools during development
-7. **User Testing**: Validate with actual photographers who understand day/night concepts
+### 6. Signed-link leakage / sharing
+- Do not email raw Supabase signed URLs. Email own opaque token URL `/dl/<token>`; store token HASH in `download_requests` (`expires_at`, `max_uses` 3-5, `used_count`); route verifies then streams or redirects to ~60s signed URL.
+- Landing page with POST "Download" button so scanner GETs don't consume uses. `Referrer-Policy: no-referrer`, `X-Robots-Tag: noindex`. Expiry 24-72h. Rate-limit by token/IP; flag multi-IP use.
+- Originals in PRIVATE bucket; verify no public URLs remain (anonymous request must 403).
 
-## Specific Recommendations for This Project
-1. Start with simple boolean flags in photos/albums tables
-2. Implement filtering at the database query level
-3. Use React Context for global state with localStorage persistence
-4. Tie theme selection directly to day/night mode (day=light, night=dark)
-5. Use CSS transitions for smooth changes, respecting user preferences
-6. Add clear visual indicators (sun/moon icons) with tooltips
-7. In admin, use clear checkboxes labeled "Daytime photo" or similar
-8. Test with existing photo dataset to ensure performance
-9. Consider making album-level setting override photo-level when implemented
-10. Document the feature clearly for future maintainers
+### 7. UI-only protection mistaken for security
+- Right-click/drag/long-press blocking is a deterrent only. Scope to image components (never inputs/whole document); iOS needs `-webkit-touch-callout: none` + `user-select: none`; don't break lightbox/swipe/zoom.
+- Real protection: serve display derivatives only (~2000px long edge), originals private. Test iOS Safari + Android Chrome.
+
+### 8. Vercel limits for ZIP generation
+- 4.5 MB response body limit for non-streamed responses; timeouts/memory. Stream (archiver/zip-stream) and fetch sources as streams; set `maxDuration` explicitly; Node runtime not Edge; STORE (no compression) for JPEG; cap files/size.
+- Better: pre-build ZIP async, store in private bucket, serve via signed URL. VERIFY plan limits. **Needs a spike.**
+
+### 9. Supabase egress / image cost
+- Each next/image width/format variant = cache miss. Limit `deviceSizes`/`imageSizes`, high `minimumCacheTTL`, AVIF/WebP only.
+- Recompress once at upload and store derivatives (thumb, display, original); avoid per-request Supabase transformations. Immutable `Cache-Control` on versioned public derivatives. Track bandwidth KPI; billing alerts. Uncached signed URLs bypass CDN. VERIFY pricing.
+
+### 10. Bot/abuse of email form
+- Honeypot, min time-to-submit, Turnstile (VERIFY consent implications), rate limit by IP and email with SHARED store (Upstash/Supabase table; in-memory fails on serverless). Cap per-email sends (e.g. 3/h) and global daily. Generic response (no enumeration). Server-side validation, origin check. Monitor Resend quota.
+- Same phase as email gate, not later.
+
+### 11. View-count inflation / double counting
+- Count views in a client event after real display (IntersectionObserver + dwell), not server render (prefetch/ISR/StrictMode). Dedupe per session and per day (`UNIQUE(photo_id, visitor_hash, day)`). `isbot` filter.
+- Count a download only when the token route actually streams; keep requested / link opened / downloaded as separate events (funnel).
+- Append-only `events` table; aggregate for dashboard; no client `count = count + 1` under open RLS; insert via rate-limited route handler. Design event schema EARLY.
+
+### 12. Privacy-friendly analytics (cookie banner trap)
+- No persistent cookie/fingerprint, no raw IP: daily-rotating salted hash `sha256(ip+ua+daily_salt)`; device class from UA then discard UA. CNIL audience-measurement exemption conditions (VERIFY). Bucket by Europe/Paris (Vercel runs UTC). Retention: purge raw events after a few months, keep aggregates. Don't show raw emails in charts.
+
+### 13. Migration from direct downloads
+- Inventory and DELETE (not hide): CartDrawer download, ZIP/folder-picker (File System Access API), `download` attrs, direct storage URLs. `410 Gone` page on old routes. Anonymous-403 test on originals.
+- Private albums: server-side key validation, short-lived session token, key never in query string, rate-limit attempts, constant-time compare.
+- Ship removal + gate in same release; use feature flag to verify first.
+
+## Moderate / Minor
+- Right to erasure: admin delete across subscribers, download_requests, events by email. CSV export admin-only, escape formula injection (`= + - @`), UTF-8 BOM.
+- New tables: RLS deny-by-default, writes server-only, service-role key never `NEXT_PUBLIC_` (repo history: env pinning in next.config.ts was added then removed).
+- No emails in URLs/logs (mask). Await Resend send or use `after()`; track status; resend cooldown; idempotency key.
+- French email copy, UTF-8, legal identity/postal address (LCEN), React Email, dark-mode test. Version consent text.
+- Keep next/image `remotePatterns` pinned; quality ~75-82; originals untouched.
+- Dashboard: SQL views/rollups with indexes, not JS aggregation. Store UTC, bucket Paris.
+- Preview deployments must not send real emails. Resend free-tier daily cap.
+
+## Phase mapping
+
+| Topic | Pitfall | Mitigation |
+|---|---|---|
+| Foundations (privacy page, DNS, schema) | late SPF/DKIM/DMARC, no policy, weak RLS | verify domain first, RLS deny-by-default |
+| Email gate / signed links | bundled consent, scanner consumption, raw URLs, form abuse | optional checkbox, opaque tokens + button page, rate limit + Turnstile |
+| Private albums | key in URL, brute force | server check, rate limit, session token |
+| Removal of direct downloads | public bucket open | anon 403 test, 410 |
+| Newsletter | no DOI, no one-click unsub, no bounce webhook | pending/confirmed, headers, Svix webhook |
+| Delivery/ZIP | timeouts, body limit, egress | streaming or pre-built ZIP, limited sizes (spike) |
+| KPIs | bot inflation, cookie banner, UTC | events dedupe, isbot, daily-salt hash, Paris time |
+| UI protection | over-blocking | scope to images, test mobile |
+
+## Research flags
+- Deeper research: ZIP on Vercel (streamed vs pre-built), CNIL audience-measurement exemption, Resend webhooks/limits, Supabase egress pricing.
+- Standard patterns: DOI, token tables, honeypot/rate limiting, RLS.
+- User decisions: optional newsletter opt-in; double opt-in; in-app broadcast composer vs Resend dashboard; privacy page existence.
