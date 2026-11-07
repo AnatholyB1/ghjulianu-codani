@@ -58,7 +58,7 @@ for (const t of tables) {
   record(`INSERT ${t}`, privilegeDenied, `HTTP ${r.status}`);
 
   // UPDATE / DELETE with an impossible filter
-  r = await fetch(`${url}/rest/v1/${t}?id=eq.00000000-0000-0000-0000-000000000000`, { method: 'DELETE', headers });
+  r = await fetch(`${url}/rest/v1/${t}?${t === 'events' ? 'id=eq.0' : t === 'rate_limits' ? 'key=eq.__none__' : t === 'events_daily' ? 'type=eq.__none__' : 'id=eq.00000000-0000-0000-0000-000000000000'}`, { method: 'DELETE', headers });
   record(`DELETE ${t}`, denied(r.status), `HTTP ${r.status}`);
   if (r.status === 404) notFound++;
 }

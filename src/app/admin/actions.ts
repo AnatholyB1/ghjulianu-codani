@@ -1,19 +1,9 @@
 'use server';
 
 import { createClient } from '@/utils/supabase/server';
-import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { randomBytes } from 'crypto';
-import { cookies } from 'next/headers';
-
-/** Service role client — bypasses RLS for key verification */
-function createServiceClient() {
-  return createSupabaseClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  );
-}
 
 /**
  * Generates a 6-character access code mixing lowercase, uppercase,
@@ -261,47 +251,4 @@ export async function uploadFile(bucket: string, file: File): Promise<string> {
   return data.publicUrl;
 }
 
-// ── ALBUM ACCESS KEY VERIFICATION ────────────────────────────
-
-export async function verifyAlbumKey(slug: string, key: string): Promise<boolean> {
-  const supabase = createServiceClient();
-  const { data: album } = await supabase
-    .from('albums')
-    .select('access_key')
-    .eq('slug', slug)
-    .single();
-
-  if (!album || album.access_key !== key) return false;
-
-  const cookieStore = await cookies();
-  cookieStore.set(`album-access-${slug}`, key, {
-    httpOnly: true,
-    sameSite: 'lax',
-    path:     `/albums/${slug}`,
-    maxAge:   60 * 60 * 24 * 30,
-  });
-  return true;
-}
-
-// ── CLIENT KEY LOOKUP ─────────────────────────────────────
-
-export async function findAlbumByKey(key: string): Promise<{ slug: string; title: string } | null> {
-  const supabase = createServiceClient();
-  const { data: album } = await supabase
-    .from('albums')
-    .select('slug, title, access_key')
-    .eq('access_key', key.trim())
-    .eq('is_public', false)
-    .single();
-
-  if (!album) return null;
-
-  const cookieStore = await cookies();
-  cookieStore.set(`album-access-${album.slug}`, album.access_key, {
-    httpOnly: true,
-    sameSite: 'lax',
-    path:     `/albums/${album.slug}`,
-    maxAge:   60 * 60 * 24 * 30,
-  });
-  return { slug: album.slug, title: album.title };
-}
+// Album key verification moved to src/app/mon-album/actions.ts (rate limited, signed cookie).

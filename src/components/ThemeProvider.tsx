@@ -11,7 +11,7 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
 
   useLayoutEffect(() => {
     // Day/night theme only applies on /portfolio — rest of site stays dark
-    const effectiveMode = pathname === '/portfolio' ? mode : 'night';
+    const effectiveMode = pathname === '/portfolio' || pathname.startsWith('/newsletter') ? mode : 'night';
     setMode(effectiveMode);
   }, [mode, pathname]);
 

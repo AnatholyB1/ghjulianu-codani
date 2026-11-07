@@ -202,3 +202,33 @@ html[data-img-protect="on"] [data-protect] {
   user-select: none;
   -webkit-user-drag: none;
 }
+
+/* -- Phase 6 tokens (request flow); see 06-DESIGN-CONTRACT.md section 2 -- */
+:root {
+  --panel:        #0f0f0f;
+  --on-accent:    #080808;
+  --muted-aa:     #9b9b94;
+  --field-bg:     rgba(255,255,255,0.04);
+  --field-border: #6e6e69;
+  --danger:       #f08a8a;
+  --danger-bg:    rgba(240,138,138,0.10);
+  --ok:           #7fd69a;
+  --warn:         #e0b45c;
+  --warn-bg:      rgba(224,180,92,0.10);
+  --focus:        #c8a97e;
+  --scrim:        rgba(0,0,0,0.7);
+}
+.day {
+  --panel:        #ffffff;
+  --on-accent:    #080808;
+  --muted-aa:     #5c5c5c;
+  --field-bg:     #ffffff;
+  --field-border: #8a8a8a;
+  --danger:       #b3261e;
+  --danger-bg:    rgba(179,38,30,0.07);
+  --ok:           #1f6b3a;
+  --warn:         #7a5200;
+  --warn-bg:      rgba(122,82,0,0.08);
+  --focus:        #7a5200;
+  --scrim:        rgba(0,0,0,0.45);
+}
