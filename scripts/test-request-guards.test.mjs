@@ -49,6 +49,31 @@ test('album access cookie: valid, expired, wrong slug, rotated key, forged', () 
   assert.equal(g.verifyAlbumAccess(undefined, 'mon-album', 'Ab3$xY', now), false);
 });
 
+test('daily caps: per-IP default 20 (DOWNLOAD_IP_DAILY_CAP), global default 80, bad values fall back, IP cap below global', () => {
+  assert.equal(g.downloadIpDailyCap(undefined), 20);
+  assert.equal(g.downloadIpDailyCap('5'), 5);
+  for (const bad of ['', '0', '-3', 'abc', '2.5']) assert.equal(g.downloadIpDailyCap(bad), 20, bad);
+  assert.equal(g.downloadEmailDailyCap(undefined), 80);
+  assert.equal(g.downloadEmailDailyCap('120'), 120);
+  assert.ok(g.downloadIpDailyCap(undefined) < g.downloadEmailDailyCap(undefined));
+  assert.equal(g.IP_DAILY_WINDOW_SECONDS, 86400);
+});
+
+test('verifyAlbumAccess does not throw when DOWNLOAD_TOKEN_SECRET is unset (treated as no cookie)', () => {
+  const saved = process.env.DOWNLOAD_TOKEN_SECRET;
+  const nowMs = Date.now();
+  const good = g.signAlbumAccess('slug', 'key', 600, nowMs);
+  assert.equal(g.verifyAlbumAccess(good, 'slug', 'key', nowMs), true);
+  process.env.DOWNLOAD_TOKEN_SECRET = '';
+  try {
+    const fake = String(Math.floor(nowMs / 1000) + 600) + '.AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+    assert.equal(g.verifyAlbumAccess(fake, 'slug', 'key', nowMs), false);
+    assert.equal(g.verifyAlbumAccess(good, 'slug', 'key', nowMs), false);
+  } finally {
+    process.env.DOWNLOAD_TOKEN_SECRET = saved;
+  }
+});
+
 test('constantTimeEqual', () => {
   assert.equal(g.constantTimeEqual('abc', 'abc'), true);
   assert.equal(g.constantTimeEqual('abc', 'abd'), false);

@@ -37,6 +37,14 @@ test('isAdminEmail: missing / non-string / blank email is refused', () => {
   for (const e of [undefined, null, '', '   ', 42, {}]) assert.equal(a.isAdminEmail(e, list), false, String(e));
 });
 
+test('isAdminEmail: Unicode lookalikes are refused (Kelvin sign, fullwidth), ASCII still matches', () => {
+  const list = 'kim@example.com';
+  assert.equal(a.isAdminEmail('Kim@example.com', list), false); // Kelvin sign folds to k under NFKC
+  assert.equal(a.isAdminEmail('ｋim@example.com', list), false); // fullwidth k
+  assert.equal(a.isAdminEmail('kim@example.com', list), true);
+  assert.equal(a.isAdminEmail('KIM@Example.COM', list), true);
+});
+
 test('isAdminUser: null user and user without email refused', () => {
   process.env.ADMIN_EMAILS = 'boss@example.com';
   assert.equal(a.isAdminUser(null), false);

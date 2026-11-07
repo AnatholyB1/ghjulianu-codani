@@ -17,14 +17,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     .eq('slug', slug)
     .single();
 
-  if (!album) return {};
-
-  // Private album: generic metadata only (no title / description / cover) and never indexed.
-  if (!album.is_public) {
+  // Not visible to the anon lookup (private OR unknown slug; RLS hides private rows): identical generic,
+  // non-indexed metadata so the response does not reveal whether the slug exists.
+  if (!album || !album.is_public) {
     return {
       title: 'Album privé — Ghjulianu Codani',
       description: undefined,
       robots: { index: false, follow: false },
+      alternates: { canonical: null },
       openGraph: { title: 'Album privé — Ghjulianu Codani', images: [] },
       twitter: { card: 'summary', title: 'Album privé — Ghjulianu Codani', images: [] },
     };

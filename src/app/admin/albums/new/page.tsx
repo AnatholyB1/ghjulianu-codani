@@ -1,9 +1,11 @@
+import { requireAdminPage } from '@/lib/server/requireAdmin';
 import { createClient }    from '@/utils/supabase/server';
 import { createAlbum }     from '../../actions';
 import type { Category }   from '@/lib/db.types';
 import ImageUploadField    from '../../_components/ImageUploadField';
 
 export default async function NewAlbumPage() {
+  await requireAdminPage('/admin/albums/new');
   const supabase = await createClient();
   const { data: categories } = await supabase.from('categories').select('*').order('name');
 

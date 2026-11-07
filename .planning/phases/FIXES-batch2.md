@@ -24,7 +24,7 @@ Apply BEFORE or together with deploying the code: the code works without it, but
 | 10 | M3 funnel > 100% | FIXED in the new migration: `requests` / `links_opened` / `downloaded` form a cohort (requests created in the window, joined by `request_id`; opens/downloads after the window end still count for their request). `StatsView`: step labels "Parmi elles : ...", headline = downloaded / requests, note explains units (step 1 stays visitor-days, indicative). SQL test asserts a previous-window request is excluded, a post-window open included, never above 100%. | same + fix(p10) |
 | 10 | Low: bot regex | FIXED. Pinterest / DuckDuckGo / Baidu app / Cubot / Slack in-app are humans; real crawlers kept (their own tokens: bot, spider, slack-imgproxy, duckduckgo-favicons, baidu-). Table test `scripts/test-bots.test.mjs` (9 humans, 17 bots). | same |
 | 10 | Low: cron bearer | FIXED. `constantTimeEqual` (SHA-256 digests of both sides, length independent). | same |
-| - | Side finding | Tailwind 4.2.1 crashes (`V.map is not a function`) when it scans a file containing the token `row-constructor`; the build scans `supabase/`. A SQL comment tripped it (`next build` failed). Reworded. Worth remembering for any future comment/SQL text. | fix(p10): reword migration comment |
+| - | Side finding | Tailwind 4.2.1 crashes (`V.map is not a function`) when it scans a file containing a particular hyphenated SQL token (omitted on purpose); the build scans `supabase/`. A SQL comment tripped it (`next build` failed). Reworded. Worth remembering for any future comment/SQL text. | fix(p10): reword migration comment |
 
 ## kpi_dashboard(90) timing, throwaway local Postgres 18, 200k synthetic events (marked synthetic, local only)
 

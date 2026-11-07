@@ -72,7 +72,8 @@ export async function purgeExpired(
       .from('subscribers')
       .delete({ count: 'exact' })
       .eq('status', 'pending')
-      .lt('updated_at', c.pendingSubscribersOlderThan);
+      // NULL updated_at falls back to created_at (a NULL never compares true, so it must be explicit)
+      .or(`updated_at.lt.${c.pendingSubscribersOlderThan},and(updated_at.is.null,created_at.lt.${c.pendingSubscribersOlderThan})`);
     if (scope.emailLike) q = q.like('email', scope.emailLike);
     return q;
   });

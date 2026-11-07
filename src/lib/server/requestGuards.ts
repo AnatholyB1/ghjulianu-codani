@@ -107,7 +107,12 @@ export function verifyAlbumAccess(value: string | undefined | null, slug: string
   if (!/^\d{9,12}$/.test(expStr)) return false;
   const exp = Number(expStr);
   const keyFp = createHash('sha256').update(accessKey).digest('hex').slice(0, 16);
-  if (!safeEq(value.slice(i + 1), b64mac(`album:${slug}:${keyFp}:${exp}`))) return false;
+  try {
+    if (!safeEq(value.slice(i + 1), b64mac(`album:${slug}:${keyFp}:${exp}`))) return false;
+  } catch {
+    // DOWNLOAD_TOKEN_SECRET missing / too short: treat as "no valid cookie" instead of a 500.
+    return false;
+  }
   return exp * 1000 > nowMs;
 }
 
@@ -129,6 +134,16 @@ export function downloadEmailDailyCap(raw: string | undefined = process.env.DOWN
   const n = Number(raw);
   return Number.isInteger(n) && n > 0 ? n : DEFAULT_DOWNLOAD_EMAIL_DAILY_CAP;
 }
+/**
+ * PER-IP daily cap on download emails, well below the global cap so one IP cannot exhaust it alone.
+ * Env DOWNLOAD_IP_DAILY_CAP, default 20; unset / not a positive integer => 20.
+ */
+export const DEFAULT_DOWNLOAD_IP_DAILY_CAP = 20;
+export function downloadIpDailyCap(raw: string | undefined = process.env.DOWNLOAD_IP_DAILY_CAP): number {
+  const n = Number(raw);
+  return Number.isInteger(n) && n > 0 ? n : DEFAULT_DOWNLOAD_IP_DAILY_CAP;
+}
+export const IP_DAILY_WINDOW_SECONDS = 86400;
 /** Rate-limit key of the global daily bucket (fixed 24 h window of the rate_limit_hit RPC). */
 export const GLOBAL_EMAIL_KEY = 'dlreq:global:day';
 export const GLOBAL_EMAIL_WINDOW_SECONDS = 86400;

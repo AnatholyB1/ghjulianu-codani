@@ -1,9 +1,11 @@
+import { requireAdminPage } from '@/lib/server/requireAdmin';
 import { createClient }             from '@/utils/supabase/server';
 import { createCategory, updateCategory, deleteCategory } from '../actions';
 import type { Category }            from '@/lib/db.types';
 import ConfirmButton                from '../_components/ConfirmButton';
 
 export default async function CategoriesPage() {
+  await requireAdminPage('/admin/categories');
   const supabase = await createClient();
   const { data: categories } = await supabase
     .from('categories')

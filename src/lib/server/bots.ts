@@ -7,7 +7,7 @@ import 'server-only';
  * is always treated as a bot.
  */
 const BOT_RE =
-  /(?<!cu)bot|crawl|spider|slurp|fetch|scrap|preview|monitor|uptime|lighthouse|pagespeed|gtmetrix|facebookexternalhit|whatsapp|telegram|discord|slack-imgproxy|skype|embedly|quora|vkshare|headless|phantomjs|puppeteer|playwright|selenium|webdriver|curl|wget|python|go-http|java\/|okhttp|axios|node-fetch|undici|libwww|httpclient|postman|insomnia|ahrefs|semrush|mj12|dotbot|petalbot|yandex|baidu-|duckduckgo-favicons|applebot|vercel/i;
+  /(?<!cu)bot|crawl|spider|slurp|fetch|scrap|preview|monitor|uptime|lighthouse|pagespeed|gtmetrix|facebookexternalhit|whatsapp|telegram|discord|slack-imgproxy|skype|embedly|quora|vkshare|headless|phantomjs|puppeteer|playwright|selenium|webdriver|curl|wget|python|go-http|java\/|okhttp|axios|node-fetch|undici|libwww|httpclient|postman|insomnia|ahrefs|semrush|mj12|dotbot|petalbot|yandex|baidu-|duckduckgo-favicons|applebot|vercel|google-inspectiontool|googleother|mediapartners-google|apis-google|qwantify|iframely|ia_archiver|newrelicpinger|google-read-aloud|netcraftsurveyagent/i;
 
 /**
  * Real people that a naive substring match flags as bots (regression table in scripts/test-bots.test.mjs):

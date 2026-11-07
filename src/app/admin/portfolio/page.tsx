@@ -1,8 +1,10 @@
+import { requireAdminPage } from '@/lib/server/requireAdmin';
 import { createClient }          from '@/utils/supabase/server';
 import AddPortfolioPhotoForm      from '../_components/AddPortfolioPhotoForm';
 import PortfolioAdminGrid         from './_components/PortfolioAdminGrid';
 
 export default async function AdminPortfolioPage() {
+  await requireAdminPage('/admin/portfolio');
   const supabase = await createClient();
   const { data: photos } = await supabase
     .from('portfolio_photos')

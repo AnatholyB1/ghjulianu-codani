@@ -4,11 +4,12 @@ import { useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
+import { safeRelativePath } from '@/lib/safeRedirect';
 
 function LoginForm() {
   const router       = useRouter();
   const searchParams = useSearchParams();
-  const redirect     = searchParams.get('redirect') ?? '/admin';
+  const redirect     = safeRelativePath(searchParams.get('redirect') ?? searchParams.get('next'), '/admin');
   const supabase     = createClient();
 
   const [email,    setEmail]    = useState('');

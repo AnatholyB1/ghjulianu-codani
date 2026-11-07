@@ -11,7 +11,7 @@ import DownloadLinkEmail, { downloadEmailSubject, downloadEmailText } from '@/li
 import { logEvent, safeVisitorHash, deviceClass, countryOf } from '@/lib/server/events';
 import { enqueueConfirmation } from '@/lib/server/newsletter';
 import {
-  GLOBAL_EMAIL_KEY, GLOBAL_EMAIL_WINDOW_SECONDS, LIMITS, LINK_TTL_HOURS, downloadEmailDailyCap, checkFormToken, normalizeEmail, parsePhotoRefs, signFormToken, verifyAlbumAccess,
+  GLOBAL_EMAIL_KEY, GLOBAL_EMAIL_WINDOW_SECONDS, IP_DAILY_WINDOW_SECONDS, downloadIpDailyCap, LIMITS, LINK_TTL_HOURS, downloadEmailDailyCap, checkFormToken, normalizeEmail, parsePhotoRefs, signFormToken, verifyAlbumAccess,
   type PhotoRef,
 } from '@/lib/server/requestGuards';
 
@@ -22,7 +22,8 @@ import {
  */
 export type RequestResult =
   | { ok: true }
-  | { ok: false; code: 'invalid_email' | 'rate_limited' | 'server_error' | 'album_locked' };
+  | { ok: false; code: 'invalid_email' | 'rate_limited' | 'server_error' | 'album_locked' }
+  | { ok: false; code: 'service_unavailable'; support: string | null };
 
 export interface RequestInput {
   email: string;
@@ -142,12 +143,18 @@ export async function requestDownload(input: RequestInput): Promise<RequestResul
       return generic();
     }
 
-    // 6c. GLOBAL daily cap on download emails (email-relay abuse). Over the cap: generic success,
-    //     nothing stored, nothing sent, loud server warning.
+    // 6c. Daily caps on download emails (email-relay abuse).
+    //     Per-IP daily cap first (default 20, well below the global cap) so one IP cannot exhaust the global
+    //     budget alone; over it the user sees the visible `rate_limited` state.
+    if (!(await hit(`dlreq:ipday:${ipHash}`, downloadIpDailyCap(), IP_DAILY_WINDOW_SECONDS))) {
+      console.warn(`[request] per-IP daily download cap (${downloadIpDailyCap()}) reached for ip ${ipHash.slice(0, 8)}: request refused.`);
+      return { ok: false, code: 'rate_limited' };
+    }
+    //     Over the GLOBAL cap: a visible, friendly error (never a fake success), nothing stored or sent, loud log.
     const cap = downloadEmailDailyCap();
     if (!(await hit(GLOBAL_EMAIL_KEY, cap, GLOBAL_EMAIL_WINDOW_SECONDS))) {
-      console.error(`[request] GLOBAL DAILY DOWNLOAD-EMAIL CAP (${cap}) REACHED: request dropped, nothing sent. Possible abuse as email relay, or raise DOWNLOAD_EMAIL_DAILY_CAP.`);
-      return generic();
+      console.error(`[request] GLOBAL DAILY DOWNLOAD-EMAIL CAP (${cap}) REACHED: request refused (service_unavailable shown to user), nothing sent. Possible abuse as email relay, or raise DOWNLOAD_EMAIL_DAILY_CAP.`);
+      return { ok: false, code: 'service_unavailable', support: process.env.SUPPORT_EMAIL?.trim() || null };
     }
 
     const requestAlbumId = distinctAlbumIds.length === 1 && portfolioIds.length === 0 ? distinctAlbumIds[0] : null;

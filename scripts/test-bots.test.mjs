@@ -34,6 +34,16 @@ const BOTS = {
   facebook: 'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)',
   whatsapp: 'WhatsApp/2.23.20.0',
   puppeteer: 'Mozilla/5.0 Puppeteer',
+  'Google-InspectionTool': 'Mozilla/5.0 (compatible; Google-InspectionTool/1.0)',
+  GoogleOther: 'GoogleOther',
+  'Mediapartners-Google': 'Mediapartners-Google',
+  'APIs-Google': 'APIs-Google (+https://developers.google.com/webmasters/APIs-Google.html)',
+  Qwantify: 'Mozilla/5.0 (compatible; Qwantify/2.4w; +https://www.qwant.com/)/2.4w',
+  Iframely: 'Iframely/1.3.1 (+https://iframely.com/docs/about)',
+  ia_archiver: 'ia_archiver (+http://www.alexa.com/site/help/webmasters)',
+  NewRelicPinger: 'NewRelicPinger/1.0 (123456)',
+  'Google-Read-Aloud': 'Mozilla/5.0 (Linux; Android 7.0) Google-Read-Aloud',
+  NetcraftSurveyAgent: 'Mozilla/5.0 (compatible; NetcraftSurveyAgent/1.0; +info@netcraft.com)',
   'no UA': '',
 };
 

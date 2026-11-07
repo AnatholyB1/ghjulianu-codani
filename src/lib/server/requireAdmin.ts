@@ -11,10 +11,20 @@ import type { User } from '@supabase/supabase-js';
 
 let warned = false;
 
+/** NFKC then lowercase (used for the allowlist entries and, after an ASCII check, for the candidate). */
+function normalizeEmail(s: string): string {
+  return s.normalize('NFKC').trim().toLowerCase();
+}
+
+function isAscii(s: string): boolean {
+  for (let i = 0; i < s.length; i++) if (s.charCodeAt(i) > 0x7f) return false;
+  return true;
+}
+
 export function parseAdminEmails(raw: string | undefined | null): string[] {
   return (raw ?? '')
     .split(',')
-    .map((s) => s.trim().toLowerCase())
+    .map((s) => normalizeEmail(s))
     .filter((s) => s.length > 0);
 }
 
@@ -28,7 +38,10 @@ export function isAdminEmail(email: string | null | undefined, raw: string | und
     return false;
   }
   if (typeof email !== 'string') return false;
-  const e = email.trim().toLowerCase();
+  // Non-ASCII addresses (Kelvin sign, fullwidth letters, ...) are never admins, even if NFKC folds them onto an
+  // allowlisted one: test the RAW string, before normalising.
+  if (!isAscii(email)) return false;
+  const e = normalizeEmail(email);
   return e.length > 0 && list.includes(e);
 }
 
@@ -51,4 +64,14 @@ export async function requireAdmin(): Promise<User> {
   const user = await getAdminUser();
   if (!user) throw new Error('Unauthorized');
   return user;
+}
+
+/** For admin server pages: defense in depth behind proxy.ts. Redirects to the login page when not an admin. */
+export async function requireAdminPage(returnTo = '/admin'): Promise<User> {
+  const user = await getAdminUser();
+  if (!user) {
+    const { redirect } = await import('next/navigation');
+    redirect('/admin/login?redirect=' + encodeURIComponent(returnTo));
+  }
+  return user as User;
 }
