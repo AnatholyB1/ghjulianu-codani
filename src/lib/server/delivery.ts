@@ -8,6 +8,7 @@ import {
   type Part,
 } from './deliveryPlan';
 import {
+  photoSize,
   photoSizes,
   resolvePhotoSource,
   type PhotoRow,
@@ -178,6 +179,8 @@ export interface PlannedPhoto extends DeliveryPhoto {
   source: PhotoSource;
   bytes: number;
   sizeKnown: boolean;
+  /** same as sizeKnown; the field name planParts() looks at. */
+  known: boolean;
 }
 
 export interface DeliveryPlan {
@@ -191,11 +194,19 @@ export interface DeliveryPlan {
 export async function planDelivery(photos: DeliveryPhoto[]): Promise<DeliveryPlan> {
   const sources = await Promise.all(photos.map((p) => resolvePhotoSource(p.row, 'download')));
   const sizes = await photoSizes(sources);
+  // One retry for the lookups that failed: a transient HEAD error must not flip the plan
+  // (landing page and ZIP route have to agree on the parts, M4).
+  await Promise.all(
+    sizes.map(async (s, i) => {
+      if (!s.known) sizes[i] = await photoSize(sources[i]);
+    }),
+  );
   const items: PlannedPhoto[] = photos.map((p, i) => ({
     ...p,
     source: sources[i],
     bytes: sizes[i].bytes,
     sizeKnown: sizes[i].known,
+    known: sizes[i].known,
   }));
   return {
     items,

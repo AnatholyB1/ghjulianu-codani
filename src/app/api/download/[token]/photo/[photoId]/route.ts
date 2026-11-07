@@ -19,6 +19,28 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
  *  4. consume_download_use (atomic; reuses an open 15-minute session)
  *  5. open the upstream file and stream; bytes are counted from the stream and logged via after()
  */
+/** HEAD: validates token + photo membership read-only. NEVER consumes a use. */
+export async function HEAD(req: Request, ctx: { params: Promise<{ token: string; photoId: string }> }) {
+  const { token, photoId } = await ctx.params;
+  try {
+    const g = await gate(req, token);
+    if (!g.ok) return g.response;
+    if (!UUID_RE.test(photoId) || !g.request.photos.some((p) => p.photo_id === photoId)) {
+      return new Response(null, { status: 404, headers: PRIVATE_HEADERS });
+    }
+    const { photos } = await loadDeliveryPhotos(g.request);
+    const photo = photos.find((p) => p.row.id === photoId);
+    if (!photo) return new Response(null, { status: 404, headers: PRIVATE_HEADERS });
+    const source = await resolvePhotoSource(photo.row, 'download');
+    const headers = new Headers(PRIVATE_HEADERS);
+    headers.set('Content-Type', source.contentType);
+    return new Response(null, { status: 200, headers });
+  } catch (e) {
+    console.error('[download/photo] HEAD failure:', e instanceof Error ? e.message : 'unknown');
+    return refuse(req, token, 'error');
+  }
+}
+
 export async function GET(req: Request, ctx: { params: Promise<{ token: string; photoId: string }> }) {
   const { token, photoId } = await ctx.params;
   try {

@@ -3,7 +3,7 @@ import { userAgent } from 'next/server';
 import { getAdminClient } from './supabaseAdmin';
 import { hit, hashIdentifier } from './rateLimit';
 import { hashToken } from './tokens';
-import { countryOf, deviceClass, visitorHash } from './events';
+import { countryOf, deviceClass, safeVisitorHash } from './events';
 import {
   RATE_LIMIT_PER_IP,
   RATE_LIMIT_PER_TOKEN,
@@ -103,7 +103,7 @@ export async function logDownloads(
         bytes: r.bytes,
         device: deviceClass(req),
         country: countryOf(req),
-        visitor_hash: visitorHash(req),
+        visitor_hash: safeVisitorHash(req),
         session_key: ctx.part ? `zip:${ctx.part}` : 'photo',
       }));
     if (!rows.length) return;

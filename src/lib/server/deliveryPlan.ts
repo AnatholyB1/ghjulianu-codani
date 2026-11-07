@@ -4,10 +4,20 @@
  * Every limit of the delivery routes lives in THIS file.
  */
 
-/** A ZIP part holds at most this many bytes of (stored, uncompressed) photo data. */
-export const ZIP_PART_MAX_BYTES = 120 * 1024 * 1024;
+/**
+ * A ZIP part holds at most this many bytes of (stored, uncompressed) photo data.
+ * 70 MB: the route streams one part inside maxDuration (300 s), so a part must
+ * finish on a slow mobile link: 70 MB * 8 / 300 s = ~1.9 Mbit/s minimum
+ * sustained (120 MB needed ~3.2 Mbit/s). See FIXES-batch2.md.
+ */
+export const ZIP_PART_MAX_BYTES = 70 * 1024 * 1024;
 /** ... and at most this many files. */
 export const ZIP_PART_MAX_FILES = 60;
+/**
+ * File cap used INSTEAD of the byte cap when at least one size is unknown
+ * (see planParts): 20 * ASSUMED_PHOTO_BYTES = 60 MB, under the byte cap.
+ */
+export const ZIP_PART_MAX_FILES_UNKNOWN_SIZE = 20;
 /**
  * Size assumed for a photo whose size could not be looked up (HEAD failed).
  * The page and the ZIP route both use it, so they still compute the same
@@ -29,6 +39,8 @@ export const DOWNLOAD_MAX_DURATION_SECONDS = 300;
 export interface SizedItem {
   /** Size in bytes (use ASSUMED_PHOTO_BYTES when unknown). */
   bytes: number;
+  /** false when `bytes` is only the assumed size. Absent = known. */
+  known?: boolean;
 }
 
 export interface Part<T extends SizedItem> {
@@ -44,12 +56,20 @@ export interface Part<T extends SizedItem> {
  * Deterministic greedy split: items keep their order; a new part starts when
  * adding the next item would exceed the byte or file cap. An item larger than
  * the byte cap still gets (alone) its own part. Same input => same output.
+ *
+ * M4: when ANY item has an unknown size the byte cap is ignored and the split
+ * is by count only (ZIP_PART_MAX_FILES_UNKNOWN_SIZE), so the result no longer
+ * depends on which items happened to be assumed at 3 MB.
  */
 export function planParts<T extends SizedItem>(
   items: readonly T[],
   maxBytes = ZIP_PART_MAX_BYTES,
   maxFiles = ZIP_PART_MAX_FILES,
 ): Part<T>[] {
+  if (items.some((i) => i.known === false)) {
+    maxBytes = Number.POSITIVE_INFINITY;
+    maxFiles = Math.min(maxFiles, ZIP_PART_MAX_FILES_UNKNOWN_SIZE);
+  }
   const parts: Part<T>[] = [];
   let cur: Part<T> | null = null;
   items.forEach((item, i) => {

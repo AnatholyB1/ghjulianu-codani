@@ -6,7 +6,8 @@ import { getAdminClient } from '@/lib/server/supabaseAdmin';
 import { getDeliveryState, loadDeliveryPhotos, planDelivery } from '@/lib/server/delivery';
 import { isBot } from '@/lib/server/deliveryHttp';
 import { hit } from '@/lib/server/rateLimit';
-import { countryOf, deviceClass, logEvent, visitorHash } from '@/lib/server/events';
+import { countryOf, deviceClass, logEvent, safeVisitorHash } from '@/lib/server/events';
+import { resolvePhotoSource } from '@/lib/server/photoSource';
 import Shell from './Shell';
 import Terminal from './Terminal';
 import DeliveryView, { type Tile } from './DeliveryView';
@@ -62,7 +63,8 @@ export default async function DeliveryPage({ params, searchParams }: Props) {
   const hdrs = new Headers([...h.entries()]);
   after(async () => {
     if (isBot({ headers: hdrs })) return;
-    const vh = visitorHash({ headers: hdrs });
+    const vh = safeVisitorHash({ headers: hdrs });
+    if (!vh) return; // salt not configured: skip analytics, never break the page
     if (!(await hit(`lo:${req.id}:${vh}`, 1, 1800))) return;
     await logEvent({
       type: 'link_open', request_id: req.id, album_id: req.albumId,
@@ -70,9 +72,11 @@ export default async function DeliveryPage({ params, searchParams }: Props) {
     });
   });
 
-  const tiles: Tile[] = plan.items.map((i) => ({
+  // M3: tiles only ever carry the THUMBNAIL source; the download source never reaches the HTML.
+  const thumbs = await Promise.all(plan.items.map((i) => resolvePhotoSource(i.row, 'thumbnail')));
+  const tiles: Tile[] = plan.items.map((i, k) => ({
     id: i.row.id,
-    url: i.source.url,
+    url: thumbs[k].url,
     w: i.row.width && i.row.width > 0 ? i.row.width : 1500,
     h: i.row.height && i.row.height > 0 ? i.row.height : 1000,
   }));

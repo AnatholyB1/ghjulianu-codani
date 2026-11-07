@@ -122,6 +122,7 @@ export async function fetchPhotoSource(source: PhotoSource, signal?: AbortSignal
       const res = await upstreamRequest(source.url, 'GET', signal);
       if (res.status === 200 && res.body) return res;
       lastErr = new Error(`upstream ${res.status}`);
+      if (res.status === 404 || res.status === 403) forgetPhotoSize(source);
       await res.body?.cancel().catch(() => undefined);
       if (res.status < 500) break;
     } catch (e) {
@@ -137,6 +138,11 @@ export async function fetchPhotoSource(source: PhotoSource, signal?: AbortSignal
 const SIZE_TTL_MS = 60 * 60 * 1000;
 const SIZE_CACHE_MAX = 5000;
 const sizeCache = new Map<string, { bytes: number; at: number }>();
+
+/** Drops a cached size (object gone: 404 on HEAD or GET) so a stale entry cannot vouch for a missing file. */
+export function forgetPhotoSize(source: PhotoSource): void {
+  sizeCache.delete(source.url);
+}
 
 /**
  * Byte size of a source via HEAD (Content-Length). Falls back to
@@ -155,6 +161,7 @@ export async function photoSize(source: PhotoSource): Promise<{ bytes: number; k
       sizeCache.set(source.url, { bytes: len, at: Date.now() });
       return { bytes: len, known: true };
     }
+    forgetPhotoSize(source);
   } catch {
     /* fall through to the assumed size */
   }
