@@ -158,12 +158,15 @@ try {
   // ---- 7. rate limit: > per-token limit in a minute => 429, uses never exceed 1 session
   const D = await seed(photos);
   const codes = [];
-  for (let i = 0; i < 80; i += 20) {
-    const batch = await Promise.all(Array.from({ length: 20 }, () => get(`/api/download/${D.token}/photo/${pid}`).then(async (r) => { await r.arrayBuffer(); return r.status; })));
+  // Fixed 60 s window: a burst can straddle a window boundary, so retry the burst once.
+  for (let round = 0; round < 3 && !codes.includes(429); round++) {
+    const batch = await Promise.all(Array.from({ length: 100 }, () => get(`/api/download/${D.token}/photo/${pid}`).then(async (r) => { await r.arrayBuffer(); return r.status; })));
     codes.push(...batch);
   }
   ok(codes.includes(429), `rate limit kicks in (${codes.filter((c) => c === 200).length} x200, ${codes.filter((c) => c === 429).length} x429)`);
   ok((await row(D.id)).used_count === 1, 'rate-limited requests consumed nothing extra (used_count == 1)');
+  const rl = await get(`/api/download/${D.token}/photo/${pid}`, { headers: { 'sec-fetch-dest': 'document', accept: 'text/html' } });
+  ok(rl.status === 303 && rl.headers.get('location') === `/telechargement/${D.token}?e=rate`, 'rate-limited browser navigation => 303 landing ?e=rate');
 } catch (e) {
   fail++; console.log('ERROR', e);
 } finally {

@@ -1,4 +1,7 @@
 import 'server-only';
+import http from 'node:http';
+import https from 'node:https';
+import { Readable } from 'node:stream';
 import { ASSUMED_PHOTO_BYTES } from './deliveryPlan';
 
 /**
@@ -66,13 +69,58 @@ export async function resolvePhotoSource(row: PhotoRow, purpose: PhotoPurpose = 
   return { kind: 'public-url', url: u.toString(), ext, contentType: MIME[ext] ?? 'application/octet-stream' };
 }
 
+/* ── upstream access over plain HTTP/1.1 ────────────────────────────
+ * Deliberately NOT global fetch: on recent Node versions fetch multiplexes every
+ * request to the storage host over ONE HTTP/2 connection. A file body that is
+ * being streamed slowly to a client then stalls every other request to that host
+ * (database RPCs included) until the stream errors out (observed: 60 s hang then
+ * NGHTTP2_PROTOCOL_ERROR). One HTTP/1.1 socket per download has no such coupling.
+ */
+const agent = new https.Agent({ keepAlive: true, maxSockets: 64 });
+const plainAgent = new http.Agent({ keepAlive: true, maxSockets: 64 });
+
+export interface Upstream {
+  status: number;
+  headers: Headers;
+  /** null for HEAD. */
+  body: ReadableStream<Uint8Array> | null;
+}
+
+function upstreamRequest(url: string, method: 'GET' | 'HEAD', signal?: AbortSignal): Promise<Upstream> {
+  return new Promise((resolve, reject) => {
+    if (signal?.aborted) return reject(new DOMException('aborted', 'AbortError'));
+    const u = new URL(url);
+    const lib = u.protocol === 'https:' ? https : http;
+    const req = lib.request(
+      u,
+      { method, agent: u.protocol === 'https:' ? agent : plainAgent, headers: { 'accept-encoding': 'identity' } },
+      (res) => {
+        const headers = new Headers();
+        for (const [k, v] of Object.entries(res.headers)) if (typeof v === 'string') headers.set(k, v);
+        if (method === 'HEAD') {
+          res.resume();
+          return resolve({ status: res.statusCode ?? 0, headers, body: null });
+        }
+        const body = Readable.toWeb(res) as unknown as ReadableStream<Uint8Array>;
+        resolve({ status: res.statusCode ?? 0, headers, body });
+      },
+    );
+    req.setTimeout(30_000, () => req.destroy(new Error('upstream timeout')));
+    req.on('error', reject);
+    const onAbort = () => req.destroy(new DOMException('aborted', 'AbortError'));
+    signal?.addEventListener('abort', onAbort, { once: true });
+    req.on('close', () => signal?.removeEventListener('abort', onAbort));
+    req.end();
+  });
+}
+
 /** Opens the file for streaming. One retry on network error / 5xx. Throws when unavailable. */
-export async function fetchPhotoSource(source: PhotoSource, signal?: AbortSignal): Promise<Response> {
+export async function fetchPhotoSource(source: PhotoSource, signal?: AbortSignal): Promise<Upstream> {
   let lastErr: unknown;
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
-      const res = await fetch(source.url, { signal, cache: 'no-store' });
-      if (res.ok && res.body) return res;
+      const res = await upstreamRequest(source.url, 'GET', signal);
+      if (res.status === 200 && res.body) return res;
       lastErr = new Error(`upstream ${res.status}`);
       await res.body?.cancel().catch(() => undefined);
       if (res.status < 500) break;
@@ -93,14 +141,16 @@ const sizeCache = new Map<string, { bytes: number; at: number }>();
 /**
  * Byte size of a source via HEAD (Content-Length). Falls back to
  * ASSUMED_PHOTO_BYTES when the lookup fails; `known` tells which one it is.
+ * `known: true` also proves the object exists, which the routes use as a cheap
+ * pre-flight BEFORE consuming a use (without holding a body open).
  */
 export async function photoSize(source: PhotoSource): Promise<{ bytes: number; known: boolean }> {
   const hit = sizeCache.get(source.url);
   if (hit && Date.now() - hit.at < SIZE_TTL_MS) return { bytes: hit.bytes, known: true };
   try {
-    const res = await fetch(source.url, { method: 'HEAD', cache: 'no-store', signal: AbortSignal.timeout(5000) });
+    const res = await upstreamRequest(source.url, 'HEAD', AbortSignal.timeout(5000));
     const len = Number(res.headers.get('content-length'));
-    if (res.ok && Number.isFinite(len) && len > 0) {
+    if (res.status === 200 && Number.isFinite(len) && len > 0) {
       if (sizeCache.size >= SIZE_CACHE_MAX) sizeCache.delete(sizeCache.keys().next().value as string);
       sizeCache.set(source.url, { bytes: len, at: Date.now() });
       return { bytes: len, known: true };

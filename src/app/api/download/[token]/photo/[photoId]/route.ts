@@ -2,7 +2,7 @@ import { after } from 'next/server';
 import { consumeDownloadUse, loadDeliveryPhotos } from '@/lib/server/delivery';
 import { photoFileName } from '@/lib/server/deliveryPlan';
 import { PRIVATE_HEADERS, contentDisposition, gate, logDownloads, refuse } from '@/lib/server/deliveryHttp';
-import { fetchPhotoSource, resolvePhotoSource } from '@/lib/server/photoSource';
+import { fetchPhotoSource, photoSize, resolvePhotoSource, type Upstream } from '@/lib/server/photoSource';
 import { countingStream } from '@/lib/server/zipStream';
 
 export const runtime = 'nodejs';
@@ -15,9 +15,9 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
  * Single photo, pass-through stream (no buffering). Order matters:
  *  1. gate: token shape, rate limit, non-consuming state check
  *  2. photo belongs to the request? (404 otherwise, nothing consumed)
- *  3. open the upstream file (a broken file must not burn a use)
+ *  3. HEAD pre-flight (a missing file must not burn a use)
  *  4. consume_download_use (atomic; reuses an open 15-minute session)
- *  5. stream; bytes are counted from the stream and logged via after()
+ *  5. open the upstream file and stream; bytes are counted from the stream and logged via after()
  */
 export async function GET(req: Request, ctx: { params: Promise<{ token: string; photoId: string }> }) {
   const { token, photoId } = await ctx.params;
@@ -37,22 +37,25 @@ export async function GET(req: Request, ctx: { params: Promise<{ token: string; 
     const abort = new AbortController();
     req.signal.addEventListener('abort', () => abort.abort(), { once: true });
 
-    let upstream: Response;
-    try {
-      upstream = await fetchPhotoSource(source, abort.signal);
-    } catch {
-      return refuse(req, token, 'error'); // nothing consumed
-    }
+    // Pre-flight (HEAD, no body held open): a missing file must not burn a use.
+    if (!(await photoSize(source)).known) return refuse(req, token, 'error');
 
     const consumed = await consumeDownloadUse(token);
     if (!consumed || !consumed.photos.some((p) => p.photo_id === photoId)) {
-      await upstream.body?.cancel().catch(() => undefined);
       return refuse(req, token, consumed ? 'invalid' : 'exhausted');
+    }
+
+    // After consuming: if this GET fails the 15-minute session stays open, so a retry is free.
+    let upstream: Upstream;
+    try {
+      upstream = await fetchPhotoSource(source, abort.signal);
+    } catch {
+      return refuse(req, token, 'error');
     }
 
     let resolveBytes!: (n: number) => void;
     const bytesDone = new Promise<number>((r) => (resolveBytes = r));
-    const counted = countingStream(upstream.body as ReadableStream<Uint8Array>, (bytes, completed) => {
+    const counted = countingStream(upstream.body!, (bytes, completed) => {
       resolveBytes(bytes); // bytes actually sent, also when the client aborted
       if (!completed) abort.abort();
     });

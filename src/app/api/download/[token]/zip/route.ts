@@ -9,7 +9,7 @@ import {
   refuse,
   type DownloadRecord,
 } from '@/lib/server/deliveryHttp';
-import { fetchPhotoSource } from '@/lib/server/photoSource';
+import { fetchPhotoSource, photoSize } from '@/lib/server/photoSource';
 import { countingStream, zipReadableStream, type ZipEntry } from '@/lib/server/zipStream';
 
 export const runtime = 'nodejs';
@@ -20,7 +20,7 @@ export const maxDuration = 300; // seconds; must be a literal (keep equal to DOW
  * Streamed ZIP (STORE mode) of one part of the request. Order:
  *  1. gate (token, rate limits, non-consuming state)
  *  2. plan parts (HEAD sizes, deterministic split) and validate `part`
- *  3. open the FIRST source before consuming, so a broken storage does not burn a use
+ *  3. HEAD pre-flight of the first file before consuming, so a broken storage does not burn a use
  *  4. consume_download_use (atomic; an open 15-minute session is reused, not re-charged)
  *  5. stream: files fetched one at a time, nothing buffered beyond one chunk
  * A failure after step 4 (a later file unavailable, client gone) truncates the
@@ -46,25 +46,18 @@ export async function GET(req: Request, ctx: { params: Promise<{ token: string }
     const abort = new AbortController();
     req.signal.addEventListener('abort', () => abort.abort(), { once: true });
 
-    let first: Response;
-    try {
-      first = await fetchPhotoSource(part.items[0].source, abort.signal);
-    } catch {
-      return refuse(req, token, 'error'); // nothing consumed
-    }
+    // Pre-flight (HEAD, no body held open): the first file must exist before a use is consumed.
+    if (!(await photoSize(part.items[0].source)).known) return refuse(req, token, 'error');
 
     const consumed = await consumeDownloadUse(token);
-    if (!consumed) {
-      await first.body?.cancel().catch(() => undefined);
-      return refuse(req, token, 'exhausted');
-    }
+    if (!consumed) return refuse(req, token, 'exhausted');
 
     const records: DownloadRecord[] = [];
-    const entries: ZipEntry[] = part.items.map((item, i) => ({
+    const entries: ZipEntry[] = part.items.map((item) => ({
       name: photoFileName(prefix, item.n, item.source.ext),
       open: async (signal) => {
-        const res = i === 0 ? first : await fetchPhotoSource(item.source, signal);
-        return countingStream(res.body as ReadableStream<Uint8Array>, (bytes) => {
+        const res = await fetchPhotoSource(item.source, signal);
+        return countingStream(res.body!, (bytes) => {
           records.push({ photoId: item.row.id, bytes });
         });
       },
