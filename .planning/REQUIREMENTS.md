@@ -1,195 +1,56 @@
-# Day/Night Photo Filtering Requirements
+# Requirements — v1.1 Téléchargement par email, newsletter & KPIs admin
 
-## Core Technical Requirements
+(v1.0 archived in `.planning/milestones/v1.0-REQUIREMENTS.md`)
 
-### CTR-01: Database Schema Extension
-- [ ] Add `is_day BOOLEAN DEFAULT true` column to photos table
-- [ ] Add `is_day BOOLEAN DEFAULT true` column to albums table
-- [ ] Create database indexes on is_day columns for both tables
-- [ ] Create migration script to backfill existing records (set to true/day)
-- [ ] Verify schema changes don't break existing functionality
+## v1 Requirements
 
-### CTR-02: State Management System
-- [ ] Create DayNightContext using React Context API
-- [ ] Implement state: mode: 'day' | 'night'
-- [ ] Implement actions: setMode(mode), toggleMode()
-- [ ] Persist state to localStorage
-- [ ] Synchronize state across browser tabs/windows
-- [ ] Provide useDayNight hook for components
+### Fondations (FND)
+- [ ] **FND-01**: Le visiteur peut lire une politique de confidentialité FR/EN à jour (finalités, durées de conservation, sous-traitants Resend/Supabase/Vercel, droits RGPD)
+- [ ] **FND-02**: L'admin peut envoyer des emails depuis un domaine vérifié (SPF/DKIM/DMARC) sans envoi réel depuis les previews
+- [ ] **FND-03**: Les données email, jetons et événements sont inaccessibles au public (RLS sans politique, accès serveur uniquement)
 
-### CTR-03: Theme Integration System
-- [ ] Implement theme switching mechanism (CSS classes or CSS variables)
-- [ ] Light theme when mode = 'day'
-- [ ] Dark theme when mode = 'night'
-- [ ] Smooth transition between themes (CSS transitions)
-- [ ] Apply to entire application consistently
+### Demande de téléchargement (REQ)
+- [ ] **REQ-01**: Le visiteur peut demander ses photos sélectionnées en saisissant son email
+- [ ] **REQ-02**: Le visiteur peut cocher une case newsletter facultative, décochée par défaut, sans que le téléchargement en dépende
+- [ ] **REQ-03**: Le visiteur reçoit un email (FR/EN) avec un lien expirant (48 h, 3 utilisations)
+- [ ] **REQ-04**: Le formulaire résiste aux abus (champ piège, limitation par IP et par email, réponse générique)
+- [ ] **REQ-05**: Le visiteur d'un album privé saisit sa clé d'accès, vérifiée côté serveur avec limitation des essais, puis suit le même flux email
 
-### CTR-04: UI Toggle Component
-- [ ] Create DayNightToggle component
-- [ ] Display appropriate icon (sun/moon) based on current state
-- [ ] Accessible button with proper ARIA labels
-- [ ] Keyboard operable (Space/Enter to toggle)
-- [ ] Positioned consistently in header/navbar
-- [ ] Tooltip explaining functionality
+### Livraison (DLV)
+- [ ] **DLV-01**: Le visiteur ouvre le lien et voit une page d'accueil (vignettes, états expiré/épuisé) sans consommer d'utilisation
+- [ ] **DLV-02**: Le visiteur peut télécharger une photo seule ou toutes en un ZIP streamé, sans bloquer le serveur
+- [ ] **DLV-03**: Les fichiers livrés restent légers (WebP déjà optimisé, ZIP en mode « store », plafond de taille avec découpage en parties)
+- [ ] **DLV-04**: Chaque utilisation de lien est comptée de façon atomique et enregistrée avec le volume transféré
 
-### CTR-05: Photo Filtering Logic
-- [ ] Modify photo queries to include is_day filter
-- [ ] Filter: is_day = eq(currentMode === 'day' ? true : false)
-- [ ] Apply to all photo gallery views
-- [ ] Maintain existing sorting/pagination/filtering
-- [ ] Handle loading states appropriately
+### Suppression de l'ancien système et protection UI (PRT)
+- [ ] **PRT-01**: Tout ancien téléchargement direct (panier, ZIP navigateur, sélecteur de dossier) est supprimé, `jszip` désinstallé
+- [ ] **PRT-02**: Le clic droit, le glisser-déposer et l'appui long sont bloqués sur les images publiques seulement (pas sur les champs, sans casser la lightbox), testé iOS/Android
+- [ ] **PRT-03**: Une fonction unique choisit la source des fichiers, pour brancher des originaux privés en v1.2
 
-### CTR-06: Album Filtering Logic
-- [ ] Modify album queries to include is_day filter
-- [ ] Filter: is_day = eq(currentMode === 'day' ? true : false)
-- [ ] Apply to all album listing views
-- [ ] Maintain existing sorting/pagination
-- [ ] Handle empty states appropriately
+### Newsletter (NWS)
+- [ ] **NWS-01**: L'abonné confirme son inscription par un email de double opt-in (confirmation par bouton POST)
+- [ ] **NWS-02**: L'abonné peut se désinscrire en un clic (lien signé + en-têtes `List-Unsubscribe`)
+- [ ] **NWS-03**: Les rebonds et plaintes Resend suppriment automatiquement l'adresse (webhook signé)
+- [ ] **NWS-04**: L'admin peut voir, filtrer et supprimer les abonnés (droit à l'effacement)
+- [ ] **NWS-05**: L'admin peut exporter les abonnés confirmés en CSV (protégé contre l'injection de formules, accents corrects dans Excel)
 
-### CTR-07: Cross-tab State Synchronization
-- [ ] Listen for storage events
-- [ ] Update local state when external changes detected
-- [ ] Prevent infinite update loops
-- [ ] Work across different browser windows/tabs
-- [ ] Fallback to polling if events not supported
+### KPIs admin (KPI)
+- [ ] **KPI-01**: L'admin voit le nombre de téléchargements et de vues avec sélecteur de période et variation
+- [ ] **KPI-02**: L'admin voit les photos préférées (ajouts à la sélection) et les plus téléchargées
+- [ ] **KPI-03**: Les vues sont comptées côté client après affichage réel, dédoublonnées par session et jour, robots filtrés, sans cookie ni IP brute
+- [ ] **KPI-04**: L'admin voit le tunnel (vue → demande → lien ouvert → téléchargé) et le taux d'inscription newsletter
+- [ ] **KPI-05**: L'admin voit les albums les plus consultés/téléchargés, la répartition jour/nuit et les appareils
+- [ ] **KPI-06**: L'admin voit la bande passante estimée et la croissance des abonnés
+- [ ] **KPI-07**: Les événements bruts sont purgés après environ 13 mois, les agrégats conservés
 
-### CTR-08: Initial Load Performance
-- [ ] Ensure filtering happens at database level
-- [ ] Verify indexes are used with EXPLAIN ANALYZE
-- [ ] Test with production-sized datasets
-- [ ] Measure query performance before/after
-- [ ] Optimize if needed
-
-## Photo-specific Requirements
-
-### PHO-01: Photo Admin Interface
-- [ ] Add day/night checkbox to photo edit form
-- [ ] Default checkbox state based on photo's is_day value
-- [ ] Update photo's is_day when checkbox changes
-- [ ] Show visual indicator in photo grid/list views
-- [ ] Tooltip explaining the setting on hover
-
-### PHO-02: Bulk Photo Operations
-- [ ] Allow selecting multiple photos
-- [ ] Provide "Mark as Day" and "Mark as Night" bulk actions
-- [ ] Update is_day for all selected photos
-- [ ] Show progress indicator for large batches
-- [ ] Handle errors gracefully
-
-### PHO-03: Photo Display Indicators
-- [ ] Optional: Show small icon indicating day/night status
-- [ ] Consistent styling across all photo displays
-- [ ] Configurable visibility (setting to show/hide)
-- [ ] Accessible alternative text for screen readers
-
-## Album-specific Requirements
-
-### ALB-01: Album Admin Interface
-- [ ] Add day/night checkbox to album edit form
-- [ ] Default checkbox state based on album's is_day value
-- [ ] Update album's is_day when checkbox changes
-- [ ] Show visual indicator in album grid/list views
-- [ ] Tooltip explaining the setting on hover
-
-### ALB-02: Album Hierarchy Behavior
-- [ ] Album's is_day setting affects contained photos
-- [ ] Option: Individual photos can override album setting
-- [ ] Clear indication when photo inherits vs. has explicit setting
-- [ ] UI to override inheritance when needed
-
-### ALB-03: Album Display Indicators
-- [ ] Show day/night indicator on album cards
-- [ ] Consistent with photo indicator styling
-- [ ] Tooltip on hover explaining meaning
-- [ ] Visible in all album listing contexts
-
-## Animation Requirements
-
-### ANI-01: Transition Animations
-- [ ] Smooth crossfade when filtering content changes
-- [ ] 300-500ms duration for all transitions
-- [ ] Use CSS transitions where possible
-- [ ] Respect prefers-reduced-motion media query
-- [ ] No layout thrashing during animations
-
-## Accessibility Requirements
-
-### ACC-01: Keyboard Navigation
-- [ ] All controls operable via keyboard
-- [ ] Logical tab order
-- [ ] Visible focus indicators
-- [ ] Escape closes any popovers/dialogs
-
-### ACC-02: Screen Reader Support
-- [ ] ARIA labels on toggle button
-- [ ] Live regions for dynamic content updates
-- [ ] Proper heading structure
-- [ ] Landmark regions for navigation
-
-### ACC-03: Color Contrast
-- [ ] All text meets WCAG AA contrast ratios
-- [ ] Icons meet contrast requirements
-- [ ] Focus indicators visible
-- [ ] Tested with various color blindness simulators
-
-## Performance Requirements
-
-### PER-01: Database Query Performance
-- [ ] Index usage verified with EXPLAIN
-- [ ] Query time < 100ms for typical datasets
-- [ ] No sequential scans on large tables
-- [ ] Monitor performance in production
-
-### PER-02: Rendering Performance
-- [ ] Component re-renders minimized
-- [ ] Memoization where beneficial
-- [ ] Virtual scrolling for large lists if needed
-- [ ] Animation performance 60fps
-
-### PER-03: Bundle Size Impact
-- [ ] Minimal increase to JavaScript bundle
-- [ ] Lazy load non-critical components if needed
-- [ ] Analyze bundle impact with webpack/source-map-explorer
-
-## Future Requirements (Deferred)
-
-### FUT-01: Automatic Day/Night Detection
-- [ ] Analyze image brightness/color temperature
-- [ ] Suggest day/night classification on upload
-- [ ] User can accept/reject suggestions
-- [ ] Confidence scoring shown to user
-
-### FUT-02: Time-based Automatic Switching
-- [ ] Calculate sunrise/sunset based on location
-- [ ] Automatically switch mode at dawn/dusk
-- [ ] User-configurable offset times
-- [ ] Location detection with permission
-
-### FUT-03: Location-based Features
-- [ ] Use browser geolocation (with permission)
-- [ ] Calculate local solar time
-- [ ] Adjust for timezone and DST
-- [ ] Manual location override option
-
-### FUT-04: Special Time Categories
-- [ ] Golden hour (hour after sunrise/before sunset)
-- [ ] Blue hour (period of twilight)
-- [ ] Night (full darkness)
-- [ ] Different UI treatments for each
+## Future Requirements
+Éditeur d'envoi dans l'admin, originaux privés et plusieurs résolutions, cache de ZIP pré-construit, CAPTCHA, synchronisation Resend Audience, digest hebdomadaire.
 
 ## Out of Scope
+- Filigrane — écarté par le propriétaire (protection UI seulement)
+- DRM / protection serveur des fichiers — buckets publics en v1.1, originaux privés en v1.2
+- Comptes visiteurs — inutiles pour le flux par email
+- Outil d'analytics tiers — événements first-party sans cookie
 
-### OOS-01: Video Media Support
-- Reason: Current scope is photo-only; video would require different analysis techniques
-- Future consideration: Separate feature for video media
-
-### OOS-02: AI-powered Scene Classification
-- Reason: Requires external ML services or model downloads
-- Future consideration: Premium feature with usage-based pricing
-
-### OOS-03: Social Sharing Integrations
-- Reason: Outside core photo management scope
-- Future consideration: Separate social features epic
-
-## Traceability Section
-*This section will be filled in after roadmap approval to link requirements to implementation phases*
+## Traceability
+(filled by roadmap)
