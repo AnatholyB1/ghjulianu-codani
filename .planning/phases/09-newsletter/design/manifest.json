@@ -1,0 +1,332 @@
+[
+ {
+  "group": "Public: confirm subscription",
+  "file": "public/confirm-ready-fr-night.html",
+  "label": "ready / fr / night",
+  "type": "page"
+ },
+ {
+  "group": "Public: confirm subscription",
+  "file": "public/confirm-ready-fr-day.html",
+  "label": "ready / fr / day",
+  "type": "page"
+ },
+ {
+  "group": "Public: confirm subscription",
+  "file": "public/confirm-ready-en-night.html",
+  "label": "ready / en / night",
+  "type": "page"
+ },
+ {
+  "group": "Public: confirm subscription",
+  "file": "public/confirm-ready-en-day.html",
+  "label": "ready / en / day",
+  "type": "page"
+ },
+ {
+  "group": "Public: confirm subscription",
+  "file": "public/confirm-error-fr-night.html",
+  "label": "error / fr / night",
+  "type": "page"
+ },
+ {
+  "group": "Public: confirm subscription",
+  "file": "public/confirm-error-fr-day.html",
+  "label": "error / fr / day",
+  "type": "page"
+ },
+ {
+  "group": "Public: confirm subscription",
+  "file": "public/confirm-error-en-night.html",
+  "label": "error / en / night",
+  "type": "page"
+ },
+ {
+  "group": "Public: confirm subscription",
+  "file": "public/confirm-error-en-day.html",
+  "label": "error / en / day",
+  "type": "page"
+ },
+ {
+  "group": "Public: confirm subscription",
+  "file": "public/confirm-confirmed-fr-night.html",
+  "label": "confirmed / fr / night",
+  "type": "page"
+ },
+ {
+  "group": "Public: confirm subscription",
+  "file": "public/confirm-confirmed-fr-day.html",
+  "label": "confirmed / fr / day",
+  "type": "page"
+ },
+ {
+  "group": "Public: confirm subscription",
+  "file": "public/confirm-confirmed-en-night.html",
+  "label": "confirmed / en / night",
+  "type": "page"
+ },
+ {
+  "group": "Public: confirm subscription",
+  "file": "public/confirm-confirmed-en-day.html",
+  "label": "confirmed / en / day",
+  "type": "page"
+ },
+ {
+  "group": "Public: confirm subscription",
+  "file": "public/confirm-expired-fr-night.html",
+  "label": "expired / fr / night",
+  "type": "page"
+ },
+ {
+  "group": "Public: confirm subscription",
+  "file": "public/confirm-expired-fr-day.html",
+  "label": "expired / fr / day",
+  "type": "page"
+ },
+ {
+  "group": "Public: confirm subscription",
+  "file": "public/confirm-expired-en-night.html",
+  "label": "expired / en / night",
+  "type": "page"
+ },
+ {
+  "group": "Public: confirm subscription",
+  "file": "public/confirm-expired-en-day.html",
+  "label": "expired / en / day",
+  "type": "page"
+ },
+ {
+  "group": "Public: confirm subscription",
+  "file": "public/confirm-already-fr-night.html",
+  "label": "already / fr / night",
+  "type": "page"
+ },
+ {
+  "group": "Public: confirm subscription",
+  "file": "public/confirm-already-fr-day.html",
+  "label": "already / fr / day",
+  "type": "page"
+ },
+ {
+  "group": "Public: confirm subscription",
+  "file": "public/confirm-already-en-night.html",
+  "label": "already / en / night",
+  "type": "page"
+ },
+ {
+  "group": "Public: confirm subscription",
+  "file": "public/confirm-already-en-day.html",
+  "label": "already / en / day",
+  "type": "page"
+ },
+ {
+  "group": "Public: unsubscribe",
+  "file": "public/unsub-ready-fr-night.html",
+  "label": "ready / fr / night",
+  "type": "page"
+ },
+ {
+  "group": "Public: unsubscribe",
+  "file": "public/unsub-ready-fr-day.html",
+  "label": "ready / fr / day",
+  "type": "page"
+ },
+ {
+  "group": "Public: unsubscribe",
+  "file": "public/unsub-ready-en-night.html",
+  "label": "ready / en / night",
+  "type": "page"
+ },
+ {
+  "group": "Public: unsubscribe",
+  "file": "public/unsub-ready-en-day.html",
+  "label": "ready / en / day",
+  "type": "page"
+ },
+ {
+  "group": "Public: unsubscribe",
+  "file": "public/unsub-error-fr-night.html",
+  "label": "error / fr / night",
+  "type": "page"
+ },
+ {
+  "group": "Public: unsubscribe",
+  "file": "public/unsub-error-fr-day.html",
+  "label": "error / fr / day",
+  "type": "page"
+ },
+ {
+  "group": "Public: unsubscribe",
+  "file": "public/unsub-error-en-night.html",
+  "label": "error / en / night",
+  "type": "page"
+ },
+ {
+  "group": "Public: unsubscribe",
+  "file": "public/unsub-error-en-day.html",
+  "label": "error / en / day",
+  "type": "page"
+ },
+ {
+  "group": "Public: unsubscribe",
+  "file": "public/unsub-confirmed-fr-night.html",
+  "label": "confirmed / fr / night",
+  "type": "page"
+ },
+ {
+  "group": "Public: unsubscribe",
+  "file": "public/unsub-confirmed-fr-day.html",
+  "label": "confirmed / fr / day",
+  "type": "page"
+ },
+ {
+  "group": "Public: unsubscribe",
+  "file": "public/unsub-confirmed-en-night.html",
+  "label": "confirmed / en / night",
+  "type": "page"
+ },
+ {
+  "group": "Public: unsubscribe",
+  "file": "public/unsub-confirmed-en-day.html",
+  "label": "confirmed / en / day",
+  "type": "page"
+ },
+ {
+  "group": "Public: unsubscribe",
+  "file": "public/unsub-invalid-fr-night.html",
+  "label": "invalid / fr / night",
+  "type": "page"
+ },
+ {
+  "group": "Public: unsubscribe",
+  "file": "public/unsub-invalid-fr-day.html",
+  "label": "invalid / fr / day",
+  "type": "page"
+ },
+ {
+  "group": "Public: unsubscribe",
+  "file": "public/unsub-invalid-en-night.html",
+  "label": "invalid / en / night",
+  "type": "page"
+ },
+ {
+  "group": "Public: unsubscribe",
+  "file": "public/unsub-invalid-en-day.html",
+  "label": "invalid / en / day",
+  "type": "page"
+ },
+ {
+  "group": "Public: unsubscribe",
+  "file": "public/unsub-already-fr-night.html",
+  "label": "already / fr / night",
+  "type": "page"
+ },
+ {
+  "group": "Public: unsubscribe",
+  "file": "public/unsub-already-fr-day.html",
+  "label": "already / fr / day",
+  "type": "page"
+ },
+ {
+  "group": "Public: unsubscribe",
+  "file": "public/unsub-already-en-night.html",
+  "label": "already / en / night",
+  "type": "page"
+ },
+ {
+  "group": "Public: unsubscribe",
+  "file": "public/unsub-already-en-day.html",
+  "label": "already / en / day",
+  "type": "page"
+ },
+ {
+  "group": "Email: double opt-in confirmation",
+  "file": "email/confirm-fr-light.html",
+  "label": "fr / light",
+  "type": "email"
+ },
+ {
+  "group": "Email: newsletter with footer",
+  "file": "email/newsletter-footer-fr-light.html",
+  "label": "fr / light",
+  "type": "email"
+ },
+ {
+  "group": "Email: double opt-in confirmation",
+  "file": "email/confirm-fr-dark.html",
+  "label": "fr / dark",
+  "type": "email"
+ },
+ {
+  "group": "Email: newsletter with footer",
+  "file": "email/newsletter-footer-fr-dark.html",
+  "label": "fr / dark",
+  "type": "email"
+ },
+ {
+  "group": "Email: double opt-in confirmation",
+  "file": "email/confirm-en-light.html",
+  "label": "en / light",
+  "type": "email"
+ },
+ {
+  "group": "Email: newsletter with footer",
+  "file": "email/newsletter-footer-en-light.html",
+  "label": "en / light",
+  "type": "email"
+ },
+ {
+  "group": "Email: double opt-in confirmation",
+  "file": "email/confirm-en-dark.html",
+  "label": "en / dark",
+  "type": "email"
+ },
+ {
+  "group": "Email: newsletter with footer",
+  "file": "email/newsletter-footer-en-dark.html",
+  "label": "en / dark",
+  "type": "email"
+ },
+ {
+  "group": "Admin: /admin/newsletter",
+  "file": "admin/list.html",
+  "label": "Default list",
+  "type": "admin"
+ },
+ {
+  "group": "Admin: /admin/newsletter",
+  "file": "admin/filter-search.html",
+  "label": "Filter pending + search",
+  "type": "admin"
+ },
+ {
+  "group": "Admin: /admin/newsletter",
+  "file": "admin/delete-confirm.html",
+  "label": "Delete confirmation (inline)",
+  "type": "admin"
+ },
+ {
+  "group": "Admin: /admin/newsletter",
+  "file": "admin/deleted.html",
+  "label": "Deleted, toast",
+  "type": "admin"
+ },
+ {
+  "group": "Admin: /admin/newsletter",
+  "file": "admin/exporting.html",
+  "label": "Export in progress",
+  "type": "admin"
+ },
+ {
+  "group": "Admin: /admin/newsletter",
+  "file": "admin/noresults.html",
+  "label": "Search without result",
+  "type": "admin"
+ },
+ {
+  "group": "Admin: /admin/newsletter",
+  "file": "admin/empty.html",
+  "label": "Empty (no subscriber)",
+  "type": "admin"
+ }
+]
