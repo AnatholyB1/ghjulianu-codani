@@ -192,3 +192,13 @@ a, button {
     animation-iteration-count: 1 !important;
   }
 }
+
+/* -- Image protection (PRT-02, deterrent only) --
+   Active only when <ImageProtection/> sets the attribute (never on /admin). */
+html[data-img-protect="on"] img,
+html[data-img-protect="on"] [data-protect] {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
