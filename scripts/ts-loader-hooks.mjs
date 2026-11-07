@@ -30,6 +30,7 @@ export async function resolve(specifier, context, next) {
     const hit = tryResolve(base);
     if (hit) return { url: pathToFileURL(hit).href, shortCircuit: true };
   }
+  if (/^next\/[a-z-]+$/.test(specifier)) return next(specifier + '.js', context); // next ships CJS entry files without exports map
   return next(specifier, context);
 }
 

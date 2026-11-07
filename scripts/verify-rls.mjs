@@ -26,11 +26,12 @@ if (!url || !anon) {
 }
 
 const headers = { apikey: anon, Authorization: `Bearer ${anon}`, 'Content-Type': 'application/json' };
-const tables = ['subscribers', 'download_requests', 'events', 'rate_limits'];
+const tables = ['subscribers', 'download_requests', 'events', 'events_daily', 'rate_limits'];
 const rpcs = [
   ['rate_limit_hit', { p_key: 'verify-rls', p_limit: 1, p_window_seconds: 60 }],
   ['consume_download_use', { p_token_hash: 'verify-rls-nonexistent' }],
   ['purge_old_events', { p_months: 1200 }],
+  ['kpi_dashboard', { p_days: 7 }],
 ];
 
 const results = [];

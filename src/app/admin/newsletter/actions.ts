@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { createClient } from '@/utils/supabase/server';
+import { getAdminUser } from '@/lib/server/requireAdmin';
 import { getAdminClient } from '@/lib/server/supabaseAdmin';
 
 export interface DeleteResult {
@@ -9,11 +9,9 @@ export interface DeleteResult {
   error?: 'unauthorized' | 'invalid' | 'not_found' | 'suppressed' | 'server';
 }
 
-/** Admin session check (proxy.ts guards pages, server actions must check themselves too). */
+/** Admin allowlist check (proxy.ts guards pages, server actions must check themselves too). */
 async function requireAdmin(): Promise<boolean> {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  return !!user;
+  return (await getAdminUser()) !== null;
 }
 
 /**

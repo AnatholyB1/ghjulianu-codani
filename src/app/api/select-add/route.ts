@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { logEvent, visitorHash, deviceClass, countryOf } from '@/lib/server/events';
+import { logEvent, safeVisitorHash, deviceClass, countryOf } from '@/lib/server/events';
 import { hit, hashIdentifier } from '@/lib/server/rateLimit';
 import { LIMITS, isUuid } from '@/lib/server/requestGuards';
 
@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
       type: 'select_add',
       photo_id: photoId,
       album_id: (albumId as string | null | undefined) ?? null,
-      visitor_hash: visitorHash(req),
+      visitor_hash: safeVisitorHash(req),
       device: deviceClass(req),
       country: countryOf(req),
     });

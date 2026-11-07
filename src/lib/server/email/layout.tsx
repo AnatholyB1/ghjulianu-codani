@@ -34,7 +34,7 @@ const COPY = {
 export function legalIdentity(lang: EmailLang): string {
   const isProd = process.env.VERCEL_ENV === 'production';
   const name = process.env.LEGAL_SENDER_NAME?.trim();
-  const address = process.env.LEGAL_POSTAL_ADDRESS?.trim();
+  const address = process.env.LEGAL_POSTAL_ADDRESS?.trim() || process.env.PUBLISHER_ADDRESS?.trim(); // PUBLISHER_ADDRESS: deprecated fallback
   if (isProd && (!name || !address)) {
     console.warn('[email] LEGAL_SENDER_NAME / LEGAL_POSTAL_ADDRESS not set in production');
   }

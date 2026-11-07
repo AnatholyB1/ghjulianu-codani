@@ -38,7 +38,14 @@ async function attemptsUsed(key: string): Promise<number> {
 export async function unlockAlbum(key: string, slug?: string): Promise<UnlockResult> {
   const k = typeof key === 'string' ? key.trim() : '';
   const h = await headers();
-  const ip = hashIdentifier(clientIp(h));
+  let ip: string;
+  try {
+    ip = hashIdentifier(clientIp(h));
+  } catch (e) {
+    // IP_HASH_SALT missing / too short: fail closed, the key is NOT verified.
+    console.error('[mon-album] unlock refused:', e instanceof Error ? e.message : 'unknown');
+    return { ok: false, code: 'locked' };
+  }
   const scope = typeof slug === 'string' && slug ? slug.slice(0, 200) : '*';
   const limKey = `albumkey:${ip}:${scope}`;
 

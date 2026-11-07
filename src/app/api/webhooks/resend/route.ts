@@ -39,6 +39,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true, ignored: 'unparsable' }, { status: 200 });
   }
 
+  if (!process.env.RESEND_FROM?.trim()) {
+    // Without our own sender domain every event looks foreign (shared Resend account) and is ignored:
+    // bounces / complaints would silently NOT suppress anyone. Still 200 so Resend does not retry.
+    console.error('[webhook/resend] RESEND_FROM is not set: ALL events are ignored, bounces and complaints are NOT being suppressed. Set RESEND_FROM.');
+  }
   const decision = decideSuppression(evt, process.env.RESEND_FROM);
   if (!decision.suppress) return NextResponse.json({ ok: true, ignored: true }, { status: 200 });
 

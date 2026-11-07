@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
+import { getAdminUser } from '@/lib/server/requireAdmin';
 import { getAdminClient } from '@/lib/server/supabaseAdmin';
 import { buildSubscribersCsv, exportFilename, type ExportRow } from '@/lib/newsletter/csv';
 
@@ -8,8 +8,7 @@ export const dynamic = 'force-dynamic';
 
 /** NWS-05: confirmed subscribers only, UTF-8 BOM, `;`, formula-injection safe. Admin session required. */
 export async function GET() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getAdminUser();
   if (!user) return NextResponse.json({ error: 'unauthorized' }, { status: 401, headers: { 'Cache-Control': 'no-store' } });
 
   const db = getAdminClient();

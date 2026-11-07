@@ -10,7 +10,7 @@ export interface DownloadEmailProps {
   /** Expiry, pre-formatted for the recipient's language (Europe/Paris). */
   expiresLabel: string;
   siteUrl: string;
-  /** LCEN publisher postal address (env PUBLISHER_ADDRESS). Omitted when unset. */
+  /** LCEN publisher postal address (env LEGAL_POSTAL_ADDRESS). Omitted when unset. */
   publisherAddress?: string | null;
 }
 
