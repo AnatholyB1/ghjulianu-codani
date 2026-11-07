@@ -1,3 +1,4 @@
+import { requireAdminPage } from '@/lib/server/requireAdmin';
 import { createClient }                                    from '@/utils/supabase/server';
 import { notFound }                                         from 'next/navigation';
 import { updateAlbum, deleteAlbum, regenerateAccessKey } from '../../actions';
@@ -10,6 +11,7 @@ import AddAlbumPhotoForm                                    from '../../_compone
 import DraggablePhotoGrid                                   from '../../_components/DraggablePhotoGrid';
 
 export default async function EditAlbumPage({ params }: { params: Promise<{ id: string }> }) {
+  await requireAdminPage('/admin/albums');
   const { id }   = await params;
   const supabase = await createClient();
 

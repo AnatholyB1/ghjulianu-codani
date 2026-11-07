@@ -1,0 +1,55 @@
+/* Phase 9 design tokens. Mirrors src/app/globals.css (public) and the admin dark palette.
+   New tokens are marked NEW. Day mode = class .day on <html>, same as the site. */
+:root {
+  --bg: #080808;
+  --surface: #0e0e0e;
+  --text: #E8E4DC;
+  --muted: #7a7a74;
+  --muted-text: #8a8a83;            /* NEW: small-text grey, >= 5.4:1 on --bg and --surface */
+  --accent: #c8a97e;
+  --accent-text: #c8a97e;
+  --border: rgba(255,255,255,0.07);
+  --border-strong: rgba(255,255,255,0.22); /* NEW: inputs, outline buttons */
+  --danger: #e69a90;                /* NEW */
+  --danger-bg: rgba(230,154,144,0.10);
+  --ok: #93cfa6;                    /* NEW */
+  --ok-bg: rgba(147,207,166,0.10);
+  --warn: #c8a97e;
+  --warn-bg: rgba(200,169,126,0.10);
+  --focus: #c8a97e;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-sans: 'Space Grotesk', 'DM Sans', system-ui, sans-serif;
+  --navbar-h: 64px;
+}
+.day {
+  --bg: #fafafa;
+  --surface: #f5f5f5;
+  --text: #1a1a1a;
+  --muted: #666666;
+  --muted-text: #5c5c5c;
+  --accent: #c8a97e;
+  --accent-text: #7a5200;
+  --border: rgba(0,0,0,0.07);
+  --border-strong: rgba(0,0,0,0.32);
+  --danger: #9b2c20;
+  --danger-bg: rgba(155,44,32,0.07);
+  --ok: #1f6b3a;
+  --ok-bg: rgba(31,107,58,0.08);
+  --warn: #7a5200;
+  --warn-bg: rgba(122,82,0,0.08);
+  --focus: #7a5200;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { color-scheme: dark; }
+html.day { color-scheme: light; }
+body {
+  background: var(--bg); color: var(--text);
+  font-family: var(--font-sans); font-size: 16px; line-height: 1.6;
+  -webkit-font-smoothing: antialiased; overflow-x: hidden;
+}
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+.sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+}

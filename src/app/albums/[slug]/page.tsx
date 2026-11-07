@@ -4,6 +4,7 @@ import { cookies }         from 'next/headers';
 import { createClient, createServiceClient } from '@/utils/supabase/server';
 import AlbumPageClient     from './AlbumPageClient';
 import AccessKeyGate       from './AccessKeyGate';
+import { verifyAlbumAccess } from '@/lib/server/requestGuards';
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -12,11 +13,22 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const supabase = await createClient();
   const { data: album } = await supabase
     .from('albums')
-    .select('title, description, cover_url, category:categories(name)')
+    .select('title, description, cover_url, is_public, category:categories(name)')
     .eq('slug', slug)
     .single();
 
-  if (!album) return {};
+  // Not visible to the anon lookup (private OR unknown slug; RLS hides private rows): identical generic,
+  // non-indexed metadata so the response does not reveal whether the slug exists.
+  if (!album || !album.is_public) {
+    return {
+      title: 'Album privé — Ghjulianu Codani',
+      description: undefined,
+      robots: { index: false, follow: false },
+      alternates: { canonical: null },
+      openGraph: { title: 'Album privé — Ghjulianu Codani', images: [] },
+      twitter: { card: 'summary', title: 'Album privé — Ghjulianu Codani', images: [] },
+    };
+  }
 
   const title       = `${album.title} — Ghjulianu Codani`;
   const description = album.description ?? `Album photo — ${album.title}`;
@@ -46,7 +58,7 @@ export default async function AlbumPage({ params }: Props) {
   if (!album.is_public) {
     const cookieStore = await cookies();
     const stored = cookieStore.get(`album-access-${slug}`)?.value;
-    if (stored !== album.access_key) {
+    if (!verifyAlbumAccess(stored, slug, album.access_key)) {
       return <AccessKeyGate slug={slug} />;
     }
   }
