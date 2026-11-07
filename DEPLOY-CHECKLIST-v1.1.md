@@ -15,5 +15,5 @@
 
 - [x] Vercel env set 2026-11-07: DOWNLOAD_TOKEN_SECRET, IP_HASH_SALT, CRON_SECRET (sensitive, prod only), NEXT_PUBLIC_SITE_URL, RESEND_FROM, SUPPORT_EMAIL, LEGAL_SENDER_NAME
 - [x] vercel.json cron (daily 03:00 UTC /api/cron/purge-events) committed on milestone/v1.1 (active only after deploy)
-- [ ] STILL TO SET: LEGAL_POSTAL_ADDRESS (postal address for email footers, unknown), ADMIN_EMAILS (admin allowlist, fix batch 1), RESEND_WEBHOOK_SECRET (after webhook creation)
-- [ ] Resend webhook: https://www.ghjulianu-codani.com/api/webhooks/resend, events email.bounced + email.complained only (UI froze; retry)
+- [x] Set 2026-11-07: LEGAL_POSTAL_ADDRESS="Paris, France" (owner choice), ADMIN_EMAILS=ghjulianu.codani2@gmail.com,contact@sevalys.com (all envs), RESEND_WEBHOOK_SECRET (prod, secret, pasted via clipboard)
+- [x] Resend webhook created 2026-11-07 (id dacc2910...): https://www.ghjulianu-codani.com/api/webhooks/resend, events email.bounced + email.complained only, Enabled. NB: endpoint returns 404 until the branch is deployed; other apps share the Resend account (our handler ignores foreign sender domains)
