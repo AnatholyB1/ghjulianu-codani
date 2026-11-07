@@ -85,6 +85,20 @@ async function runProfile(browser, label, ctxOptions, touch) {
     await page.waitForTimeout(900); // reveal transition
     const cm = await probe(page, 'img[data-e2e="target"]', 'contextmenu');
     check(label, 'contextmenu on image is prevented', cm === true, `got=${cm}`);
+    // keyboard-initiated menu (Menu key / Shift+F10: detail 0, button 0, no pointer) must NOT be cancelled
+    const kb = await page.evaluate(() => {
+      const el = document.querySelector('img[data-e2e="target"]');
+      const ev = new MouseEvent('contextmenu', { bubbles: true, cancelable: true, button: 0, detail: 0 });
+      el.dispatchEvent(ev); return ev.defaultPrevented;
+    });
+    check(label, 'keyboard-initiated contextmenu (detail 0) NOT prevented', kb === false, `got=${kb}`);
+    // touch long-press (pointerType touch) stays blocked
+    const lp = await page.evaluate(() => {
+      const el = document.querySelector('img[data-e2e="target"]');
+      const ev = new PointerEvent('contextmenu', { bubbles: true, cancelable: true, button: 0, detail: 0, pointerType: 'touch' });
+      el.dispatchEvent(ev); return ev.defaultPrevented;
+    });
+    check(label, 'touch long-press contextmenu (pointerType touch) still prevented', lp === true, `got=${lp}`);
     const ds = await probe(page, 'img[data-e2e="target"]', 'dragstart');
     check(label, 'dragstart on image is prevented', ds === true, `got=${ds}`);
 
@@ -130,7 +144,7 @@ async function runProfile(browser, label, ctxOptions, touch) {
         const imgs = [...document.querySelectorAll('img')].filter((i) => { const r = i.getBoundingClientRect(); return r.width > 150 && r.height > 150 && r.top >= 0; });
         const img = imgs[imgs.length - 1]; if (!img) return 'missing';
         const r = img.getBoundingClientRect();
-        const ev = new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: r.left + r.width / 2, clientY: r.top + r.height / 2 });
+        const ev = new MouseEvent('contextmenu', { bubbles: true, cancelable: true, button: 2, clientX: r.left + r.width / 2, clientY: r.top + r.height / 2 });
         (document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2) ?? img).dispatchEvent(ev);
         return ev.defaultPrevented;
       });
@@ -156,8 +170,27 @@ async function runProfile(browser, label, ctxOptions, touch) {
     }
     const pct = parseFloat(await track.getAttribute('data-percentage'));
     check(label, 'albums carousel drag moves track', Number.isFinite(pct) && pct < 0, `percentage=${pct}`);
-    const cover = await probe(page, 'img.image', 'contextmenu');
-    check(label, 'contextmenu on album cover prevented (pointer-events:none img)', cover === true, `got=${cover}`);
+    // Album cover = <a href><img pointer-events:none/> + title</a>: the pointer target is the LINK, so the browser menu is the
+    // link menu (open in new tab / copy link, no image entry). It must be left alone (audit 08a). A cover NOT in a link stays blocked.
+    // pick a cover that is actually on screen after the drag (elementFromPoint is null off-screen)
+    const inLink = await page.evaluate(() => {
+      const im = [...document.querySelectorAll('img.image')].find((i) => { const r = i.getBoundingClientRect(); return r.left >= 0 && r.right <= innerWidth && r.top >= 0 && r.bottom <= innerHeight; });
+      if (im) im.setAttribute('data-e2e-cover', '1');
+      return !!im?.closest('a[href]');
+    });
+    const cover = await probe(page, 'img[data-e2e-cover]', 'contextmenu');
+    check(label, inLink ? 'contextmenu on link-wrapped album cover NOT prevented (link menu / open-in-new-tab kept)' : 'contextmenu on album cover prevented (pointer-events:none img)',
+      inLink ? cover === false : cover === true, `got=${cover} inLink=${inLink}`);
+    // keyboard: focus the first album link, press the Menu key and Shift+F10: never cancelled
+    const link = page.locator('a[href]:has(img.image)').first();
+    if (!touch && (await link.count())) {
+      await page.evaluate(() => { window.__kbPrevented = []; window.addEventListener('contextmenu', (e) => { window.__kbPrevented.push(e.defaultPrevented); }); });
+      await link.focus();
+      await page.keyboard.press('ContextMenu');
+      await page.keyboard.press('Shift+F10');
+      const kbp = await page.evaluate(() => window.__kbPrevented);
+      check(label, 'keyboard Menu key / Shift+F10 on album link NOT prevented', kbp.length > 0 && kbp.every((v) => v === false), `events=${JSON.stringify(kbp)}`);
+    }
   } else {
     check(label, 'albums track present', false, 'no [data-percentage] (no albums in live data?)');
   }
