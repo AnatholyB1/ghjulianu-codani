@@ -1,0 +1,386 @@
+[
+ {
+  "id": "a-cart-empty",
+  "label": "Panier vide",
+  "lang": "fr",
+  "theme": "night",
+  "file": "a-cart-empty.fr.night.html",
+  "group": "a"
+ },
+ {
+  "id": "a-cart-list",
+  "label": "Panier avec photos, point d’entrée",
+  "lang": "fr",
+  "theme": "night",
+  "file": "a-cart-list.fr.night.html",
+  "group": "a"
+ },
+ {
+  "id": "a-form-default",
+  "label": "Formulaire, état initial",
+  "lang": "fr",
+  "theme": "night",
+  "file": "a-form-default.fr.night.html",
+  "group": "a"
+ },
+ {
+  "id": "a-form-default",
+  "label": "Formulaire, état initial",
+  "lang": "en",
+  "theme": "night",
+  "file": "a-form-default.en.night.html",
+  "group": "a"
+ },
+ {
+  "id": "a-form-invalid",
+  "label": "Email invalide (validation locale)",
+  "lang": "fr",
+  "theme": "night",
+  "file": "a-form-invalid.fr.night.html",
+  "group": "a"
+ },
+ {
+  "id": "a-form-invalid",
+  "label": "Email invalide (validation locale)",
+  "lang": "en",
+  "theme": "night",
+  "file": "a-form-invalid.en.night.html",
+  "group": "a"
+ },
+ {
+  "id": "a-form-newsletter",
+  "label": "Newsletter cochée par le visiteur",
+  "lang": "fr",
+  "theme": "night",
+  "file": "a-form-newsletter.fr.night.html",
+  "group": "a"
+ },
+ {
+  "id": "a-form-loading",
+  "label": "Envoi en cours",
+  "lang": "fr",
+  "theme": "night",
+  "file": "a-form-loading.fr.night.html",
+  "group": "a"
+ },
+ {
+  "id": "a-success",
+  "label": "Succès générique",
+  "lang": "fr",
+  "theme": "night",
+  "file": "a-success.fr.night.html",
+  "group": "a"
+ },
+ {
+  "id": "a-success",
+  "label": "Succès générique",
+  "lang": "en",
+  "theme": "night",
+  "file": "a-success.en.night.html",
+  "group": "a"
+ },
+ {
+  "id": "a-success-newsletter",
+  "label": "Succès, newsletter demandée",
+  "lang": "fr",
+  "theme": "night",
+  "file": "a-success-newsletter.fr.night.html",
+  "group": "a"
+ },
+ {
+  "id": "a-error-server",
+  "label": "Erreur serveur / envoi",
+  "lang": "fr",
+  "theme": "night",
+  "file": "a-error-server.fr.night.html",
+  "group": "a"
+ },
+ {
+  "id": "a-error-rate",
+  "label": "Limite de débit atteinte",
+  "lang": "fr",
+  "theme": "night",
+  "file": "a-error-rate.fr.night.html",
+  "group": "a"
+ },
+ {
+  "id": "a-error-rate",
+  "label": "Limite de débit atteinte",
+  "lang": "en",
+  "theme": "night",
+  "file": "a-error-rate.en.night.html",
+  "group": "a"
+ },
+ {
+  "id": "b-key-default",
+  "label": "Clé : état initial",
+  "lang": "fr",
+  "theme": "night",
+  "file": "b-key-default.fr.night.html",
+  "group": "b"
+ },
+ {
+  "id": "b-key-loading",
+  "label": "Clé : vérification",
+  "lang": "fr",
+  "theme": "night",
+  "file": "b-key-loading.fr.night.html",
+  "group": "b"
+ },
+ {
+  "id": "b-key-wrong",
+  "label": "Clé : incorrecte (essais restants)",
+  "lang": "fr",
+  "theme": "night",
+  "file": "b-key-wrong.fr.night.html",
+  "group": "b"
+ },
+ {
+  "id": "b-key-wrong",
+  "label": "Clé : incorrecte (essais restants)",
+  "lang": "en",
+  "theme": "night",
+  "file": "b-key-wrong.en.night.html",
+  "group": "b"
+ },
+ {
+  "id": "b-key-locked",
+  "label": "Clé : trop d’essais",
+  "lang": "fr",
+  "theme": "night",
+  "file": "b-key-locked.fr.night.html",
+  "group": "b"
+ },
+ {
+  "id": "b-key-locked",
+  "label": "Clé : trop d’essais",
+  "lang": "en",
+  "theme": "night",
+  "file": "b-key-locked.en.night.html",
+  "group": "b"
+ },
+ {
+  "id": "a-cart-empty",
+  "label": "Panier vide",
+  "lang": "fr",
+  "theme": "day",
+  "file": "a-cart-empty.fr.day.html",
+  "group": "a"
+ },
+ {
+  "id": "a-cart-list",
+  "label": "Panier avec photos, point d’entrée",
+  "lang": "fr",
+  "theme": "day",
+  "file": "a-cart-list.fr.day.html",
+  "group": "a"
+ },
+ {
+  "id": "a-form-default",
+  "label": "Formulaire, état initial",
+  "lang": "fr",
+  "theme": "day",
+  "file": "a-form-default.fr.day.html",
+  "group": "a"
+ },
+ {
+  "id": "a-form-default",
+  "label": "Formulaire, état initial",
+  "lang": "en",
+  "theme": "day",
+  "file": "a-form-default.en.day.html",
+  "group": "a"
+ },
+ {
+  "id": "a-form-invalid",
+  "label": "Email invalide (validation locale)",
+  "lang": "fr",
+  "theme": "day",
+  "file": "a-form-invalid.fr.day.html",
+  "group": "a"
+ },
+ {
+  "id": "a-form-invalid",
+  "label": "Email invalide (validation locale)",
+  "lang": "en",
+  "theme": "day",
+  "file": "a-form-invalid.en.day.html",
+  "group": "a"
+ },
+ {
+  "id": "a-form-newsletter",
+  "label": "Newsletter cochée par le visiteur",
+  "lang": "fr",
+  "theme": "day",
+  "file": "a-form-newsletter.fr.day.html",
+  "group": "a"
+ },
+ {
+  "id": "a-form-loading",
+  "label": "Envoi en cours",
+  "lang": "fr",
+  "theme": "day",
+  "file": "a-form-loading.fr.day.html",
+  "group": "a"
+ },
+ {
+  "id": "a-success",
+  "label": "Succès générique",
+  "lang": "fr",
+  "theme": "day",
+  "file": "a-success.fr.day.html",
+  "group": "a"
+ },
+ {
+  "id": "a-success",
+  "label": "Succès générique",
+  "lang": "en",
+  "theme": "day",
+  "file": "a-success.en.day.html",
+  "group": "a"
+ },
+ {
+  "id": "a-success-newsletter",
+  "label": "Succès, newsletter demandée",
+  "lang": "fr",
+  "theme": "day",
+  "file": "a-success-newsletter.fr.day.html",
+  "group": "a"
+ },
+ {
+  "id": "a-error-server",
+  "label": "Erreur serveur / envoi",
+  "lang": "fr",
+  "theme": "day",
+  "file": "a-error-server.fr.day.html",
+  "group": "a"
+ },
+ {
+  "id": "a-error-rate",
+  "label": "Limite de débit atteinte",
+  "lang": "fr",
+  "theme": "day",
+  "file": "a-error-rate.fr.day.html",
+  "group": "a"
+ },
+ {
+  "id": "a-error-rate",
+  "label": "Limite de débit atteinte",
+  "lang": "en",
+  "theme": "day",
+  "file": "a-error-rate.en.day.html",
+  "group": "a"
+ },
+ {
+  "id": "b-key-default",
+  "label": "Clé : état initial",
+  "lang": "fr",
+  "theme": "day",
+  "file": "b-key-default.fr.day.html",
+  "group": "b"
+ },
+ {
+  "id": "b-key-loading",
+  "label": "Clé : vérification",
+  "lang": "fr",
+  "theme": "day",
+  "file": "b-key-loading.fr.day.html",
+  "group": "b"
+ },
+ {
+  "id": "b-key-wrong",
+  "label": "Clé : incorrecte (essais restants)",
+  "lang": "fr",
+  "theme": "day",
+  "file": "b-key-wrong.fr.day.html",
+  "group": "b"
+ },
+ {
+  "id": "b-key-wrong",
+  "label": "Clé : incorrecte (essais restants)",
+  "lang": "en",
+  "theme": "day",
+  "file": "b-key-wrong.en.day.html",
+  "group": "b"
+ },
+ {
+  "id": "b-key-locked",
+  "label": "Clé : trop d’essais",
+  "lang": "fr",
+  "theme": "day",
+  "file": "b-key-locked.fr.day.html",
+  "group": "b"
+ },
+ {
+  "id": "b-key-locked",
+  "label": "Clé : trop d’essais",
+  "lang": "en",
+  "theme": "day",
+  "file": "b-key-locked.en.day.html",
+  "group": "b"
+ },
+ {
+  "id": "c-email-multi",
+  "label": "Email transactionnel, 12 photos",
+  "lang": "fr",
+  "theme": "light",
+  "file": "c-email-multi.fr.light.html",
+  "group": "c"
+ },
+ {
+  "id": "c-email-multi",
+  "label": "Email transactionnel, 12 photos",
+  "lang": "fr",
+  "theme": "dark",
+  "file": "c-email-multi.fr.dark.html",
+  "group": "c"
+ },
+ {
+  "id": "c-email-single",
+  "label": "Email transactionnel, 1 photo",
+  "lang": "fr",
+  "theme": "light",
+  "file": "c-email-single.fr.light.html",
+  "group": "c"
+ },
+ {
+  "id": "c-email-single",
+  "label": "Email transactionnel, 1 photo",
+  "lang": "fr",
+  "theme": "dark",
+  "file": "c-email-single.fr.dark.html",
+  "group": "c"
+ },
+ {
+  "id": "c-email-multi",
+  "label": "Email transactionnel, 12 photos",
+  "lang": "en",
+  "theme": "light",
+  "file": "c-email-multi.en.light.html",
+  "group": "c"
+ },
+ {
+  "id": "c-email-multi",
+  "label": "Email transactionnel, 12 photos",
+  "lang": "en",
+  "theme": "dark",
+  "file": "c-email-multi.en.dark.html",
+  "group": "c"
+ },
+ {
+  "id": "c-email-single",
+  "label": "Email transactionnel, 1 photo",
+  "lang": "en",
+  "theme": "light",
+  "file": "c-email-single.en.light.html",
+  "group": "c"
+ },
+ {
+  "id": "c-email-single",
+  "label": "Email transactionnel, 1 photo",
+  "lang": "en",
+  "theme": "dark",
+  "file": "c-email-single.en.dark.html",
+  "group": "c"
+ }
+]
