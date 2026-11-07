@@ -1,6 +1,6 @@
 # DEPLOY-CHECKLIST v1.1 (human / gated actions)
-- [ ] Resend account + API key -> RESEND_API_KEY in Vercel (via CLI stdin, never in chat)
-- [ ] Resend domain mail.ghjulianucodani.com verified (SPF/DKIM/DMARC records; emailed code = human)
+- [x] Resend API key (sending access, domain-restricted) -> Vercel RESEND_API_KEY prod (done 2026-11-07)
+- [x] Resend domain mail.ghjulianu-codani.com verified; DNS (DKIM, rsend/send CNAME, DMARC p=none) added in Vercel DNS (done 2026-11-07). NB: real domain is ghjulianu-codani.com (hyphen), canonical host www
 - [ ] (migration 000002 kpi_dashboard applied) Resend webhook (bounce/complaint) -> /api/webhooks/resend, secret RESEND_WEBHOOK_SECRET; FILTER on own sender domain
 - [ ] Vercel env: RESEND_FROM, DOWNLOAD_TOKEN_SECRET (>= 16 chars), IP_HASH_SALT (>= 16 chars; shorter = rate limits / analytics / album-key unlock refuse), NEXT_PUBLIC_SITE_URL, RESEND_WEBHOOK_SECRET
 - [ ] **Vercel env `ADMIN_EMAILS` (REQUIRED, comma-separated, case-insensitive)**: the Supabase project is shared with open sign-up, so any signed-up user is NOT an admin. Unset/empty = nobody can use /admin, /api/admin or the admin server actions (fail closed, server logs a warning). Set it BEFORE first login on the new deployment. Also consider disabling public sign-ups in Supabase Auth settings (shared project: coordinate with the other apps).
@@ -12,3 +12,8 @@
 - [ ] Vercel env: CRON_SECRET, LEGAL_SENDER_NAME, LEGAL_POSTAL_ADDRESS, SUPPORT_EMAIL, RESEND_WEBHOOK_SECRET; add cron (GET/POST /api/cron/purge-events with Bearer CRON_SECRET) in Vercel project settings (repo has no vercel.json)
 - [ ] KNOWN LIMIT (documented, not fixed in v1.1): newsletters are sent from the Resend dashboard (D-03). A recipient who unsubscribes through a dashboard broadcast (Resend's own unsubscribe link) is NOT synced back to `subscribers`: no Resend contact/unsubscribe webhook handler exists (the webhook only handles bounce and complaint). Before each broadcast, export the CSV (confirmed only) and re-upload it / remove manually anyone who unsubscribed in Resend; keep Resend and `subscribers` as two lists. Broadcasts cannot carry the per-recipient HMAC unsubscribe link either. Decide v1.2: build the sync (Resend `contact.updated` webhook or API poll) or move sending in-app.
 - [ ] Shared Supabase project: our tables are unprefixed in public (others use gecko_/sv_/ziko_): consider a prefix in v1.2
+
+- [x] Vercel env set 2026-11-07: DOWNLOAD_TOKEN_SECRET, IP_HASH_SALT, CRON_SECRET (sensitive, prod only), NEXT_PUBLIC_SITE_URL, RESEND_FROM, SUPPORT_EMAIL, LEGAL_SENDER_NAME
+- [x] vercel.json cron (daily 03:00 UTC /api/cron/purge-events) committed on milestone/v1.1 (active only after deploy)
+- [ ] STILL TO SET: LEGAL_POSTAL_ADDRESS (postal address for email footers, unknown), ADMIN_EMAILS (admin allowlist, fix batch 1), RESEND_WEBHOOK_SECRET (after webhook creation)
+- [ ] Resend webhook: https://www.ghjulianu-codani.com/api/webhooks/resend, events email.bounced + email.complained only (UI froze; retry)
