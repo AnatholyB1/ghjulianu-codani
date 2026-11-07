@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { timingSafeEqual } from 'node:crypto';
+import { constantTimeEqual } from '@/lib/server/requestGuards';
 import { getAdminClient } from '@/lib/server/supabaseAdmin';
 import { purgeExpired } from '@/lib/server/retention';
 
@@ -23,9 +23,8 @@ function authorised(req: NextRequest): boolean | null {
   const secret = process.env.CRON_SECRET;
   if (!secret || secret.length < 16) return null; // not configured
   const header = req.headers.get('authorization') ?? '';
-  const given = Buffer.from(header);
-  const expected = Buffer.from(`Bearer ${secret}`);
-  return given.length === expected.length && timingSafeEqual(given, expected);
+  // Compares SHA-256 digests of both sides: constant time AND independent of the header length.
+  return constantTimeEqual(header, `Bearer ${secret}`);
 }
 
 async function run(req: NextRequest) {

@@ -41,6 +41,18 @@ export function visitorHash(req: HeaderCarrier): string {
   return createHash('sha256').update(`${clientIp(req)}|${ua}|${daily}`).digest('hex').slice(0, 32);
 }
 
+/**
+ * IP-ONLY daily visitor id: sha256(ip + daily_salt), the User-Agent is NOT part of it.
+ * Used by /api/track as the `visitor_hash` of `view` events, so rotating the UA from one IP
+ * cannot produce extra rows: the unique index (target, visitor_hash, Paris day) then means
+ * "one view per IP per target per day". Trade-off: visitors behind one shared IP (CGNAT, office)
+ * count as one visitor per day. Throws like visitorHash() when the salt is missing.
+ */
+export function ipVisitorHash(req: HeaderCarrier): string {
+  const daily = createHash('sha256').update(`${requireSalt()}:${parisDate()}`).digest('hex');
+  return createHash('sha256').update(`ip|${clientIp(req)}|${daily}`).digest('hex').slice(0, 32);
+}
+
 /** visitorHash() that never throws: returns null (and warns) when the salt is not configured. */
 export function safeVisitorHash(req: HeaderCarrier): string | null {
   try {
