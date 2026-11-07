@@ -2,11 +2,13 @@
 - [ ] Resend account + API key -> RESEND_API_KEY in Vercel (via CLI stdin, never in chat)
 - [ ] Resend domain mail.ghjulianucodani.com verified (SPF/DKIM/DMARC records; emailed code = human)
 - [ ] (migration 000002 kpi_dashboard applied) Resend webhook (bounce/complaint) -> /api/webhooks/resend, secret RESEND_WEBHOOK_SECRET; FILTER on own sender domain
-- [ ] Vercel env: RESEND_FROM, DOWNLOAD_TOKEN_SECRET, IP_HASH_SALT, NEXT_PUBLIC_SITE_URL, RESEND_WEBHOOK_SECRET
+- [ ] Vercel env: RESEND_FROM, DOWNLOAD_TOKEN_SECRET (>= 16 chars), IP_HASH_SALT (>= 16 chars; shorter = rate limits / analytics / album-key unlock refuse), NEXT_PUBLIC_SITE_URL, RESEND_WEBHOOK_SECRET
+- [ ] **Vercel env `ADMIN_EMAILS` (REQUIRED, comma-separated, case-insensitive)**: the Supabase project is shared with open sign-up, so any signed-up user is NOT an admin. Unset/empty = nobody can use /admin, /api/admin or the admin server actions (fail closed, server logs a warning). Set it BEFORE first login on the new deployment. Also consider disabling public sign-ups in Supabase Auth settings (shared project: coordinate with the other apps).
+- [ ] RLS note: admin pages/actions read and write albums/photos with the user's own Supabase session (anon key + cookies). Existing RLS policies on those tables (not part of v1.1) should allow writes only to the admin account, otherwise a signed-up non-admin could still call the Supabase REST API directly. Review those policies in the Supabase dashboard (human).
 - [x] (applied 2026-11-07, verify-rls 15/15) Apply migration supabase/migrations/20261107000001_v11_email_downloads.sql to project ubxllsvanurkwkohzxau (needs user approval)
 - [ ] Owner review of FR/EN privacy policy text
 - [ ] Real Gmail send test (List-Unsubscribe pass-through)
 - [ ] Merge to deploy branch / push: ONLY on explicit user request
 - [ ] Vercel env: CRON_SECRET, LEGAL_SENDER_NAME, LEGAL_POSTAL_ADDRESS, SUPPORT_EMAIL, RESEND_WEBHOOK_SECRET; add cron (GET/POST /api/cron/purge-events with Bearer CRON_SECRET) in Vercel project settings (repo has no vercel.json)
-- [ ] Resend dashboard broadcasts cannot carry per-recipient HMAC unsubscribe: use Resend's own unsubscribe placeholder (no sync handler built) — decide v1.2
+- [ ] KNOWN LIMIT (documented, not fixed in v1.1): newsletters are sent from the Resend dashboard (D-03). A recipient who unsubscribes through a dashboard broadcast (Resend's own unsubscribe link) is NOT synced back to `subscribers`: no Resend contact/unsubscribe webhook handler exists (the webhook only handles bounce and complaint). Before each broadcast, export the CSV (confirmed only) and re-upload it / remove manually anyone who unsubscribed in Resend; keep Resend and `subscribers` as two lists. Broadcasts cannot carry the per-recipient HMAC unsubscribe link either. Decide v1.2: build the sync (Resend `contact.updated` webhook or API poll) or move sending in-app.
 - [ ] Shared Supabase project: our tables are unprefixed in public (others use gecko_/sv_/ziko_): consider a prefix in v1.2
