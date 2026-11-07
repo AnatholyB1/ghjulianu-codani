@@ -119,3 +119,16 @@ export const LIMITS = {
   keyAttemptsGlobalPerIp: { limit: 20, windowSeconds: 900 },
   selectAddPerMinute: { limit: 120, windowSeconds: 60 },
 } as const;
+
+/**
+ * GLOBAL cap on download emails per day (abuse as an email relay, F3).
+ * Env DOWNLOAD_EMAIL_DAILY_CAP, default 80; unset / not a positive integer => 80.
+ */
+export const DEFAULT_DOWNLOAD_EMAIL_DAILY_CAP = 80;
+export function downloadEmailDailyCap(raw: string | undefined = process.env.DOWNLOAD_EMAIL_DAILY_CAP): number {
+  const n = Number(raw);
+  return Number.isInteger(n) && n > 0 ? n : DEFAULT_DOWNLOAD_EMAIL_DAILY_CAP;
+}
+/** Rate-limit key of the global daily bucket (fixed 24 h window of the rate_limit_hit RPC). */
+export const GLOBAL_EMAIL_KEY = 'dlreq:global:day';
+export const GLOBAL_EMAIL_WINDOW_SECONDS = 86400;

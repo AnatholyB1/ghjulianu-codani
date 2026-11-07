@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { getAdminClient } from '@/lib/server/supabaseAdmin';
-import { hit } from '@/lib/server/rateLimit';
-import { countryOf, deviceClass, logEvent, visitorHash } from '@/lib/server/events';
+import { hit, hashIdentifier } from '@/lib/server/rateLimit';
+import { countryOf, deviceClass, ipVisitorHash, logEvent } from '@/lib/server/events';
 import { isBotUserAgent } from '@/lib/server/bots';
 
 /**
@@ -20,11 +20,16 @@ export const dynamic = 'force-dynamic';
 const ALLOWED_TYPES = new Set(['view']);
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const MAX_BODY = 2048;
-const RATE_LIMIT = 90; // events per visitor hash per minute
+const RATE_LIMIT = 120; // events per IP per minute (UA independent)
 const RATE_WINDOW_S = 60;
 
 const noContent = () => new NextResponse(null, { status: 204, headers: { 'Cache-Control': 'no-store' } });
 const bad = () => new NextResponse(null, { status: 400, headers: { 'Cache-Control': 'no-store' } });
+
+function clientIp(req: NextRequest): string {
+  const xff = req.headers.get('x-forwarded-for');
+  return (xff?.split(',')[0] ?? req.headers.get('x-real-ip') ?? '').trim() || 'unknown';
+}
 
 function sameOrigin(req: NextRequest): boolean {
   const origin = req.headers.get('origin');
@@ -95,8 +100,11 @@ export async function POST(req: NextRequest) {
   if (isBotUserAgent(req.headers.get('user-agent'))) return noContent();
 
   try {
-    const vh = visitorHash(req);
-    if (!(await hit(`track:${vh}`, RATE_LIMIT, RATE_WINDOW_S))) return noContent();
+    // H1: the per-IP limit comes FIRST and depends on the IP only (salted hash), never on the
+    // User-Agent, so rotating UAs from one address cannot dodge it. The view's visitor_hash is IP-only
+    // too: the unique index (target, visitor_hash, Paris day) then caps views at 1 per IP per target per day.
+    if (!(await hit(`track:ip:${hashIdentifier(clientIp(req))}`, RATE_LIMIT, RATE_WINDOW_S))) return noContent();
+    const vh = ipVisitorHash(req);
 
     const photo = await resolvePhoto(photoId, src);
     if (!photo) return noContent();

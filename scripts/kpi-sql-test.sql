@@ -78,6 +78,19 @@ INSERT INTO events (type, photo_id, album_id, request_id, bytes, created_at) VAL
   -- previous window download
   ('download','bbbbbbbb-0000-4000-8000-000000000001','aaaaaaaa-0000-4000-8000-000000000001','11111111-0000-4000-8000-000000000009',4000,'2026-03-20 12:01:00+00');
 
+-- Funnel cohort (M3): a request created in the PREVIOUS window must not count in the current funnel even
+-- when its link is opened / downloaded inside the current window; a request created on the last day of the
+-- window and opened AFTER the window end still counts (cohort follows the request, not the open date).
+INSERT INTO events (type, request_id, created_at) VALUES
+  ('request','11111111-0000-4000-8000-000000000010','2026-03-24 10:00:00+00'),
+  ('request','11111111-0000-4000-8000-000000000011','2026-03-31 18:00:00+00');
+INSERT INTO events (type, request_id, created_at) VALUES
+  ('link_open','11111111-0000-4000-8000-000000000010','2026-03-27 13:00:00+00'),
+  ('link_open','11111111-0000-4000-8000-000000000009','2026-03-27 13:00:00+00'),
+  ('link_open','11111111-0000-4000-8000-000000000011','2026-04-01 08:00:00+00');
+INSERT INTO events (type, photo_id, album_id, request_id, bytes, created_at) VALUES
+  ('download','bbbbbbbb-0000-4000-8000-000000000001','aaaaaaaa-0000-4000-8000-000000000001','11111111-0000-4000-8000-000000000010',10,'2026-03-27 13:01:00+00');
+
 -- Subscribers ---------------------------------------------------------------------
 INSERT INTO subscribers (email, status, consent_at, confirmed_at, unsubscribed_at, created_at) VALUES
   ('s1@x.test','confirmed',   '2026-03-26 09:00:00+00','2026-03-26 09:30:00+00', NULL, now()),
@@ -92,17 +105,18 @@ SELECT pg_temp.check('range start', (j->'range'->>'start'), '2026-03-25') FROM k
 SELECT pg_temp.check('range prev_start', (j->'range'->>'prev_start'), '2026-03-18') FROM k;
 SELECT pg_temp.check('views cur (Paris bucketing, dedupe, 04-01 excluded)', (j->'totals'->'views'->>'cur')::int, 4) FROM k;
 SELECT pg_temp.check('views prev', (j->'totals'->'views'->>'prev')::int, 2) FROM k;
-SELECT pg_temp.check('downloads cur', (j->'totals'->'downloads'->>'cur')::int, 3) FROM k;
+SELECT pg_temp.check('downloads cur', (j->'totals'->'downloads'->>'cur')::int, 4) FROM k;
 SELECT pg_temp.check('downloads prev', (j->'totals'->'downloads'->>'prev')::int, 1) FROM k;
-SELECT pg_temp.check('bytes cur', (j->'totals'->'bytes'->>'cur')::bigint, 3500::bigint) FROM k;
+SELECT pg_temp.check('bytes cur', (j->'totals'->'bytes'->>'cur')::bigint, 3510::bigint) FROM k;
 SELECT pg_temp.check('bytes prev', (j->'totals'->'bytes'->>'prev')::bigint, 4000::bigint) FROM k;
-SELECT pg_temp.check('requests cur', (j->'totals'->'requests'->>'cur')::int, 3) FROM k;
+SELECT pg_temp.check('requests cur', (j->'totals'->'requests'->>'cur')::int, 4) FROM k;
 SELECT pg_temp.check('visitor_days cur', (j->'totals'->'visitor_days'->>'cur')::int, 3) FROM k;
 SELECT pg_temp.check('visitor_days prev', (j->'totals'->'visitor_days'->>'prev')::int, 2) FROM k;
 SELECT pg_temp.check('funnel visitor_days', (j->'funnel'->>'visitor_days')::int, 3) FROM k;
-SELECT pg_temp.check('funnel requests', (j->'funnel'->>'requests')::int, 3) FROM k;
-SELECT pg_temp.check('funnel links_opened (distinct request)', (j->'funnel'->>'links_opened')::int, 2) FROM k;
+SELECT pg_temp.check('funnel requests (cohort)', (j->'funnel'->>'requests')::int, 4) FROM k;
+SELECT pg_temp.check('funnel links_opened (cohort, prev-window request excluded, post-window open included)', (j->'funnel'->>'links_opened')::int, 3) FROM k;
 SELECT pg_temp.check('funnel downloaded (distinct request)', (j->'funnel'->>'downloaded')::int, 2) FROM k;
+SELECT pg_temp.check('funnel never above 100%', (j->'funnel'->>'links_opened')::int <= (j->'funnel'->>'requests')::int AND (j->'funnel'->>'downloaded')::int <= (j->'funnel'->>'requests')::int, true) FROM k;
 SELECT pg_temp.check('signups cur', (j->'totals'->'signups'->>'cur')::int, 2) FROM k;
 SELECT pg_temp.check('signups confirmed', (j->'totals'->'signups'->>'confirmed')::int, 1) FROM k;
 SELECT pg_temp.check('subscribers now', (j->'subscribers'->>'now')::int, 2) FROM k;
@@ -118,7 +132,7 @@ SELECT pg_temp.check('daily 03-26 views (v2 + v1 p2 + v1 23:30Z)', (j->'daily'->
 SELECT pg_temp.check('daily sum = tile (A10)', (SELECT sum((e->>'views')::int) FROM k, jsonb_array_elements(j->'daily') e)::int, 4);
 SELECT pg_temp.check('top favorite #1 = p1 (3)', (j->'top_favorites'->0->>'count')::int, 3) FROM k;
 SELECT pg_temp.check('top favorite #1 album title', (j->'top_favorites'->0->>'album_title'), 'Album A') FROM k;
-SELECT pg_temp.check('top download #1 = p1 (2)', (j->'top_downloads'->0->>'count')::int, 2) FROM k;
+SELECT pg_temp.check('top download #1 = p1 (3)', (j->'top_downloads'->0->>'count')::int, 3) FROM k;
 SELECT pg_temp.check('top album #1 views (Album A)', (j->'top_albums'->0->>'views')::int, 3) FROM k;
 SELECT pg_temp.check('top album #2 private flag', (j->'top_albums'->1->>'is_public')::boolean, false) FROM k;
 SELECT pg_temp.check('day/night day', (j->'day_night'->>'day')::int, 2) FROM k;

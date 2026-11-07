@@ -98,6 +98,12 @@ try {
   ok(wrong.status === 404 && (await row(B.id)).used_count === 0, 'photo not in request => 404, nothing consumed');
   const badPart = await get(`/api/download/${B.token}/zip?part=9`);
   ok(badPart.status === 404 && (await row(B.id)).used_count === 0, 'part out of range => 404, nothing consumed');
+  // M1: HEAD never consumes a use
+  const hz = await get(`/api/download/${B.token}/zip?part=1`, { method: 'HEAD' });
+  const hp = await get(`/api/download/${B.token}/photo/${pid}`, { method: 'HEAD' });
+  const hbad = await get(`/api/download/${B.token}/zip?part=9`, { method: 'HEAD' });
+  ok(hz.status === 200 && hp.status === 200 && hbad.status === 404, `HEAD zip/photo 200, bad part 404 (${hz.status}/${hp.status}/${hbad.status})`);
+  ok((await row(B.id)).used_count === 0 && !(await row(B.id)).window_started_at, 'HEAD leaves used_count unchanged (0) and opens no window');
   const rnd = await get(`/api/download/${randomBytes(32).toString('base64url')}/photo/${pid}`);
   ok(rnd.status === 404, 'random token => 404');
   const mal = await get(`/api/download/short/photo/${pid}`);

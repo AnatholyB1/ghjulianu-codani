@@ -60,21 +60,23 @@ async function db(pathAndQuery, init = {}) {
 }
 
 const parisDate = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Paris' }).format(new Date());
-function vhash(ip, ua) {
+// H1: the view's visitor_hash is IP-only (no User-Agent) => 1 row per IP per target per day
+function vhash(ip) {
   const daily = createHash('sha256').update(`${SALT}:${parisDate()}`).digest('hex');
-  return createHash('sha256').update(`${ip}|${ua}|${daily}`).digest('hex').slice(0, 32);
+  return createHash('sha256').update(`ip|${ip}|${daily}`).digest('hex').slice(0, 32);
 }
+const ipKey = (ip) => 'track:ip:' + createHash('sha256').update(`${SALT}:${ip.trim().toLowerCase()}`).digest('hex').slice(0, 32);
 
 const DESKTOP_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
-const IP_D = '203.0.113.71', IP_M = '203.0.113.72', IP_R = '203.0.113.73';
+const IP_D = '203.0.113.71', IP_M = '203.0.113.72', IP_R = '203.0.113.73', IP_U = '203.0.113.74';
 const iphone = devices['iPhone 14'];
-const hashes = [vhash(IP_D, DESKTOP_UA), vhash(IP_M, iphone.userAgent), vhash(IP_R, DESKTOP_UA)];
+const hashes = [vhash(IP_D), vhash(IP_M), vhash(IP_R), vhash(IP_U)];
 
 async function cleanup() {
   if (!HAVE_DB) return;
   const list = hashes.map((h) => `"${h}"`).join(',');
   await db(`events?visitor_hash=in.(${list})`, { method: 'DELETE' });
-  for (const h of hashes) await db(`rate_limits?key=like.${encodeURIComponent(`track:${h}`)}*`, { method: 'DELETE' });
+  for (const ip of [IP_D, IP_M, IP_R, IP_U]) await db(`rate_limits?key=eq.${encodeURIComponent(ipKey(ip))}`, { method: 'DELETE' });
 }
 const eventsFor = async (h) => (await db(`events?visitor_hash=eq.${h}&select=*&order=id`)).body ?? [];
 
@@ -115,7 +117,7 @@ try {
     const nous = await botApi.post('/api/track', { data: JSON.stringify({ type: 'view', photo_id: photo.id }), headers: { 'user-agent': '' } });
     check('missing UA dropped with 204', nous.status() === 204);
     // bots left no row (hash computed for each bot UA)
-    const botHashes = ['curl/8.4.0', 'HeadlessChrome/124 Safari', 'python-requests/2.31'].map((u) => vhash(IP_R, u));
+    const botHashes = [vhash(IP_R)];
     const botRows = (await db(`events?visitor_hash=in.(${botHashes.map((h) => `"${h}"`).join(',')})&select=id`)).body ?? [];
     check('bots: zero events rows written', botRows.length === 0);
 
@@ -133,8 +135,19 @@ try {
     }
     // rate limit: > 90 / min / visitor => counter keeps counting, rows stop (unknown photo -> no insert anyway)
     for (let i = 0; i < 95; i++) await post({ type: 'view', photo_id: '22222222-2222-4222-8222-222222222222' });
-    const rl = (await db(`rate_limits?key=eq.track:${hashes[2]}&select=count`)).body ?? [];
-    check('rate limit counter incremented per visitor hash (>90)', rl.reduce((a, b) => a + b.count, 0) > 90, `count=${rl.reduce((a, b) => a + b.count, 0)}`);
+    const rl = (await db(`rate_limits?key=eq.${encodeURIComponent(ipKey(IP_R))}&select=count`)).body ?? [];
+    check('rate limit counter incremented per IP (>90)', rl.reduce((a, b) => a + b.count, 0) > 90, `count=${rl.reduce((a, b) => a + b.count, 0)}`);
+    // H1: 40 distinct (non-bot) User-Agents from ONE IP => exactly 1 view row for the target that day
+    const uaApi = await apiRequest.newContext({ baseURL: BASE, extraHTTPHeaders: { 'x-forwarded-for': IP_U, 'content-type': 'text/plain' } });
+    const uaStatuses = [];
+    for (let i = 0; i < 40; i++) {
+      const ua = `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${100 + i}.0.${i}.0 Safari/537.36`;
+      uaStatuses.push((await uaApi.post('/api/track', { data: JSON.stringify({ type: 'view', photo_id: photo.id }), headers: { 'user-agent': ua } })).status());
+    }
+    check('H1: 40 distinct UAs from one IP all answered 204', uaStatuses.every((s) => s === 204));
+    const uaRows = await eventsFor(hashes[3]);
+    check('H1: 40 distinct UAs from one IP => exactly 1 view row per target per day', uaRows.length === 1, `rows=${uaRows.length}`);
+    await uaApi.dispose();
   } else skip('DB-backed track assertions', 'no .env.local service role or no photos');
   await api.dispose();
 

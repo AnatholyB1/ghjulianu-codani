@@ -148,12 +148,13 @@ export default function StatsView({ d, days }: { d: KpiData; days: 7 | 30 | 90 }
   const f = d.funnel;
   const steps = [
     { name: 'Visiteurs-jours ayant vu une photo', n: f.visitor_days, color: '#8fbcf0' },
-    { name: 'Demandes de téléchargement', n: f.requests, color: '#5f9de8' },
-    { name: 'Liens ouverts', n: f.links_opened, color: '#3987e5' },
-    { name: 'Téléchargés', n: f.downloaded, color: '#2a67b4' },
+    { name: 'Demandes de téléchargement (créées sur la période)', n: f.requests, color: '#5f9de8' },
+    { name: 'Parmi elles : liens ouverts', n: f.links_opened, color: '#3987e5' },
+    { name: 'Parmi elles : téléchargées', n: f.downloaded, color: '#2a67b4' },
   ];
   const conv = (i: number) => (steps[i - 1].n > 0 ? (steps[i].n / steps[i - 1].n) * 100 : null);
-  const globalConv = f.visitor_days > 0 ? (f.downloaded / f.visitor_days) * 100 : null;
+  // Cohort rate: of the requests created in the period, how many were downloaded (always <= 100%).
+  const globalConv = f.requests > 0 ? (f.downloaded / f.requests) * 100 : null;
 
   const dn = d.day_night;
   const dnP = percents([dn.day, dn.night]);
@@ -209,7 +210,7 @@ export default function StatsView({ d, days }: { d: KpiData; days: 7 | 30 | 90 }
       </section>
 
       <section className="card sec" aria-labelledby="h-fn">
-        <div className="card-head"><h2 id="h-fn">Tunnel de téléchargement</h2><span className="sub">Conversion globale {globalConv === null ? '–' : pct1(globalConv)}</span></div>
+        <div className="card-head"><h2 id="h-fn">Tunnel de téléchargement</h2><span className="sub">Demandes téléchargées {globalConv === null ? '–' : pct1(globalConv)}</span></div>
         {noWindowData ? empty() : (
           <>
             <ol className="funnel">
@@ -226,7 +227,7 @@ export default function StatsView({ d, days }: { d: KpiData; days: 7 | 30 | 90 }
                 </li>
               ))}
             </ol>
-            <p className="note">L’étape 1 compte des visiteurs-jours ; les étapes 2 à 4 comptent des demandes. Les taux entre l’étape 1 et la suite sont donc indicatifs.</p>
+            <p className="note">L’étape 1 compte des visiteurs-jours (une autre unité : le taux vers l’étape 2 est indicatif). Les étapes 2 à 4 suivent les mêmes demandes, créées sur la période : un lien ouvert ou un téléchargement postérieur à la période compte pour sa demande, et les taux des étapes 3 et 4 ne peuvent pas dépasser 100 %.</p>
             <DataTable caption="Tunnel de téléchargement" head={['Étape', 'Effectif', 'Conversion depuis l’étape précédente']}
               rows={steps.map((s, i) => [s.name, fmt(s.n), i === 0 ? '–' : conv(i) === null ? '–' : pct1(conv(i) as number)])} />
           </>
