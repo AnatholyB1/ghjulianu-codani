@@ -4,6 +4,7 @@ import { cookies }         from 'next/headers';
 import { createClient, createServiceClient } from '@/utils/supabase/server';
 import AlbumPageClient     from './AlbumPageClient';
 import AccessKeyGate       from './AccessKeyGate';
+import { verifyAlbumAccess } from '@/lib/server/requestGuards';
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -46,7 +47,7 @@ export default async function AlbumPage({ params }: Props) {
   if (!album.is_public) {
     const cookieStore = await cookies();
     const stored = cookieStore.get(`album-access-${slug}`)?.value;
-    if (stored !== album.access_key) {
+    if (!verifyAlbumAccess(stored, slug, album.access_key)) {
       return <AccessKeyGate slug={slug} />;
     }
   }
