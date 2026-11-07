@@ -10,7 +10,7 @@
 --     * M2 performance: ONE materialised pass over the two windows feeding ONE
 --       FILTERed aggregate (was ~20 separate scans of a materialised CTE);
 --       visitor-days counted ONCE per window with a scalar text key
---       (count(DISTINCT visitor_hash || day) instead of the row-constructor
+--       (a text key visitor_hash + day, hash-aggregated; instead of the record constructor
 --       DISTINCT (visitor_hash, day), which sorts records and was computed twice).
 --     * M3 funnel: links_opened / downloaded are a COHORT of the requests created
 --       in the window (joined by request_id on the 'request' events), so
@@ -90,7 +90,7 @@ BEGIN
      GROUP BY day, type, album_id, is_day, device
   ),
   -- visitor-days (raw rows only: the rollup has no visitor_hash), counted ONCE per window with a
-  -- scalar text key (hash-aggregated), never a row-constructor DISTINCT.
+  -- scalar text key (hash-aggregated), never a record constructor DISTINCT.
   vd AS (
     SELECT count(*) FILTER (WHERE d >= v_start) AS cur,
            count(*) FILTER (WHERE d <  v_start) AS prev
