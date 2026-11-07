@@ -37,7 +37,7 @@ export interface RequestInput {
 }
 
 /** Generic success is padded to this floor so silent/ignored paths are not distinguishable by timing. */
-const GENERIC_MIN_MS = 900;
+const GENERIC_MIN_MS = 1800;
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
