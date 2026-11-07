@@ -3,6 +3,7 @@
 -- 20261107000001_v11_email_downloads.sql, 20261107000002_v11_kpi_views.sql.
 \set ON_ERROR_STOP on
 \pset pager off
+\o .tmp-pg-data/noise.txt
 
 CREATE TEMP TABLE results(name text, ok boolean, detail text);
 CREATE OR REPLACE FUNCTION pg_temp.check(p_name text, p_actual anyelement, p_expected anyelement) RETURNS void
@@ -158,42 +159,34 @@ SELECT pg_temp.check('rollup unchanged after second purge', (SELECT sum(count)::
 SELECT pg_temp.check('recent views unaffected', (public.kpi_dashboard(7, DATE '2026-03-31')->'totals'->'views'->>'cur')::int, 4);
 
 -- ---- privacy / RLS: anon + authenticated get nothing ------------------------------
+CREATE TEMP TABLE role_res(name text, ok boolean);
+GRANT ALL ON role_res TO PUBLIC;
 DO $$
-DECLARE r text;
+DECLARE r text; ok boolean;
 BEGIN
   FOREACH r IN ARRAY ARRAY['anon','authenticated'] LOOP
     EXECUTE format('SET LOCAL ROLE %I', r);
-    BEGIN
-      PERFORM count(*) FROM public.events;
-      PERFORM pg_temp.check('RLS/grants: ' || r || ' cannot read events', false, true);
-    EXCEPTION WHEN insufficient_privilege THEN
-      PERFORM pg_temp.check('RLS/grants: ' || r || ' cannot read events', true, true);
-    END;
-    BEGIN
-      PERFORM public.kpi_dashboard(7);
-      PERFORM pg_temp.check('grants: ' || r || ' cannot execute kpi_dashboard', false, true);
-    EXCEPTION WHEN insufficient_privilege THEN
-      PERFORM pg_temp.check('grants: ' || r || ' cannot execute kpi_dashboard', true, true);
-    END;
-    BEGIN
-      PERFORM public.purge_old_events(13);
-      PERFORM pg_temp.check('grants: ' || r || ' cannot execute purge_old_events', false, true);
-    EXCEPTION WHEN insufficient_privilege THEN
-      PERFORM pg_temp.check('grants: ' || r || ' cannot execute purge_old_events', true, true);
-    END;
-    RESET ROLE;
+    ok := false; BEGIN PERFORM count(*) FROM public.events; EXCEPTION WHEN insufficient_privilege THEN ok := true; END;
+    RESET ROLE; INSERT INTO role_res VALUES ('RLS/grants: ' || r || ' cannot read events', ok);
+    EXECUTE format('SET LOCAL ROLE %I', r);
+    ok := false; BEGIN PERFORM public.kpi_dashboard(7); EXCEPTION WHEN insufficient_privilege THEN ok := true; END;
+    RESET ROLE; INSERT INTO role_res VALUES ('grants: ' || r || ' cannot execute kpi_dashboard', ok);
+    EXECUTE format('SET LOCAL ROLE %I', r);
+    ok := false; BEGIN PERFORM public.purge_old_events(13); EXCEPTION WHEN insufficient_privilege THEN ok := true; END;
+    RESET ROLE; INSERT INTO role_res VALUES ('grants: ' || r || ' cannot execute purge_old_events', ok);
   END LOOP;
   SET LOCAL ROLE service_role;
-  PERFORM public.kpi_dashboard(7);
-  PERFORM pg_temp.check('service_role can execute kpi_dashboard', true, true);
-  RESET ROLE;
+  ok := false; BEGIN PERFORM public.kpi_dashboard(7); ok := true; EXCEPTION WHEN OTHERS THEN ok := false; END;
+  RESET ROLE; INSERT INTO role_res VALUES ('service_role can execute kpi_dashboard', ok);
 END $$;
+INSERT INTO results SELECT name, ok, 'privilege check' FROM role_res;
 
 -- privacy: events has no IP/UA column
 SELECT pg_temp.check('events has no ip / user_agent column',
   (SELECT count(*)::int FROM information_schema.columns
     WHERE table_name = 'events' AND column_name ~* '(^ip|ip_|user_?agent|^ua$|email)'), 0);
 
+\o
 \echo ---- RESULTS ----
 SELECT CASE WHEN ok THEN 'PASS' ELSE 'FAIL' END AS r, name, CASE WHEN ok THEN '' ELSE detail END AS detail FROM results ORDER BY ok, name;
 SELECT count(*) FILTER (WHERE ok) AS passed, count(*) FILTER (WHERE NOT ok) AS failed FROM results;
