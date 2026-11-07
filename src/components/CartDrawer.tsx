@@ -12,24 +12,6 @@ import { REQUEST_COPY } from '@/lib/requestCopy';
 import RequestStep from '@/components/cart/RequestStep';
 import '@/components/cart/request.css';
 
-/* ── LEGACY direct download (removed in phase 8b; kept reachable as a secondary action) ── */
-async function downloadPhoto(src: string, alt: string, downloadName?: string) {
-  try {
-    const res  = await fetch(src);
-    const blob = await res.blob();
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href     = url;
-    a.download = `${(downloadName || alt || 'photo').replace(/\s+/g, '-').toLowerCase()}.jpg`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  } catch (err) {
-    console.error('Download failed for', src, err);
-  }
-}
-
 const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]):not([tabindex="-1"]), [tabindex]:not([tabindex="-1"])';
 
 export default function CartDrawer() {
@@ -39,8 +21,6 @@ export default function CartDrawer() {
 
   const [step,          setStep]          = useState<'list' | 'form'>('list');
   const [footerNode,    setFooterNode]    = useState<React.ReactNode>(null);
-  const [donationModal, setDonationModal] = useState(false);
-  const [downloading,   setDownloading]   = useState(false);
 
   const fabRef    = useRef<HTMLButtonElement>(null);
   const drawerRef = useRef<HTMLDivElement>(null);
@@ -52,8 +32,8 @@ export default function CartDrawer() {
   /* Keyboard: Escape closes everything; Tab is trapped inside the open drawer */
   const handleKey = useCallback(
     (e: KeyboardEvent) => {
-      if (e.key === 'Escape') { close(); setDonationModal(false); return; }
-      if (e.key === 'Tab' && open && !donationModal && drawerRef.current) {
+      if (e.key === 'Escape') { close(); return; }
+      if (e.key === 'Tab' && open && drawerRef.current) {
         const nodes = Array.from(drawerRef.current.querySelectorAll<HTMLElement>(FOCUSABLE))
           .filter((n) => n.offsetParent !== null && !n.closest('[aria-hidden="true"]'));
         if (nodes.length === 0) return;
@@ -64,7 +44,7 @@ export default function CartDrawer() {
         else if (!e.shiftKey && (active === last || !drawerRef.current.contains(active))) { e.preventDefault(); first.focus(); }
       }
     },
-    [close, open, donationModal],
+    [close, open],
   );
   useEffect(() => {
     window.addEventListener('keydown', handleKey);
@@ -86,18 +66,6 @@ export default function CartDrawer() {
     }
     if (wasOpen.current) { wasOpen.current = false; fabRef.current?.focus(); }
   }, [open]);
-
-  /* LEGACY (phase 8b removes) */
-  async function handleDownloadAll() {
-    setDonationModal(false);
-    setDownloading(true);
-    for (const photo of items) {
-      await downloadPhoto(photo.src, photo.alt, photo.downloadName);
-    }
-    setDownloading(false);
-    clear();
-    close();
-  }
 
   const goBack = useCallback(() => { setStep('list'); setFooterNode(null); }, []);
   const setFooter = useCallback((node: React.ReactNode) => setFooterNode(node), []);
@@ -233,101 +201,10 @@ export default function CartDrawer() {
             </div>
             <button className="rq-btn" data-testid="cta-request" onClick={() => setStep('form')}>{c.cta}</button>
             <p className="rq-hint">{c.ctaHint}</p>
-            {/* LEGACY direct download: phase 8b removes this and the donation modal below */}
-            <button
-              className="rq-btn rq-btn--ghost"
-              onClick={() => setDonationModal(true)}
-              disabled={downloading}
-              data-testid="legacy-download"
-            >
-              {downloading ? '…' : c.legacyDownload}
-            </button>
           </div>
         )}
         {items.length > 0 && step === 'form' && <div className="rq-foot">{footerNode}</div>}
       </div>
-
-      {/* ── Donation modal (LEGACY, phase 8b removes) ────────────────── */}
-      {donationModal && (
-        <div
-          onClick={() => setDonationModal(false)}
-          style={{
-            position:       'fixed',
-            inset:          0,
-            zIndex:         300,
-            background:     'rgba(0,0,0,0.88)',
-            display:        'flex',
-            alignItems:     'center',
-            justifyContent: 'center',
-            animation:      'fadeIn 0.2s ease',
-          }}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              background: '#111',
-              border:     '1px solid var(--border)',
-              padding:    'clamp(2rem,5vw,3rem)',
-              width:      'min(500px, 92vw)',
-              textAlign:  'center',
-              animation:  'scaleIn 0.3s cubic-bezier(0.22,1,0.36,1)',
-            }}
-          >
-            <p style={{ fontSize: '0.58rem', letterSpacing: '0.22em', color: 'var(--muted)', marginBottom: '1rem' }}>
-              AVANT DE TÉLÉCHARGER
-            </p>
-            <h2
-              style={{
-                fontFamily:   'var(--font-cormorant),serif',
-                fontSize:     'clamp(1.7rem,4vw,2.5rem)',
-                fontStyle:    'italic',
-                fontWeight:   300,
-                color:        '#E8E4DC',
-                lineHeight:   1.15,
-                marginBottom: '1rem',
-              }}
-            >
-              Ces images vous ont touché ?
-            </h2>
-            <p style={{ fontSize: '0.8rem', color: 'var(--muted)', lineHeight: 1.9, maxWidth: '380px', margin: '0 auto 2rem' }}>
-              Mon travail est librement accessible. Si vous souhaitez soutenir la création et me permettre de continuer à photographier, un geste — même modeste — est infiniment précieux.
-            </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.7rem' }}>
-              <Link
-                href="/don"
-                onClick={() => setDonationModal(false)}
-                style={{
-                  display:       'block',
-                  background:    'var(--accent)',
-                  color:         '#080808',
-                  padding:       '1.05rem',
-                  fontSize:      '0.62rem',
-                  letterSpacing: '0.2em',
-                  fontFamily:    'var(--font-space)',
-                  fontWeight:    700,
-                  textDecoration: 'none',
-                }}
-              >
-                SOUTENIR GHJULIANU →
-              </Link>
-              <button
-                onClick={handleDownloadAll}
-                style={{
-                  background:    'none',
-                  border:        '1px solid var(--border)',
-                  color:         'var(--muted)',
-                  padding:       '0.95rem',
-                  fontSize:      '0.6rem',
-                  letterSpacing: '0.16em',
-                  cursor:        'pointer',
-                }}
-              >
-                TÉLÉCHARGER QUAND MÊME
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 }

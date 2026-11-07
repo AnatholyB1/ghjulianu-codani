@@ -188,7 +188,7 @@ const translations = {
     client: {
       label:           'ESPACE CLIENT',
       title:           'Mon album',
-      desc:            "Vous avez reçu une clé d'accès personnalisée ? Saisissez-la ci-dessous pour visualiser et télécharger votre album en haute qualité.",
+      desc:            "Vous avez reçu une clé d'accès personnalisée ? Saisissez-la ci-dessous pour visualiser votre album privé et demander vos photos en haute qualité par email.",
       keyLabel:        'CLÉ D\'ACCÈS',
       keyPlaceholder:  'Entrez votre clé...',
       submit:          'ACCÉDER À MON ALBUM',
@@ -198,7 +198,7 @@ const translations = {
       helpItems: [
         'Vous recevez une clé unique après votre séance photo ou événement',
         "Saisissez cette clé ici pour accéder à votre album privé",
-        "Parcourez, sélectionnez et téléchargez vos photos directement depuis l'album",
+        "Parcourez l'album, sélectionnez vos photos et recevez le lien de téléchargement par email",
       ],
     },
     // ── Footer ──────────────────────────────────────────────
@@ -401,7 +401,7 @@ const translations = {
     client: {
       label:           'CLIENT SPACE',
       title:           'My album',
-      desc:            'Received a personalised access key? Enter it below to view and download your album in full quality.',
+      desc:            'Received a personalised access key? Enter it below to view your private album and request your photos in full quality by email.',
       keyLabel:        'ACCESS KEY',
       keyPlaceholder:  'Enter your key...',
       submit:          'ACCESS MY ALBUM',
@@ -411,7 +411,7 @@ const translations = {
       helpItems: [
         'You receive a unique key after your photo session or event',
         'Enter that key here to access your private album',
-        'Browse, select and download your photos directly from the album',
+        'Browse the album, select your photos and receive the download link by email',
       ],
     },
 
