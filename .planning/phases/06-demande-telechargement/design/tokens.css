@@ -1,0 +1,43 @@
+/* Phase 6 design tokens. Site tokens copied verbatim from src/app/globals.css
+   (:root = night default, .day = day theme). Additions are marked NEW. */
+:root{
+  --bg:#080808; --surface:#0e0e0e; --text:#E8E4DC; --muted:#7a7a74;
+  --accent:#c8a97e; --accent-text:#c8a97e; --border:rgba(255,255,255,0.07);
+  --btn-text:#E8E4DC; --btn-border:rgba(255,255,255,0.3); --navbar-h:64px;
+  /* NEW (phase 6) */
+  --panel:#0f0f0f;                 /* drawer bg, already hardcoded #0f0f0f in CartDrawer */
+  --on-accent:#080808;             /* text on accent button */
+  --muted-aa:#9b9b94;              /* --muted fails 4.5:1 on --panel at night: use for text < 18px */
+  --field-bg:rgba(255,255,255,0.04);
+  --field-border:#6e6e69;          /* >= 3:1 vs --panel (WCAG 1.4.11) */
+  --danger:#f08a8a; --danger-bg:rgba(240,138,138,0.10);
+  --ok:#7fd69a;     --ok-bg:rgba(127,214,154,0.10);
+  --warn:#e0b45c;   --warn-bg:rgba(224,180,92,0.10);
+  --scrim:rgba(0,0,0,0.7);
+  --ph-a:#1a1a1a; --ph-b:#232323; --ph-ink:#9b9b94;   /* image placeholder */
+  --focus:#c8a97e;
+  /* spacing scale (4pt) */
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px;
+  /* type scale (rem, 16px base, ratio ~1.25, floor 14px) */
+  --t-cap:0.875rem; --t-body:1rem; --t-lead:1.125rem; --t-h3:1.5rem; --t-h2:1.875rem; --t-h1:clamp(2.25rem,6vw,3.5rem);
+  --font-display:'Cormorant Garamond',Georgia,serif;
+  --font-ui:'Space Grotesk','DM Sans',system-ui,sans-serif;
+  /* motion */
+  --ease-out:cubic-bezier(0.22,1,0.36,1); --dur-1:150ms; --dur-2:250ms; --dur-3:350ms;
+  /* z scale */
+  --z-fab:150; --z-scrim:160; --z-drawer:170; --z-modal:300;
+  --tap:44px; --field-h:52px;
+}
+.day{
+  --bg:#fafafa; --surface:#f5f5f5; --text:#1a1a1a; --muted:#666666;
+  --accent:#c8a97e; --accent-text:#7a5200; --border:rgba(0,0,0,0.07);
+  --btn-text:#fafafa; --btn-border:rgba(0,0,0,0.35);
+  --panel:#ffffff; --on-accent:#080808; --muted-aa:#5c5c5c;
+  --field-bg:#ffffff; --field-border:#8a8a8a;
+  --danger:#b3261e; --danger-bg:rgba(179,38,30,0.07);
+  --ok:#1f6b3a; --ok-bg:rgba(31,107,58,0.08);
+  --warn:#7a5200; --warn-bg:rgba(122,82,0,0.08);
+  --scrim:rgba(0,0,0,0.45);
+  --ph-a:#e6e6e6; --ph-b:#ededed; --ph-ink:#5c5c5c;
+  --focus:#7a5200;
+}
