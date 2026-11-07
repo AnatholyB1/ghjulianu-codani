@@ -1,9 +1,11 @@
+import { requireAdminPage } from '@/lib/server/requireAdmin';
 import { createClient }  from '@/utils/supabase/server';
 import Link               from 'next/link';
 import type { Album }     from '@/lib/db.types';
 import AlbumSortableList  from './_components/AlbumSortableList';
 
 export default async function AdminAlbumsPage() {
+  await requireAdminPage('/admin/albums');
   const supabase = await createClient();
   const { data: albums } = await supabase
     .from('albums')
