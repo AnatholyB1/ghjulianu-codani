@@ -5,6 +5,7 @@ import Navbar      from '@/components/Navbar';
 import BottomBar   from '@/components/BottomBar';
 import Footer      from '@/components/Footer';
 import CartDrawer  from '@/components/CartDrawer';
+import ViewBeacon  from '@/components/ViewBeacon';
 import { CartProvider }    from '@/contexts/CartContext';
 import { LanguageProvider } from '@/contexts/LanguageContext';
 
@@ -27,6 +28,7 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
       <Footer />
       <BottomBar />
       <CartDrawer />
+      <ViewBeacon />
     </CartProvider>
     </LanguageProvider>
   );
