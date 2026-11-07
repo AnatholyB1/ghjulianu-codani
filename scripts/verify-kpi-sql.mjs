@@ -30,7 +30,7 @@ try {
   CREATE TABLE portfolio_photos (id uuid PRIMARY KEY, src text, alt text, is_day boolean);`;
   const stubFile = path.join(DATA, 'stub.sql');
   writeFileSync(stubFile, stub);
-  for (const f of [stubFile, 'supabase/migrations/20261107000001_v11_email_downloads.sql', 'supabase/migrations/20261107000002_v11_kpi_views.sql']) {
+  for (const f of [stubFile, 'supabase/migrations/20261107000001_v11_email_downloads.sql', 'supabase/migrations/20261107000002_v11_kpi_views.sql', 'supabase/migrations/20261107000004_v11_audit_batch2.sql']) {
     const x = psql(['-q', '-f', f]);
     if (x.status !== 0) { console.error(`LOAD FAILED ${f}\n`, x.stderr); throw new Error('load'); }
   }
