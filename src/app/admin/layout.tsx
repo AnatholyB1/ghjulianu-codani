@@ -9,6 +9,7 @@ const NAV = [
   { label: 'ALBUMS',      href: '/admin/albums' },
   { label: 'PORTFOLIO',   href: '/admin/portfolio' },
   { label: 'CATÉGORIES',  href: '/admin/categories' },
+  { label: 'STATS',       href: '/admin/stats' },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
