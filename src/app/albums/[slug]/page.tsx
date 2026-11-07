@@ -13,11 +13,22 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const supabase = await createClient();
   const { data: album } = await supabase
     .from('albums')
-    .select('title, description, cover_url, category:categories(name)')
+    .select('title, description, cover_url, is_public, category:categories(name)')
     .eq('slug', slug)
     .single();
 
   if (!album) return {};
+
+  // Private album: generic metadata only (no title / description / cover) and never indexed.
+  if (!album.is_public) {
+    return {
+      title: 'Album privé — Ghjulianu Codani',
+      description: undefined,
+      robots: { index: false, follow: false },
+      openGraph: { title: 'Album privé — Ghjulianu Codani', images: [] },
+      twitter: { card: 'summary', title: 'Album privé — Ghjulianu Codani', images: [] },
+    };
+  }
 
   const title       = `${album.title} — Ghjulianu Codani`;
   const description = album.description ?? `Album photo — ${album.title}`;
