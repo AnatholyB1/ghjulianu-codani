@@ -53,4 +53,34 @@
 - Outil d'analytics tiers — événements first-party sans cookie
 
 ## Traceability
-(filled by roadmap)
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| FND-01 | Phase 5 | Pending |
+| FND-02 | Phase 5 | Pending |
+| FND-03 | Phase 5 | Pending |
+| REQ-01 | Phase 6 | Pending |
+| REQ-02 | Phase 6 | Pending |
+| REQ-03 | Phase 6 | Pending |
+| REQ-04 | Phase 6 | Pending |
+| REQ-05 | Phase 6 | Pending |
+| DLV-01 | Phase 7 | Pending |
+| DLV-02 | Phase 7 | Pending |
+| DLV-03 | Phase 7 | Pending |
+| DLV-04 | Phase 7 | Pending |
+| PRT-03 | Phase 7 | Pending |
+| PRT-01 | Phase 8 | Pending |
+| PRT-02 | Phase 8 | Pending |
+| NWS-01 | Phase 9 | Pending |
+| NWS-02 | Phase 9 | Pending |
+| NWS-03 | Phase 9 | Pending |
+| NWS-04 | Phase 9 | Pending |
+| NWS-05 | Phase 9 | Pending |
+| KPI-01 | Phase 10 | Pending |
+| KPI-02 | Phase 10 | Pending |
+| KPI-03 | Phase 10 | Pending |
+| KPI-04 | Phase 10 | Pending |
+| KPI-05 | Phase 10 | Pending |
+| KPI-06 | Phase 10 | Pending |
+| KPI-07 | Phase 10 | Pending |
+
+Coverage: 27/27 mapped
