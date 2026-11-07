@@ -39,6 +39,7 @@ export const COPY = {
     partAria: (i: number, free: boolean) => `Télécharger la partie ${i} (${free ? 'session en cours, gratuit' : 'session de 15 minutes, 1 utilisation'})`,
     busy: 'Préparation…',
     again: 'Télécharger à nouveau',
+    wait: 'Un autre téléchargement démarre à peine. Patientez un instant, puis cliquez à nouveau.',
     started:
       "Téléchargement lancé. Votre navigateur l'affiche dans ses téléchargements. Les grosses parties peuvent mettre quelques secondes à démarrer. Rien ne s'affiche sur cette page, c'est normal.",
     stillNothing: "Toujours rien ? Vérifiez les téléchargements de votre navigateur, puis réessayez : la session reste ouverte 15 minutes.",
@@ -94,6 +95,7 @@ export const COPY = {
     partAria: (i: number, free: boolean) => `Download part ${i} (${free ? 'session open, free' : '15-minute session, 1 use'})`,
     busy: 'Preparing…',
     again: 'Download again',
+    wait: 'Another download is just starting. Please wait a moment, then click again.',
     started:
       'Download started. Your browser shows it in its downloads. Large parts can take a few seconds to start. Nothing moves on this page, that is normal.',
     stillNothing: 'Still nothing? Check your browser downloads, then try again: the session stays open for 15 minutes.',

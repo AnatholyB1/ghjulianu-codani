@@ -40,6 +40,7 @@ export default function DeliveryView(p: Props) {
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
   const [clicked, setClicked] = useState<Set<string>>(new Set());
+  const [hint, setHint] = useState(false);
   const [shown, setShown] = useState(p.parts.length > 1 ? FIRST_BATCH : p.tiles.length);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
   useEffect(() => () => timers.current.forEach(clearTimeout), []);
@@ -50,11 +51,18 @@ export default function DeliveryView(p: Props) {
   const isLast = left === 1 && !opened;
 
   const start = (id: string, ms: number) => (e: React.MouseEvent) => {
-    if (busy) { e.preventDefault(); return; }
+    if (busy) {
+      // A download is still starting: block the double click, but tell the visitor and release soon.
+      e.preventDefault();
+      setHint(true);
+      timers.current.push(setTimeout(() => setHint(false), 3000));
+      return;
+    }
     setBusy(id);
     setClicked((s) => new Set(s).add(id));
     timers.current.push(setTimeout(() => router.refresh(), 4000));
-    timers.current.push(setTimeout(() => setBusy(null), ms));
+    // The browser starts a native download within a second or two; keep the lock short so a second one works.
+    timers.current.push(setTimeout(() => setBusy(null), Math.min(ms, 3000)));
   };
 
   const zipHref = (n: number) => `/api/download/${p.token}/zip?part=${n}`;
@@ -92,6 +100,7 @@ export default function DeliveryView(p: Props) {
           </div>
           <div><dt>{c.validUntil}</dt><dd>{p.validUntil}</dd></div>
         </dl>
+        <p className="note" role="status" aria-live="polite">{hint ? c.wait : ''}</p>
         {(p.windowOpen && p.windowUntil) && <p className="note" role="status">{c.sessionOpen(p.windowUntil)}</p>}
 
         {!multi ? (
