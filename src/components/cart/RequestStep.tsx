@@ -16,7 +16,7 @@ type Phase =
   | { p: 'invalid' }
   | { p: 'loading' }
   | { p: 'success'; newsletter: boolean }
-  | { p: 'error'; kind: 'server' | 'rate' | 'locked' };
+  | { p: 'error'; kind: 'server' | 'rate' | 'locked' | 'unavailable'; support?: string | null };
 
 const EMAIL_OK = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const MIN_LOADING_MS = 400;
@@ -96,6 +96,7 @@ export default function RequestStep({
       else if (res.code === 'invalid_email') next = { p: 'invalid' };
       else if (res.code === 'rate_limited') next = { p: 'error', kind: 'rate' };
       else if (res.code === 'album_locked') next = { p: 'error', kind: 'locked' };
+      else if (res.code === 'service_unavailable') next = { p: 'error', kind: 'unavailable', support: res.support };
       else { next = { p: 'error', kind: 'server' }; void refreshToken(); }
     } catch {
       next = { p: 'error', kind: 'server' };
@@ -169,10 +170,15 @@ export default function RequestStep({
       </p>
 
       {phase.p === 'error' && (
-        <div className={`rq-msg ${phase.kind === 'rate' ? 'rq-msg--warn' : 'rq-msg--err'}`} role="alert">
+        <div className={`rq-msg ${phase.kind === 'rate' || phase.kind === 'unavailable' ? 'rq-msg--warn' : 'rq-msg--err'}`} role="alert">
           <AlertCircle size={18} aria-hidden />
           <span>
-            {phase.kind === 'rate' ? c.errRate : phase.kind === 'locked' ? c.errLocked : c.errServer}
+            {phase.kind === 'rate' ? c.errRate : phase.kind === 'locked' ? c.errLocked : phase.kind === 'unavailable' ? c.errUnavailable : c.errServer}
+            {phase.kind === 'unavailable' && (
+              <> {phase.support
+                ? <a href={`mailto:${phase.support}`}>{phase.support}</a>
+                : <Link href="/contact" onClick={onClose}>{c.errUnavailableContact}</Link>}</>
+            )}
             {phase.kind === 'locked' && <> <Link href="/mon-album" onClick={onClose}>{c.lockedLink}</Link></>}
           </span>
         </div>
