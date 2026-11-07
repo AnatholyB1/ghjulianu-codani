@@ -1,6 +1,6 @@
 import { after } from 'next/server';
 import { consumeDownloadUse, loadDeliveryPhotos, planDelivery } from '@/lib/server/delivery';
-import { DOWNLOAD_MAX_DURATION_SECONDS, photoFileName, zipFileName } from '@/lib/server/deliveryPlan';
+import { photoFileName, zipFileName } from '@/lib/server/deliveryPlan';
 import {
   PRIVATE_HEADERS,
   contentDisposition,
@@ -14,7 +14,7 @@ import { countingStream, zipReadableStream, type ZipEntry } from '@/lib/server/z
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-export const maxDuration = DOWNLOAD_MAX_DURATION_SECONDS;
+export const maxDuration = 300; // seconds; must be a literal (keep equal to DOWNLOAD_MAX_DURATION_SECONDS)
 
 /**
  * Streamed ZIP (STORE mode) of one part of the request. Order:

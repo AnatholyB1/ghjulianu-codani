@@ -12,7 +12,8 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAdmin   = pathname.startsWith('/admin');
 
-  if (isAdmin) {
+  // Admin and the emailed-link delivery page (/telechargement/<token>) have their own chrome.
+  if (isAdmin || pathname.startsWith('/telechargement/')) {
     return <>{children}</>;
   }
 

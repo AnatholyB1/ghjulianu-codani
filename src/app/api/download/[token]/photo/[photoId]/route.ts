@@ -1,13 +1,13 @@
 import { after } from 'next/server';
 import { consumeDownloadUse, loadDeliveryPhotos } from '@/lib/server/delivery';
-import { DOWNLOAD_MAX_DURATION_SECONDS, photoFileName } from '@/lib/server/deliveryPlan';
+import { photoFileName } from '@/lib/server/deliveryPlan';
 import { PRIVATE_HEADERS, contentDisposition, gate, logDownloads, refuse } from '@/lib/server/deliveryHttp';
 import { fetchPhotoSource, resolvePhotoSource } from '@/lib/server/photoSource';
 import { countingStream } from '@/lib/server/zipStream';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-export const maxDuration = DOWNLOAD_MAX_DURATION_SECONDS;
+export const maxDuration = 300; // seconds; must be a literal (keep equal to DOWNLOAD_MAX_DURATION_SECONDS)
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
