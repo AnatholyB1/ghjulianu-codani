@@ -3,12 +3,15 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
+import './admin-shell.css';
 
 const NAV = [
   { label: 'DASHBOARD',   href: '/admin' },
   { label: 'ALBUMS',      href: '/admin/albums' },
   { label: 'PORTFOLIO',   href: '/admin/portfolio' },
   { label: 'CATÉGORIES',  href: '/admin/categories' },
+  { label: 'STATS',       href: '/admin/stats' },
+  { label: 'NEWSLETTER',  href: '/admin/newsletter' },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -28,7 +31,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div style={{ minHeight: '100vh', background: '#0a0a0a', display: 'flex', flexDirection: 'column' }}>
       {/* Top bar */}
-      <header style={{
+      <header className="adm-head" style={{
         height:         '56px',
         background:     '#0e0e0e',
         borderBottom:   '1px solid rgba(255,255,255,0.07)',
@@ -38,11 +41,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         padding:        '0 2rem',
         flexShrink:     0,
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '2.5rem' }}>
+        <div className="adm-left" style={{ display: 'flex', alignItems: 'center', gap: '2.5rem' }}>
           <span style={{ fontFamily: 'var(--font-cormorant,serif)', fontStyle: 'italic', fontSize: '1.1rem', color: '#E8E4DC' }}>
             Admin
           </span>
-          <nav style={{ display: 'flex', gap: '0.2rem' }}>
+          <nav className="adm-nav" style={{ display: 'flex', gap: '0.2rem' }}>
             {NAV.map((n) => {
               const active = pathname === n.href || (n.href !== '/admin' && pathname.startsWith(n.href));
               return (
@@ -72,7 +75,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </header>
 
       {/* Content */}
-      <main style={{ flex: 1, padding: '2rem', maxWidth: '1400px', width: '100%', margin: '0 auto' }}>
+      <main className="adm-main" style={{ flex: 1, padding: '2rem', maxWidth: '1400px', width: '100%', margin: '0 auto' }}>
         {children}
       </main>
     </div>
