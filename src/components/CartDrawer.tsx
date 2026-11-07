@@ -3,11 +3,16 @@
 import Image   from 'next/image';
 import Link    from 'next/link';
 import {
-  useEffect, useState, useCallback,
+  useEffect, useState, useCallback, useRef,
 } from 'react';
 
 import { useCart } from '@/contexts/CartContext';
+import { useLang } from '@/contexts/LanguageContext';
+import { REQUEST_COPY } from '@/lib/requestCopy';
+import RequestStep from '@/components/cart/RequestStep';
+import '@/components/cart/request.css';
 
+/* ── LEGACY direct download (removed in phase 8b; kept reachable as a secondary action) ── */
 async function downloadPhoto(src: string, alt: string, downloadName?: string) {
   try {
     const res  = await fetch(src);
@@ -25,18 +30,41 @@ async function downloadPhoto(src: string, alt: string, downloadName?: string) {
   }
 }
 
+const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]):not([tabindex="-1"]), [tabindex]:not([tabindex="-1"])';
+
 export default function CartDrawer() {
   const { items, remove, clear, open, setOpen, count } = useCart();
+  const { lang } = useLang();
+  const c = REQUEST_COPY[lang];
 
+  const [step,          setStep]          = useState<'list' | 'form'>('list');
+  const [footerNode,    setFooterNode]    = useState<React.ReactNode>(null);
   const [donationModal, setDonationModal] = useState(false);
   const [downloading,   setDownloading]   = useState(false);
 
-  /* Keyboard: Escape closes everything */
+  const fabRef    = useRef<HTMLButtonElement>(null);
+  const drawerRef = useRef<HTMLDivElement>(null);
+  const titleRef  = useRef<HTMLHeadingElement>(null);
+  const wasOpen   = useRef(false);
+
+  const close = useCallback(() => { setOpen(false); setStep('list'); }, [setOpen]);
+
+  /* Keyboard: Escape closes everything; Tab is trapped inside the open drawer */
   const handleKey = useCallback(
     (e: KeyboardEvent) => {
-      if (e.key === 'Escape') { setOpen(false); setDonationModal(false); }
+      if (e.key === 'Escape') { close(); setDonationModal(false); return; }
+      if (e.key === 'Tab' && open && !donationModal && drawerRef.current) {
+        const nodes = Array.from(drawerRef.current.querySelectorAll<HTMLElement>(FOCUSABLE))
+          .filter((n) => n.offsetParent !== null && !n.closest('[aria-hidden="true"]'));
+        if (nodes.length === 0) return;
+        const first = nodes[0];
+        const last  = nodes[nodes.length - 1];
+        const active = document.activeElement;
+        if (e.shiftKey && (active === first || !drawerRef.current.contains(active))) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && (active === last || !drawerRef.current.contains(active))) { e.preventDefault(); first.focus(); }
+      }
     },
-    [setOpen],
+    [close, open, donationModal],
   );
   useEffect(() => {
     window.addEventListener('keydown', handleKey);
@@ -49,6 +77,17 @@ export default function CartDrawer() {
     return () => { document.body.style.overflow = ''; };
   }, [open]);
 
+  /* Focus: title on open, back to the cart button on close */
+  useEffect(() => {
+    if (open) {
+      wasOpen.current = true;
+      const t = window.setTimeout(() => titleRef.current?.focus(), 50);
+      return () => window.clearTimeout(t);
+    }
+    if (wasOpen.current) { wasOpen.current = false; fabRef.current?.focus(); }
+  }, [open]);
+
+  /* LEGACY (phase 8b removes) */
   async function handleDownloadAll() {
     setDonationModal(false);
     setDownloading(true);
@@ -57,15 +96,23 @@ export default function CartDrawer() {
     }
     setDownloading(false);
     clear();
-    setOpen(false);
+    close();
   }
+
+  const goBack = useCallback(() => { setStep('list'); setFooterNode(null); }, []);
+  const setFooter = useCallback((node: React.ReactNode) => setFooterNode(node), []);
 
   return (
     <>
       {/* ── Floating cart button (only visible when cart has items) ───── */}
       <button
+        ref={fabRef}
+        className="rq-fab"
         onClick={() => setOpen(true)}
-        aria-label="Ouvrir le panier"
+        aria-label={c.openCart}
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        tabIndex={count > 0 ? 0 : -1}
         style={{
           position:       'fixed',
           bottom:         '5.5rem',
@@ -89,28 +136,26 @@ export default function CartDrawer() {
         onMouseEnter={(e) => { if (count > 0) e.currentTarget.style.transform = 'scale(1.1)'; }}
         onMouseLeave={(e) => { if (count > 0) e.currentTarget.style.transform = 'scale(1)'; }}
       >
-        {/* cart icon */}
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#080808" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--bg)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
           <circle cx="9"  cy="21" r="1"/>
           <circle cx="20" cy="21" r="1"/>
           <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
         </svg>
-
-        {/* badge */}
         <span
+          data-testid="cart-count"
           style={{
             position:       'absolute',
             top:            '-5px',
             right:          '-5px',
             background:     'var(--accent)',
-            color:          '#080808',
-            fontSize:       '0.58rem',
+            color:          'var(--on-accent)',
+            fontSize:       '0.75rem',
             fontFamily:     'var(--font-space)',
             fontWeight:     700,
             lineHeight:     1,
-            minWidth:       '18px',
-            height:         '18px',
-            borderRadius:   '9px',
+            minWidth:       '20px',
+            height:         '20px',
+            borderRadius:   '10px',
             display:        'flex',
             alignItems:     'center',
             justifyContent: 'center',
@@ -122,247 +167,87 @@ export default function CartDrawer() {
       </button>
 
       {/* ── Backdrop ──────────────────────────────────────────────────── */}
-      <div
-        onClick={() => setOpen(false)}
-        style={{
-          position:       'fixed',
-          inset:          0,
-          zIndex:         160,
-          background:     'rgba(0,0,0,0.7)',
-          opacity:        open ? 1 : 0,
-          pointerEvents:  open ? 'auto' : 'none',
-          transition:     'opacity 0.3s ease',
-        }}
-      />
+      <div className="rq-scrim" data-open={open} onClick={close} aria-hidden />
 
       {/* ── Drawer panel ──────────────────────────────────────────────── */}
       <div
-        style={{
-          position:        'fixed',
-          top:             0,
-          right:           0,
-          bottom:          0,
-          zIndex:          170,
-          width:           'min(440px, 100vw)',
-          background:      '#0f0f0f',
-          borderLeft:      '1px solid var(--border)',
-          display:         'flex',
-          flexDirection:   'column',
-          transform:       open ? 'translateX(0)' : 'translateX(100%)',
-          transition:      'transform 0.35s cubic-bezier(0.22,1,0.36,1)',
-          willChange:      'transform',
-        }}
+        ref={drawerRef}
+        className="rq-drawer"
+        data-open={open}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="rq-drawer-title"
+        aria-hidden={!open}
+        inert={!open}
       >
-        {/* Header */}
-        <div
-          style={{
-            display:        'flex',
-            justifyContent: 'space-between',
-            alignItems:     'center',
-            padding:        '1.5rem 1.75rem',
-            borderBottom:   '1px solid var(--border)',
-          }}
-        >
+        <div className="rq-head">
           <div>
-            <p style={{ fontSize: '0.58rem', letterSpacing: '0.2em', color: 'var(--muted)', marginBottom: '0.3rem' }}>
-              SÉLECTION
-            </p>
-            <h2
-              style={{
-                fontFamily:  'var(--font-cormorant),serif',
-                fontSize:    '1.7rem',
-                fontStyle:   'italic',
-                fontWeight:  300,
-                color:       'var(--text)',
-                lineHeight:  1,
-              }}
-            >
-              Votre panier
+            <p className="rq-eyebrow">{c.cartEyebrow}</p>
+            <h2 id="rq-drawer-title" ref={titleRef} tabIndex={-1}>
+              {step === 'form' ? c.title : c.cartTitle}
             </h2>
           </div>
-
-          <button
-            onClick={() => setOpen(false)}
-            aria-label="Fermer le panier"
-            style={{
-              background:  'none',
-              border:      'none',
-              color:       'var(--muted)',
-              cursor:      'pointer',
-              fontSize:    '1.4rem',
-              lineHeight:  1,
-              transition:  'color 0.2s',
-            }}
-            onMouseEnter={(e) => ((e.target as HTMLElement).style.color = 'var(--text)')}
-            onMouseLeave={(e) => ((e.target as HTMLElement).style.color = 'var(--muted)')}
-          >
-            ✕
+          <button className="rq-iconbtn" onClick={close} aria-label={c.closeCart}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden><path d="M6 6l12 12M18 6L6 18"/></svg>
           </button>
         </div>
 
-        {/* Photo list */}
-        <div
-          style={{
-            flex:          1,
-            overflowY:     'auto',
-            padding:       '1rem 1.75rem',
-            display:       'flex',
-            flexDirection: 'column',
-            gap:           '0.6rem',
-          }}
-        >
-          {items.length === 0 ? (
-            <p
-              style={{
-                color:      'var(--muted)',
-                fontSize:   '0.82rem',
-                marginTop:  '3rem',
-                textAlign:  'center',
-                fontStyle:  'italic',
-              }}
-            >
-              Aucune photo sélectionnée.
-            </p>
+        <div className="rq-body">
+          {step === 'form' && items.length > 0 ? (
+            <RequestStep onBack={goBack} onClose={close} renderFooter={setFooter} />
+          ) : items.length === 0 ? (
+            <div className="rq-empty">
+              <p>{c.empty}</p>
+              <Link href="/albums" className="rq-btn rq-btn--ghost" onClick={close}>{c.browse}</Link>
+            </div>
           ) : (
-            items.map((photo) => (
-              <div
-                key={photo.id}
-                style={{
-                  display:     'flex',
-                  gap:         '0.8rem',
-                  alignItems:  'center',
-                  padding:     '0.5rem',
-                  background:  'rgba(255,255,255,0.03)',
-                  borderRadius: '3px',
-                }}
-              >
-                {/* Thumbnail */}
-                <div
-                  style={{
-                    width:        '72px',
-                    height:       '54px',
-                    flexShrink:   0,
-                    overflow:     'hidden',
-                    borderRadius: '2px',
-                    background:   '#1a1a1a',
-                  }}
-                >
-                  <Image
-                    src={photo.src}
-                    alt={photo.alt}
-                    width={72}
-                    height={54}
-                    unoptimized
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                  />
-                </div>
-
-                {/* Info */}
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p
-                    style={{
-                      fontSize:      '0.72rem',
-                      color:         'var(--text)',
-                      whiteSpace:    'nowrap',
-                      overflow:      'hidden',
-                      textOverflow:  'ellipsis',
-                    }}
+            <div className="rq-list">
+              {items.map((photo) => (
+                <div key={photo.id} className="rq-item">
+                  <div className="rq-item__img">
+                    <Image src={photo.src} alt="" width={72} height={54} unoptimized />
+                  </div>
+                  <div className="rq-item__t">
+                    <p>{photo.alt || 'Photo'}</p>
+                    {photo.context && <p>{photo.context}</p>}
+                  </div>
+                  <button
+                    className="rq-iconbtn"
+                    onClick={() => remove(photo.id)}
+                    aria-label={`${c.remove} ${photo.alt || 'photo'}`}
                   >
-                    {photo.alt || 'Photo'}
-                  </p>
-                  {photo.context && (
-                    <p style={{ fontSize: '0.58rem', color: 'var(--muted)', letterSpacing: '0.08em', marginTop: '2px' }}>
-                      {photo.context}
-                    </p>
-                  )}
-                  <p style={{ fontSize: '0.57rem', color: 'rgba(122,122,116,0.6)', marginTop: '2px' }}>
-                    {photo.width} × {photo.height}
-                  </p>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden><path d="M6 6l12 12M18 6L6 18"/></svg>
+                  </button>
                 </div>
-
-                {/* Remove */}
-                <button
-                  onClick={() => remove(photo.id)}
-                  aria-label={`Retirer ${photo.alt || 'photo'}`}
-                  style={{
-                    background: 'none',
-                    border:     'none',
-                    color:      'var(--muted)',
-                    cursor:     'pointer',
-                    fontSize:   '1rem',
-                    lineHeight: 1,
-                    padding:    '4px',
-                    transition: 'color 0.2s',
-                    flexShrink: 0,
-                  }}
-                  onMouseEnter={(e) => ((e.target as HTMLElement).style.color = '#e55')}
-                  onMouseLeave={(e) => ((e.target as HTMLElement).style.color = 'var(--muted)')}
-                >
-                  ✕
-                </button>
-              </div>
-            ))
+              ))}
+            </div>
           )}
         </div>
 
-        {/* Footer CTA */}
-        {items.length > 0 && (
-          <div
-            style={{
-              padding:       '1.25rem 1.75rem',
-              borderTop:     '1px solid var(--border)',
-              display:       'flex',
-              flexDirection: 'column',
-              gap:           '0.75rem',
-            }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <p style={{ fontSize: '0.65rem', letterSpacing: '0.1em', color: 'var(--muted)' }}>
-                {count} photo{count > 1 ? 's' : ''} sélectionnée{count > 1 ? 's' : ''}
-              </p>
-              <button
-                onClick={clear}
-                style={{
-                  background:    'none',
-                  border:        'none',
-                  color:         'var(--muted)',
-                  cursor:        'pointer',
-                  fontSize:      '0.58rem',
-                  letterSpacing: '0.14em',
-                  textDecoration: 'underline',
-                  transition:    'color 0.2s',
-                }}
-                onMouseEnter={(e) => ((e.target as HTMLElement).style.color = 'var(--text)')}
-                onMouseLeave={(e) => ((e.target as HTMLElement).style.color = 'var(--muted)')}
-              >
-                VIDER
-              </button>
+        {/* Footer: list entry point, or the request step's own primary button */}
+        {items.length > 0 && step === 'list' && (
+          <div className="rq-foot">
+            <div className="rq-row">
+              <p className="rq-hint" data-testid="cart-summary">{count === 1 ? c.countOne : c.countMany(count)}</p>
+              <button className="rq-textbtn" onClick={clear}>{c.clear}</button>
             </div>
-
+            <button className="rq-btn" data-testid="cta-request" onClick={() => setStep('form')}>{c.cta}</button>
+            <p className="rq-hint">{c.ctaHint}</p>
+            {/* LEGACY direct download: phase 8b removes this and the donation modal below */}
             <button
+              className="rq-btn rq-btn--ghost"
               onClick={() => setDonationModal(true)}
               disabled={downloading}
-              style={{
-                background:    downloading ? 'rgba(200,169,126,0.6)' : 'var(--accent)',
-                color:         '#080808',
-                border:        'none',
-                padding:       '0.95rem 1.5rem',
-                fontSize:      '0.62rem',
-                letterSpacing: '0.2em',
-                fontFamily:    'var(--font-space)',
-                fontWeight:    700,
-                cursor:        downloading ? 'wait' : 'pointer',
-                width:         '100%',
-                transition:    'background 0.2s',
-              }}
+              data-testid="legacy-download"
             >
-              {downloading ? 'TÉLÉCHARGEMENT…' : 'TÉLÉCHARGER LES PHOTOS'}
+              {downloading ? '…' : c.legacyDownload}
             </button>
           </div>
         )}
+        {items.length > 0 && step === 'form' && <div className="rq-foot">{footerNode}</div>}
       </div>
 
-      {/* ── Donation modal ────────────────────────────────────────────── */}
+      {/* ── Donation modal (LEGACY, phase 8b removes) ────────────────── */}
       {donationModal && (
         <div
           onClick={() => setDonationModal(false)}
@@ -388,51 +273,26 @@ export default function CartDrawer() {
               animation:  'scaleIn 0.3s cubic-bezier(0.22,1,0.36,1)',
             }}
           >
-            <p
-              style={{
-                fontSize:      '0.58rem',
-                letterSpacing: '0.22em',
-                color:         'var(--muted)',
-                marginBottom:  '1rem',
-              }}
-            >
+            <p style={{ fontSize: '0.58rem', letterSpacing: '0.22em', color: 'var(--muted)', marginBottom: '1rem' }}>
               AVANT DE TÉLÉCHARGER
             </p>
-
             <h2
               style={{
                 fontFamily:   'var(--font-cormorant),serif',
                 fontSize:     'clamp(1.7rem,4vw,2.5rem)',
                 fontStyle:    'italic',
                 fontWeight:   300,
-                color:        'var(--text)',
+                color:        '#E8E4DC',
                 lineHeight:   1.15,
                 marginBottom: '1rem',
               }}
             >
               Ces images vous ont touché ?
             </h2>
-
-            <p
-              style={{
-                fontSize:     '0.8rem',
-                color:        'var(--muted)',
-                lineHeight:   1.9,
-                marginBottom: '2rem',
-                maxWidth:     '380px',
-                margin:       '0 auto 2rem',
-              }}
-            >
+            <p style={{ fontSize: '0.8rem', color: 'var(--muted)', lineHeight: 1.9, maxWidth: '380px', margin: '0 auto 2rem' }}>
               Mon travail est librement accessible. Si vous souhaitez soutenir la création et me permettre de continuer à photographier, un geste — même modeste — est infiniment précieux.
             </p>
-
-            <div
-              style={{
-                display:       'flex',
-                flexDirection: 'column',
-                gap:           '0.7rem',
-              }}
-            >
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.7rem' }}>
               <Link
                 href="/don"
                 onClick={() => setDonationModal(false)}
@@ -450,7 +310,6 @@ export default function CartDrawer() {
               >
                 SOUTENIR GHJULIANU →
               </Link>
-
               <button
                 onClick={handleDownloadAll}
                 style={{
@@ -461,15 +320,6 @@ export default function CartDrawer() {
                   fontSize:      '0.6rem',
                   letterSpacing: '0.16em',
                   cursor:        'pointer',
-                  transition:    'color 0.2s, border-color 0.2s',
-                }}
-                onMouseEnter={(e) => {
-                  (e.target as HTMLElement).style.color       = 'var(--text)';
-                  (e.target as HTMLElement).style.borderColor = 'rgba(255,255,255,0.2)';
-                }}
-                onMouseLeave={(e) => {
-                  (e.target as HTMLElement).style.color       = 'var(--muted)';
-                  (e.target as HTMLElement).style.borderColor = 'var(--border)';
                 }}
               >
                 TÉLÉCHARGER QUAND MÊME

@@ -328,8 +328,9 @@ function useHeroParallax() {
 
 /* ── Photo card with enter/exit animation + inner parallax ─── */
 function PhotoCard({
-  src, width, height, alt, index, onClick, albumTitle, prefix,
+  photoId, albumId, src, width, height, alt, index, onClick, albumTitle, prefix,
 }: {
+  photoId: string; albumId: string;
   src: string; width: number; height: number; alt?: string;
   index: number; onClick: () => void; albumTitle: string; prefix: string;
 }) {
@@ -338,7 +339,7 @@ function PhotoCard({
   const [vis, setVis] = useState(false);
   const [hov, setHov] = useState(false);
   const { add, remove, has } = useCart();
-  const inCart = has(src);
+  const inCart = has(photoId);
 
   const label    = `IMG_${String(index + 1).padStart(3, '0')}`;
   const dlName   = `${prefix}_${String(index + 1).padStart(3, '0')}`;
@@ -374,7 +375,10 @@ function PhotoCard({
 
   const delay = (index % 4) * 60;
   const cartPhoto: CartPhoto = {
-    id:           src,
+    id:           photoId,
+    photoId,
+    albumId,
+    source:       'album_photos',
     src,
     width,
     height,
@@ -442,7 +446,7 @@ function PhotoCard({
       <button
         onClick={(e) => {
           e.stopPropagation();
-          inCart ? remove(src) : add(cartPhoto);
+          inCart ? remove(photoId) : add(cartPhoto);
         }}
         aria-label={inCart ? 'Retirer du panier' : 'Ajouter au panier'}
         style={{
@@ -530,6 +534,9 @@ export default function AlbumPageClient({
 
   const prefix         = downloadPrefix(album.slug);
   const lightboxPhotos = photos.map((p, i) => ({
+    id:      p.id,
+    albumId: album.id,
+    source:  'album_photos' as const,
     src:     p.src,
     width:   p.width,
     height:  p.height,
@@ -619,6 +626,8 @@ export default function AlbumPageClient({
         {photos.map((photo, i) => (
           <PhotoCard
             key={photo.id}
+            photoId={photo.id}
+            albumId={album.id}
             src={photo.src}
             width={photo.width}
             height={photo.height}

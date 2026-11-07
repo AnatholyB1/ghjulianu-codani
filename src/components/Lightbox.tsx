@@ -4,7 +4,11 @@ import Image from 'next/image';
 import { useEffect, useCallback } from 'react';
 import { useCart } from '@/contexts/CartContext';
 
-type Photo = { src: string; width: number; height: number; alt?: string; context?: string };
+type Photo = {
+  src: string; width: number; height: number; alt?: string; context?: string;
+  /** DB identity, required for the cart button (portfolio lightbox has none and hides it) */
+  id?: string; albumId?: string | null; source?: 'album_photos' | 'portfolio_photos';
+};
 
 interface Props {
   photos:    Photo[];
@@ -18,7 +22,8 @@ interface Props {
 export default function Lightbox({ photos, index, onClose, onNext, onPrev, showCart = true }: Props) {
   const photo = photos[index];
   const { add, remove, has } = useCart();
-  const inCart = has(photo.src);
+  const cartable = !!photo.id && !!photo.source;
+  const inCart = cartable && has(photo.id as string);
 
   const handleKey = useCallback((e: globalThis.KeyboardEvent) => {
     if (e.key === 'Escape')     onClose();
@@ -141,13 +146,17 @@ export default function Lightbox({ photos, index, onClose, onNext, onPrev, showC
           {index + 1} / {photos.length}
         </p>
 
-        {showCart && (
+        {showCart && cartable && (
         <button
           onClick={(e) => {
             e.stopPropagation();
             inCart
-              ? remove(photo.src)
-              : add({ id: photo.src, src: photo.src, width: photo.width, height: photo.height, alt: photo.alt ?? '', context: photo.context });
+              ? remove(photo.id as string)
+              : add({
+                  id: photo.id as string, photoId: photo.id as string, albumId: photo.albumId ?? null,
+                  source: photo.source as 'album_photos' | 'portfolio_photos',
+                  src: photo.src, width: photo.width, height: photo.height, alt: photo.alt ?? '', context: photo.context,
+                });
           }}
           style={{
             background:    inCart ? 'rgba(100,200,120,0.18)' : 'rgba(200,169,126,0.18)',
