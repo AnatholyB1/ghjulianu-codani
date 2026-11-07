@@ -1,0 +1,100 @@
+import { after } from 'next/server';
+import { consumeDownloadUse, loadDeliveryPhotos, planDelivery } from '@/lib/server/delivery';
+import { DOWNLOAD_MAX_DURATION_SECONDS, photoFileName, zipFileName } from '@/lib/server/deliveryPlan';
+import {
+  PRIVATE_HEADERS,
+  contentDisposition,
+  gate,
+  logDownloads,
+  refuse,
+  type DownloadRecord,
+} from '@/lib/server/deliveryHttp';
+import { fetchPhotoSource } from '@/lib/server/photoSource';
+import { countingStream, zipReadableStream, type ZipEntry } from '@/lib/server/zipStream';
+
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+export const maxDuration = DOWNLOAD_MAX_DURATION_SECONDS;
+
+/**
+ * Streamed ZIP (STORE mode) of one part of the request. Order:
+ *  1. gate (token, rate limits, non-consuming state)
+ *  2. plan parts (HEAD sizes, deterministic split) and validate `part`
+ *  3. open the FIRST source before consuming, so a broken storage does not burn a use
+ *  4. consume_download_use (atomic; an open 15-minute session is reused, not re-charged)
+ *  5. stream: files fetched one at a time, nothing buffered beyond one chunk
+ * A failure after step 4 (a later file unavailable, client gone) truncates the
+ * archive; the session stays open for 15 minutes so the visitor can retry free.
+ */
+export async function GET(req: Request, ctx: { params: Promise<{ token: string }> }) {
+  const { token } = await ctx.params;
+  try {
+    const g = await gate(req, token);
+    if (!g.ok) return g.response;
+
+    const partParam = new URL(req.url).searchParams.get('part');
+    const partNo = partParam === null ? 1 : Number(partParam);
+
+    const { prefix, photos } = await loadDeliveryPhotos(g.request);
+    if (!photos.length) return refuse(req, token, 'error');
+    const plan = await planDelivery(photos);
+    if (!Number.isInteger(partNo) || partNo < 1 || partNo > plan.parts.length) {
+      return Response.json({ error: 'not_found', status: 404 }, { status: 404, headers: PRIVATE_HEADERS });
+    }
+    const part = plan.parts[partNo - 1];
+
+    const abort = new AbortController();
+    req.signal.addEventListener('abort', () => abort.abort(), { once: true });
+
+    let first: Response;
+    try {
+      first = await fetchPhotoSource(part.items[0].source, abort.signal);
+    } catch {
+      return refuse(req, token, 'error'); // nothing consumed
+    }
+
+    const consumed = await consumeDownloadUse(token);
+    if (!consumed) {
+      await first.body?.cancel().catch(() => undefined);
+      return refuse(req, token, 'exhausted');
+    }
+
+    const records: DownloadRecord[] = [];
+    const entries: ZipEntry[] = part.items.map((item, i) => ({
+      name: photoFileName(prefix, item.n, item.source.ext),
+      open: async (signal) => {
+        const res = i === 0 ? first : await fetchPhotoSource(item.source, signal);
+        return countingStream(res.body as ReadableStream<Uint8Array>, (bytes) => {
+          records.push({ photoId: item.row.id, bytes });
+        });
+      },
+    }));
+
+    let resolveDone!: () => void;
+    const done = new Promise<void>((r) => (resolveDone = r));
+    const zip = countingStream(zipReadableStream(entries, { signal: abort.signal }), (_bytes, completed) => {
+      if (!completed) abort.abort();
+      resolveDone();
+    });
+
+    after(async () => {
+      await done;
+      await logDownloads(
+        req,
+        { requestId: consumed.requestId, albumId: g.request.albumId, part: partNo },
+        records,
+      );
+    });
+
+    const headers = new Headers(PRIVATE_HEADERS);
+    headers.set('Content-Type', 'application/zip');
+    headers.set('Content-Disposition', contentDisposition(zipFileName(prefix, partNo, plan.parts.length)));
+    headers.set('X-Download-Window-Open', consumed.windowOpen ? '1' : '0');
+    headers.set('X-Download-Uses-Remaining', String(consumed.remaining));
+    headers.set('X-Zip-Part', `${partNo}/${plan.parts.length}`);
+    return new Response(zip, { status: 200, headers });
+  } catch (e) {
+    console.error('[download/zip] failure:', e instanceof Error ? e.message : 'unknown');
+    return refuse(req, token, 'error');
+  }
+}
