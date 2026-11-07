@@ -143,6 +143,9 @@ try {
   const C = await seed(photos);
   for (let i = 0; i < 3; i++) { await get(`/telechargement/${C.token}`); await fetch(`${BASE}/telechargement/${C.token}`, { method: 'HEAD' }); }
   ok((await row(C.id)).used_count === 0, 'landing GET x3 + HEAD x3 leaves used_count at 0');
+  await new Promise((r) => setTimeout(r, 2000));
+  const lo = await (await rest(`events?request_id=eq.${C.id}&type=eq.link_open&select=id`)).json();
+  ok(lo.length === 1, `link_open logged once for 6 loads by the same visitor (${lo.length})`);
   const landing = await get(`/telechargement/${C.token}`);
   const html = await landing.text();
   ok(landing.status === 200 && !html.includes('/api/download/') === false, 'landing contains download links (not fetched)');
