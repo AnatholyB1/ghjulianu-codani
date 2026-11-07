@@ -22,6 +22,19 @@ test('hashIdentifier / visitorHash work with a >=16 char salt', () => {
   assert.equal(ev.safeVisitorHash(req), ev.visitorHash(req));
 });
 
+test('verifyUnsubscribe never throws without DOWNLOAD_TOKEN_SECRET (returns null)', async () => {
+  const tk = await import('../src/lib/server/tokens.ts');
+  process.env.DOWNLOAD_TOKEN_SECRET = 'unit-test-secret-0123456789abcdef';
+  const sig = tk.signUnsubscribe('A@Example.org');
+  assert.equal(tk.verifyUnsubscribe(sig), 'a@example.org');
+  for (const s of [undefined, '', 'short']) {
+    if (s === undefined) delete process.env.DOWNLOAD_TOKEN_SECRET; else process.env.DOWNLOAD_TOKEN_SECRET = s;
+    assert.equal(tk.isSecretConfigured(), false);
+    assert.doesNotThrow(() => tk.verifyUnsubscribe(sig));
+    assert.equal(tk.verifyUnsubscribe(sig), null);
+  }
+});
+
 test('logEvent never throws (no DB configured)', async () => {
   delete process.env.NEXT_PUBLIC_SUPABASE_URL;
   delete process.env.SUPABASE_SERVICE_ROLE_KEY;

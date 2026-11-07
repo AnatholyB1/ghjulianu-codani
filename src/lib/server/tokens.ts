@@ -27,9 +27,23 @@ export function signUnsubscribe(email: string): string {
   return `${payload}.${mac(payload)}`;
 }
 
-/** Returns the lowercased email when the signature is valid, otherwise null. */
+/** False when DOWNLOAD_TOKEN_SECRET is missing / shorter than 16 chars (unsubscribe links cannot be verified). */
+export function isSecretConfigured(): boolean {
+  const s = process.env.DOWNLOAD_TOKEN_SECRET;
+  return !!s && s.length >= 16;
+}
+
+/**
+ * Returns the lowercased email when the signature is valid, otherwise null.
+ * Never throws: with no usable secret it logs an error and returns null (fail closed, callers show the
+ * generic "invalid link" state instead of an unhandled 500).
+ */
 export function verifyUnsubscribe(sig: string): string | null {
   if (typeof sig !== 'string' || sig.length > 512) return null;
+  if (!isSecretConfigured()) {
+    console.error('[tokens] DOWNLOAD_TOKEN_SECRET missing or too short: unsubscribe links cannot be verified');
+    return null;
+  }
   const idx = sig.indexOf('.');
   if (idx <= 0) return null;
   const payload = sig.slice(0, idx);
