@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
-import { findByEmail, normaliseLang } from '@/lib/server/newsletter';
+import { headers } from 'next/headers';
+import { findByEmail, langFromAcceptLanguage, normaliseLang } from '@/lib/server/newsletter';
 import { verifyUnsubscribe } from '@/lib/server/tokens';
 import { maskEmail } from '@/lib/newsletter/mask';
 import Shell from '../_components/Shell';
@@ -18,7 +19,7 @@ export default async function UnsubscribePage({ searchParams }: { searchParams: 
   const email = sig ? verifyUnsubscribe(sig) : null;
 
   let state: 'ready' | 'already' | 'invalid' = 'invalid';
-  let lang: 'fr' | 'en' = 'fr';
+  let lang: 'fr' | 'en' = langFromAcceptLanguage((await headers()).get('accept-language'));
   let masked: string | undefined;
   let failed = false;
   if (email) {

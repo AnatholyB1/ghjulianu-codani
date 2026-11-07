@@ -32,6 +32,11 @@ export function normaliseLang(l: unknown): EmailLang {
   return l === 'en' ? 'en' : 'fr';
 }
 
+/** Language for pages where the address (and so its stored language) is unknown: browser preference, default FR. */
+export function langFromAcceptLanguage(h: string | null | undefined): EmailLang {
+  return /^\s*en/i.test(h ?? '') ? 'en' : 'fr';
+}
+
 /**
  * NWS-01 hook, called by the request flow (phase 6) once a visitor ticked the optional newsletter box.
  *

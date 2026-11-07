@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
-import { findByConfirmToken, classifyConfirm, normaliseLang } from '@/lib/server/newsletter';
+import { headers } from 'next/headers';
+import { findByConfirmToken, classifyConfirm, langFromAcceptLanguage, normaliseLang } from '@/lib/server/newsletter';
 import { CONSENT_TEXT } from '@/lib/server/consent';
 import { maskEmail } from '@/lib/newsletter/mask';
 import Shell from '../_components/Shell';
@@ -23,7 +24,7 @@ export default async function ConfirmPage({ searchParams }: { searchParams: Prom
   } catch {
     failed = true;
   }
-  const lang = normaliseLang(row?.lang);
+  const lang = row ? normaliseLang(row.lang) : langFromAcceptLanguage((await headers()).get('accept-language'));
   const state = failed ? 'ready' : classifyConfirm(row);
 
   // Unknown / used / expired tokens never show an address (no enumeration).
