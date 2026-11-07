@@ -134,7 +134,8 @@ CREATE TABLE IF NOT EXISTS public.subscribers (
   lang                 text        NOT NULL DEFAULT 'fr',
   consent_text_version text,
   consent_at           timestamptz,
-  confirm_token_hash   text,
+  confirmed_at         timestamptz,   -- set when status becomes 'confirmed' (growth KPIs)
+  confirm_token_hash  text,
   confirm_expires_at   timestamptz,
   unsubscribed_at      timestamptz,
   suppressed_reason    text,
@@ -195,10 +196,28 @@ PARALLEL SAFE
 SET search_path = pg_catalog
 AS $$ SELECT (ts AT TIME ZONE 'Europe/Paris')::date $$;
 
--- One 'view' per (photo, visitor, Paris day).
+-- One 'view' per (target, visitor, Paris day). Album-level views (photo_id NULL)
+-- are deduped too via coalesce(photo_id, album_id, nil uuid).
 CREATE UNIQUE INDEX IF NOT EXISTS events_view_dedupe_idx
-  ON public.events (photo_id, visitor_hash, public.paris_day(created_at))
+  ON public.events (
+    (coalesce(photo_id, album_id, '00000000-0000-0000-0000-000000000000'::uuid)),
+    visitor_hash,
+    public.paris_day(created_at)
+  )
   WHERE type = 'view';
+
+-- Daily rollup that survives the raw-event purge (KPI history). Requires PostgreSQL 15+.
+CREATE TABLE IF NOT EXISTS public.events_daily (
+  day      date   NOT NULL,
+  type     text   NOT NULL,
+  album_id uuid,
+  photo_id uuid,
+  is_day   boolean,
+  device   text,
+  count    bigint NOT NULL DEFAULT 0,
+  bytes    bigint NOT NULL DEFAULT 0,
+  CONSTRAINT events_daily_key UNIQUE NULLS NOT DISTINCT (day, type, album_id, photo_id, is_day, device)
+);
 
 -- 4. rate_limits --------------------------------------------------------
 CREATE TABLE IF NOT EXISTS public.rate_limits (
@@ -213,10 +232,11 @@ ALTER TABLE public.subscribers       ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.download_requests ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.events            ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.rate_limits       ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.events_daily      ENABLE ROW LEVEL SECURITY;
 
-REVOKE ALL ON public.subscribers, public.download_requests, public.events, public.rate_limits
+REVOKE ALL ON public.subscribers, public.download_requests, public.events, public.rate_limits, public.events_daily
   FROM PUBLIC, anon, authenticated;
-GRANT ALL ON public.subscribers, public.download_requests, public.events, public.rate_limits
+GRANT ALL ON public.subscribers, public.download_requests, public.events, public.rate_limits, public.events_daily
   TO service_role;
 -- identity sequence of events (service_role inserts need it)
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO service_role;
@@ -284,8 +304,23 @@ BEGIN
   IF p_months IS NULL OR p_months < 1 THEN
     RAISE EXCEPTION 'p_months must be >= 1';
   END IF;
-  DELETE FROM public.events WHERE created_at < now() - make_interval(months => p_months);
-  GET DIAGNOSTICS v_deleted = ROW_COUNT;
+  -- Single statement = single atomic unit: rows are rolled into events_daily
+  -- and deleted together, so aggregates survive the purge (KPI-07).
+  WITH del AS (
+    DELETE FROM public.events
+     WHERE created_at < now() - make_interval(months => p_months)
+    RETURNING type, album_id, photo_id, is_day, device, bytes, created_at
+  ), agg AS (
+    INSERT INTO public.events_daily AS d (day, type, album_id, photo_id, is_day, device, count, bytes)
+    SELECT public.paris_day(created_at), type, album_id, photo_id, is_day, device,
+           count(*), coalesce(sum(bytes), 0)
+      FROM del
+     GROUP BY 1, 2, 3, 4, 5, 6
+    ON CONFLICT ON CONSTRAINT events_daily_key
+    DO UPDATE SET count = d.count + EXCLUDED.count, bytes = d.bytes + EXCLUDED.bytes
+    RETURNING 1
+  )
+  SELECT count(*)::int INTO v_deleted FROM del;
   RETURN v_deleted;
 END;
 $$;
