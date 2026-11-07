@@ -46,6 +46,8 @@ try {
     sub('sub-fresh-pending', 'pending', ago(5)),    // kept
     sub('sub-old-confirmed', 'confirmed', ago(400)), // kept (status != pending)
     sub('sub-old-unsub', 'unsubscribed', ago(400)),  // kept
+    { ...sub('sub-null-stale', 'pending', ago(60)), updated_at: null },  // purged: created_at fallback
+    { ...sub('sub-null-fresh', 'pending', ago(3)), updated_at: null },   // kept
   ]);
   assert.ifError(r.error);
 
@@ -53,12 +55,12 @@ try {
   assert.deepEqual(res.failed, []);
   assert.equal(res.downloadRequests, 1);
   assert.equal(res.rateLimits, 1);
-  assert.equal(res.pendingSubscribers, 1);
-  out.push('ok   purgeExpired deleted exactly 1 download_request, 1 rate_limit, 1 stale pending subscriber');
+  assert.equal(res.pendingSubscribers, 2);
+  out.push('ok   purgeExpired deleted exactly 1 download_request, 1 rate_limit, 2 stale pending subscribers (one with NULL updated_at)');
 
   const emails = async (t) => (await db.from(t).select('email').like('email', 'ret-e2e-%@example.org')).data.map((x) => x.email).sort();
   assert.deepEqual(await emails('download_requests'), [E('dr-live'), E('dr-recent')].sort());
-  assert.deepEqual(await emails('subscribers'), [E('sub-fresh-pending'), E('sub-old-confirmed'), E('sub-old-unsub')].sort());
+  assert.deepEqual(await emails('subscribers'), [E('sub-fresh-pending'), E('sub-null-fresh'), E('sub-old-confirmed'), E('sub-old-unsub')].sort());
   const keys = (await db.from('rate_limits').select('key').like('key', 'ret-e2e:%')).data.map((x) => x.key);
   assert.deepEqual(keys, ['ret-e2e:fresh']);
   out.push('ok   recent/valid/confirmed/unsubscribed/fresh rows survived');
