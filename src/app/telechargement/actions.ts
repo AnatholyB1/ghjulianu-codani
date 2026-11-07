@@ -8,9 +8,8 @@ import { newToken, hashToken } from '@/lib/server/tokens';
 import { sendEmail } from '@/lib/server/email/send';
 import { siteUrl } from '@/lib/server/email/layout';
 import DownloadLinkEmail, { downloadEmailSubject, downloadEmailText } from '@/lib/server/email/templates/DownloadLinkEmail';
-import { logEvent, visitorHash, deviceClass, countryOf } from '@/lib/server/events';
-import { CONSENT_TEXT_VERSION } from '@/lib/server/consent';
-import { enqueueConfirmation } from '@/lib/server/newsletterHook';
+import { logEvent, safeVisitorHash, deviceClass, countryOf } from '@/lib/server/events';
+import { enqueueConfirmation } from '@/lib/server/newsletter';
 import {
   LIMITS, LINK_TTL_HOURS, checkFormToken, normalizeEmail, parsePhotoRefs, signFormToken, verifyAlbumAccess,
   type PhotoRef,
@@ -166,7 +165,7 @@ export async function requestDownload(input: RequestInput): Promise<RequestResul
     // 8. optional newsletter: pending subscriber + consent proof. Never blocks or alters the download.
     if (input.newsletter === true) {
       try {
-        await recordPendingSubscriber(email, lang);
+        // single implementation (phase 9): upserts the pending row with consent proof AND sends the double opt-in mail
         await enqueueConfirmation(email, lang);
       } catch (e) {
         console.warn('[request] newsletter step failed:', e instanceof Error ? e.message : 'unknown');
@@ -184,7 +183,8 @@ export async function requestDownload(input: RequestInput): Promise<RequestResul
         timeZone: 'Europe/Paris', dateStyle: 'long', timeStyle: 'short',
       }).format(expiresAt),
       siteUrl: siteUrl(),
-      publisherAddress: process.env.PUBLISHER_ADDRESS?.trim() || null,
+      // LEGAL_POSTAL_ADDRESS is canonical; PUBLISHER_ADDRESS is a deprecated fallback.
+      publisherAddress: process.env.LEGAL_POSTAL_ADDRESS?.trim() || process.env.PUBLISHER_ADDRESS?.trim() || null,
     };
     const sent = await sendEmail({
       to: email,
@@ -204,7 +204,7 @@ export async function requestDownload(input: RequestInput): Promise<RequestResul
       type: 'request',
       request_id: row.id,
       album_id: requestAlbumId,
-      visitor_hash: visitorHash({ headers: h }),
+      visitor_hash: safeVisitorHash({ headers: h }),
       device: deviceClass({ headers: h }),
       country: countryOf({ headers: h }),
     });
@@ -214,31 +214,5 @@ export async function requestDownload(input: RequestInput): Promise<RequestResul
   } catch (e) {
     console.warn('[request] unexpected failure:', e instanceof Error ? e.message : 'unknown');
     return { ok: false, code: 'server_error' };
-  }
-}
-
-/**
- * Upsert a `pending` subscriber with versioned consent proof.
- * Existing confirmed / suppressed rows are never touched (no downgrade, no re-activation of a suppression).
- * An unsubscribed address that ticks the box again is a fresh, explicit opt-in -> back to pending.
- */
-async function recordPendingSubscriber(email: string, lang: 'fr' | 'en'): Promise<void> {
-  const db = getAdminClient();
-  const now = new Date().toISOString();
-  const { data: existing, error } = await db.from('subscribers').select('id, status').eq('email', email).maybeSingle();
-  if (error) throw new Error(`subscribers lookup: ${error.code ?? 'error'}`);
-  if (!existing) {
-    const { error: e2 } = await db.from('subscribers').insert({
-      email, status: 'pending', lang, consent_text_version: CONSENT_TEXT_VERSION, consent_at: now, source: 'download_request',
-    });
-    if (e2 && e2.code !== '23505') throw new Error(`subscribers insert: ${e2.code ?? 'error'}`);
-    return;
-  }
-  if (existing.status === 'pending' || existing.status === 'unsubscribed') {
-    const { error: e3 } = await db.from('subscribers').update({
-      status: 'pending', lang, consent_text_version: CONSENT_TEXT_VERSION, consent_at: now, unsubscribed_at: null,
-      source: 'download_request', updated_at: now,
-    }).eq('id', existing.id);
-    if (e3) throw new Error(`subscribers update: ${e3.code ?? 'error'}`);
   }
 }

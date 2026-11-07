@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { AlertCircle, Download, Search, X } from 'lucide-react';
+import { redirect } from 'next/navigation';
 import { getAdminClient } from '@/lib/server/supabaseAdmin';
+import { getAdminUser } from '@/lib/server/requireAdmin';
 import SubscriberTable, { type SubRow } from './SubscriberTable';
 import './newsletter-admin.css';
 
@@ -32,6 +34,8 @@ export default async function NewsletterAdminPage({
 }: {
   searchParams: Promise<{ status?: string; q?: string; page?: string }>;
 }) {
+  // Defence in depth: src/proxy.ts already guards /admin/**; this page uses the service role.
+  if (!(await getAdminUser())) redirect('/admin/login?redirect=/admin/newsletter');
   const sp = await searchParams;
   const status: StatusKey = STATUSES.some((s) => s.key === sp.status) ? (sp.status as StatusKey) : 'all';
   const q = (sp.q ?? '').trim().slice(0, 100);

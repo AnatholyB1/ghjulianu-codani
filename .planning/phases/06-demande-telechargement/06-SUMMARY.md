@@ -26,7 +26,7 @@ Other contract checks run in the e2e: AC-01 no overflow (form, key page, 320 px)
 - Newsletter confirmation email (phase 9) and the download landing page (phase 7) are not part of this phase.
 
 ## Human items
-- Set `PUBLISHER_ADDRESS` (LCEN postal address in the email footer) in production; the line is omitted when unset.
+- Set `LEGAL_POSTAL_ADDRESS` + `LEGAL_SENDER_NAME` (LCEN identity in the email footer) in production (`PUBLISHER_ADDRESS` is a deprecated alias).
 - Owner/lawyer review of the consent wording (`src/lib/consentCopy.ts`; bump `CONSENT_TEXT_VERSION` if changed after launch) and privacy line.
 - Env on Vercel: `DOWNLOAD_TOKEN_SECRET`, `IP_HASH_SALT`, `NEXT_PUBLIC_SITE_URL`, `RESEND_*` (see `.env.example`). `DOWNLOAD_TOKEN_SECRET` is now required by the request form (without it `issueFormToken` returns null and requests fail with `server_error`).
 - Existing private-album visitors lose their old 30-day raw-key cookie (they re-enter the key once).
@@ -34,5 +34,5 @@ Other contract checks run in the e2e: AC-01 no overflow (form, key page, 320 px)
 ## Notes for the merge
 - Likely conflict files: `src/lib/server/consent.ts` (P5 file, now derived from `consentCopy.ts`), `src/app/globals.css` (tokens appended at the end), `src/components/Lightbox.tsx` and `AlbumPageClient.tsx` (P8a / P8b), `src/app/admin/actions.ts` (verifyAlbumKey / findAlbumByKey removed), `.env.example`.
 - Phase 8b: remove the LEGACY blocks in `CartDrawer.tsx` (downloadPhoto, handleDownloadAll, donation modal, secondary button) and `PrivateDownloadSection` in `AlbumPageClient.tsx`.
-- Phase 9: fill `enqueueConfirmation` in `src/lib/server/newsletterHook.ts`.
+- Done in audit batch 1: request flow calls `enqueueConfirmation` from `src/lib/server/newsletter.ts` (stub removed).
 - Phase 7 can rely on `download_requests.photos = [{photo_id, source}]`, `album_id` (null when mixed / portfolio), `lang`, `token_hash`, and `email_status`.

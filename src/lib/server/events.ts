@@ -2,6 +2,7 @@ import 'server-only';
 import { createHash } from 'node:crypto';
 import { userAgent } from 'next/server';
 import { getAdminClient } from './supabaseAdmin';
+import { requireSalt } from './rateLimit';
 
 export type EventType = 'view' | 'select_add' | 'request' | 'link_open' | 'download';
 
@@ -32,11 +33,22 @@ function clientIp(req: HeaderCarrier): string {
 /**
  * Anonymous, cookie-less visitor id: sha256(ip + ua + daily_salt).
  * daily_salt = sha256(IP_HASH_SALT + Paris date), so ids cannot be linked across days.
+ * Throws when IP_HASH_SALT is missing / shorter than 16 chars (fail closed); use safeVisitorHash() where a throw must not break the caller.
  */
 export function visitorHash(req: HeaderCarrier): string {
-  const daily = createHash('sha256').update(`${process.env.IP_HASH_SALT ?? ''}:${parisDate()}`).digest('hex');
+  const daily = createHash('sha256').update(`${requireSalt()}:${parisDate()}`).digest('hex');
   const ua = req.headers.get('user-agent') ?? '';
   return createHash('sha256').update(`${clientIp(req)}|${ua}|${daily}`).digest('hex').slice(0, 32);
+}
+
+/** visitorHash() that never throws: returns null (and warns) when the salt is not configured. */
+export function safeVisitorHash(req: HeaderCarrier): string | null {
+  try {
+    return visitorHash(req);
+  } catch (err) {
+    console.warn('[events] visitor hash unavailable:', err instanceof Error ? err.message : 'unknown');
+    return null;
+  }
 }
 
 /** 'mobile' | 'tablet' | 'desktop' (the UA itself is never stored). */

@@ -61,7 +61,6 @@ function PhotoCard({
       {/* image */}
       <div
         onClick={onClick}
-        onContextMenu={(e) => e.preventDefault()}
         style={{ overflow: 'hidden', cursor: 'zoom-in', display: 'block' }}
       >
         <Image

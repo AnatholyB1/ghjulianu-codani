@@ -14,6 +14,7 @@
  */
 import { createRequire } from 'node:module';
 import fs from 'node:fs';
+import { createHash } from 'node:crypto';
 
 const BASE = process.env.BASE_URL ?? 'http://localhost:3105';
 const require = createRequire(
@@ -22,7 +23,7 @@ const require = createRequire(
 let pw;
 try { pw = require('playwright'); } catch { pw = require('playwright-core'); }
 const { chromium, devices } = pw;
-const { createClient } = require('@supabase/supabase-js');
+const { createClient } = createRequire(process.cwd() + '/x.js')('@supabase/supabase-js'); // repo dependency, not the playwright dir's
 
 for (const l of fs.readFileSync('.env.local', 'utf8').split(/\r?\n/)) {
   const m = l.match(/^([A-Z0-9_]+)=(.*)$/);
@@ -193,6 +194,29 @@ for (const profile of ['desktop', 'iphone']) {
     const { data: sub } = await db.from('subscribers').select('*').eq('email', e2);
     check(G, 'AC-07 ticked: same download outcome (guarded row)', rows2.length === 1 && rows2[0].email_status === 'guarded' && rows2[0].photos.length === 2);
     check(G, 'REQ-02 subscriber pending + consent version/time (double opt-in not confirmed)', sub?.length === 1 && sub[0].status === 'pending' && sub[0].consent_text_version === 'v1' && !!sub[0].consent_at && !sub[0].confirmed_at);
+
+    // INTEGRATION (audit batch 1): ticking the box runs the REAL phase 9 enqueueConfirmation -> confirm token stored
+    // (hash + ~48 h expiry), confirmation mail goes through sendEmail's guard, then the confirm page flips pending -> confirmed.
+    const s0 = sub?.[0];
+    const ttlH = s0?.confirm_expires_at ? (new Date(s0.confirm_expires_at) - Date.now()) / 3_600_000 : 0;
+    check(G, 'E2E newsletter: confirm token hash + 48 h expiry stored by enqueueConfirmation', /^[0-9a-f]{64}$/.test(s0?.confirm_token_hash ?? '') && ttlH > 47 && ttlH <= 48.01 && s0?.source === 'download', `ttl=${ttlH.toFixed(2)}h source=${s0?.source}`);
+    if (process.env.SERVER_LOG) {
+      const log = fs.readFileSync(process.env.SERVER_LOG, 'utf8');
+      const guarded = log.split(/\r?\n/).filter((l) => l.includes('[email] guard: not sent') && /Confirm/i.test(l));
+      check(G, 'E2E newsletter: confirmation email logged as guarded (not really sent)', guarded.length > 0, `lines=${guarded.length}`);
+    }
+    const knownToken = 'e2e-confirm-' + RUN + '-' + G.replace('/', '-');
+    const { error: setErr } = await db.from('subscribers').update({ confirm_token_hash: createHash('sha256').update(knownToken).digest('hex') }).eq('email', e2);
+    const cpage = await ctx.newPage();
+    await cpage.goto(`${BASE}/newsletter/confirmer?t=${knownToken}`, { waitUntil: 'domcontentloaded' });
+    const { data: viaGet } = await db.from('subscribers').select('status').eq('email', e2).single();
+    check(G, 'E2E newsletter: GET of the confirm page does not confirm', !setErr && viaGet?.status === 'pending');
+    await cpage.getByRole('button', { name: /Confirm/i }).first().click();
+    await cpage.waitForFunction(() => /confirm/i.test(document.querySelector('h1')?.textContent ?? '') && !/Confirmer mon|Confirm my/i.test(document.querySelector('h1')?.textContent ?? ''), null, { timeout: 15000 }).catch(() => {});
+    await sleep(500);
+    const { data: confirmed } = await db.from('subscribers').select('status,confirmed_at').eq('email', e2).single();
+    check(G, 'E2E newsletter: confirm page POST -> confirmed + confirmed_at', confirmed?.status === 'confirmed' && !!confirmed?.confirmed_at, JSON.stringify(confirmed));
+    await cpage.close();
 
     // honeypot: indistinguishable success, nothing stored
     await page.locator('button.rq-textbtn', { hasText: 'Utiliser une autre adresse' }).click();

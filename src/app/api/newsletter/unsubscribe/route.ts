@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { verifyUnsubscribe } from '@/lib/server/tokens';
+import { isSecretConfigured, verifyUnsubscribe } from '@/lib/server/tokens';
 import { unsubscribeEmail } from '@/lib/server/newsletter';
 import { hit, hashIdentifier } from '@/lib/server/rateLimit';
 
@@ -16,14 +16,18 @@ const NO_STORE = { 'Cache-Control': 'no-store' };
 export async function POST(request: Request) {
   const url = new URL(request.url);
   const sig = url.searchParams.get('s') ?? '';
+  if (!isSecretConfigured()) {
+    console.error('[newsletter] one-click: DOWNLOAD_TOKEN_SECRET missing or too short');
+    return NextResponse.json({ error: 'not_configured' }, { status: 503, headers: NO_STORE });
+  }
   const email = verifyUnsubscribe(sig);
   if (!email) return NextResponse.json({ error: 'invalid' }, { status: 400, headers: NO_STORE });
 
-  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
-  if (!(await hit(`nl-oneclick:${hashIdentifier(ip)}`, 120, 600))) {
-    return NextResponse.json({ error: 'rate_limited' }, { status: 429, headers: NO_STORE });
-  }
   try {
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    if (!(await hit(`nl-oneclick:${hashIdentifier(ip)}`, 120, 600))) {
+      return NextResponse.json({ error: 'rate_limited' }, { status: 429, headers: NO_STORE });
+    }
     await unsubscribeEmail(email);
     return NextResponse.json({ ok: true }, { status: 200, headers: NO_STORE });
   } catch (e) {

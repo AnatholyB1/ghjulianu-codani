@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { createClient } from '@/utils/supabase/server';
+import { getAdminUser } from '@/lib/server/requireAdmin';
 import { fetchKpis } from '@/lib/server/stats';
 import StatsView from './StatsView';
 import RetryButton from './RetryButton';
@@ -42,8 +42,7 @@ function Head({ days, range }: { days: Period; range?: string }) {
 
 export default async function StatsPage({ searchParams }: { searchParams: Promise<{ p?: string | string[] }> }) {
   // Defence in depth: src/proxy.ts already guards /admin/**.
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getAdminUser();
   if (!user) redirect('/admin/login?redirect=/admin/stats');
 
   const days = parsePeriod((await searchParams).p);
