@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/utils/supabase/server';
+import { requireAdmin } from '@/lib/server/requireAdmin';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { randomBytes } from 'crypto';
@@ -18,6 +19,7 @@ function generateAccessCode(): string {
 // ── CATEGORIES ────────────────────────────────────────────────
 
 export async function createCategory(formData: FormData) {
+  await requireAdmin();
   const supabase = await createClient();
   const name     = (formData.get('name') as string).trim();
   const slug     = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
@@ -27,6 +29,7 @@ export async function createCategory(formData: FormData) {
 }
 
 export async function updateCategory(id: string, formData: FormData) {
+  await requireAdmin();
   const supabase = await createClient();
   const name     = (formData.get('name') as string).trim();
   const slug     = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
@@ -36,6 +39,7 @@ export async function updateCategory(id: string, formData: FormData) {
 }
 
 export async function deleteCategory(id: string) {
+  await requireAdmin();
   const supabase = await createClient();
   const { error } = await supabase.from('categories').delete().eq('id', id);
   if (error) throw new Error(error.message);
@@ -45,6 +49,7 @@ export async function deleteCategory(id: string) {
 // ── ALBUMS ─────────────────────────────────────────────────────
 
 export async function createAlbum(formData: FormData) {
+  await requireAdmin();
   const supabase    = await createClient();
   const title       = (formData.get('title') as string).trim();
   const slug        = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
@@ -70,6 +75,7 @@ export async function createAlbum(formData: FormData) {
 }
 
 export async function updateAlbum(id: string, formData: FormData) {
+  await requireAdmin();
   const supabase    = await createClient();
   const title       = (formData.get('title') as string).trim();
   const year        = (formData.get('year') as string) || null;
@@ -98,6 +104,7 @@ export async function updateAlbum(id: string, formData: FormData) {
 }
 
 export async function deleteAlbum(id: string) {
+  await requireAdmin();
   const supabase = await createClient();
   const { error } = await supabase.from('albums').delete().eq('id', id);
   if (error) throw new Error(error.message);
@@ -113,6 +120,7 @@ export async function deleteAlbum(id: string) {
  * matching the existing `ORDER BY sort_order DESC`).
  */
 export async function reorderAlbums(orderedIds: string[]) {
+  await requireAdmin();
   const supabase = await createClient();
   const n = orderedIds.length;
   const results = await Promise.all(
@@ -127,6 +135,7 @@ export async function reorderAlbums(orderedIds: string[]) {
 }
 
 export async function regenerateAccessKey(id: string) {
+  await requireAdmin();
   const supabase   = await createClient();
   const access_key = generateAccessCode();
   const { error }  = await supabase.from('albums').update({ access_key }).eq('id', id);
@@ -137,6 +146,7 @@ export async function regenerateAccessKey(id: string) {
 // ── ALBUM PHOTOS ───────────────────────────────────────────────
 
 export async function addAlbumPhoto(album_id: string, formData: FormData) {
+  await requireAdmin();
   const supabase = await createClient();
   const src      = (formData.get('src') as string).trim();
   const alt      = (formData.get('alt') as string) || null;
@@ -149,6 +159,7 @@ export async function addAlbumPhoto(album_id: string, formData: FormData) {
 }
 
 export async function saveAlbumPhoto(album_id: string, src: string, width: number, height: number) {
+  await requireAdmin();
   const supabase = await createClient();
   const { error } = await supabase.from('album_photos').insert({ album_id, src, width, height });
   if (error) throw new Error(error.message);
@@ -157,6 +168,7 @@ export async function saveAlbumPhoto(album_id: string, src: string, width: numbe
 }
 
 export async function deleteAlbumPhoto(id: string, album_id: string) {
+  await requireAdmin();
   const supabase = await createClient();
   const { error } = await supabase.from('album_photos').delete().eq('id', id);
   if (error) throw new Error(error.message);
@@ -169,6 +181,7 @@ export async function deleteAlbumPhoto(id: string, album_id: string) {
  * Each photo receives sort_order = its index in that array.
  */
 export async function reorderAlbumPhotos(albumId: string, orderedIds: string[]) {
+  await requireAdmin();
   const supabase = await createClient();
   const updates  = orderedIds.map((id, idx) => ({ id, sort_order: idx }));
   const { error } = await supabase
@@ -182,6 +195,7 @@ export async function reorderAlbumPhotos(albumId: string, orderedIds: string[]) 
 // ── PORTFOLIO ─────────────────────────────────────────────────
 
 export async function addPortfolioPhoto(formData: FormData) {
+  await requireAdmin();
   const supabase = await createClient();
   const src      = (formData.get('src') as string).trim();
   const alt      = (formData.get('alt') as string) || null;
@@ -194,6 +208,7 @@ export async function addPortfolioPhoto(formData: FormData) {
 }
 
 export async function savePortfolioPhoto(src: string, width: number, height: number) {
+  await requireAdmin();
   const supabase = await createClient();
   const { error } = await supabase.from('portfolio_photos').insert({ src, width, height });
   if (error) throw new Error(error.message);
@@ -202,6 +217,7 @@ export async function savePortfolioPhoto(src: string, width: number, height: num
 }
 
 export async function deletePortfolioPhoto(id: string) {
+  await requireAdmin();
   const supabase = await createClient();
   const { error } = await supabase.from('portfolio_photos').delete().eq('id', id);
   if (error) throw new Error(error.message);
@@ -212,6 +228,7 @@ export async function deletePortfolioPhoto(id: string) {
 // -- DAY/NIGHT TAGGING --
 
 export async function updatePortfolioPhotoDay(id: string, isDay: boolean | null) {
+  await requireAdmin();
   const supabase = await createClient();
   const { error } = await supabase.from('portfolio_photos').update({ is_day: isDay }).eq('id', id);
   if (error) throw new Error(error.message);
@@ -220,6 +237,7 @@ export async function updatePortfolioPhotoDay(id: string, isDay: boolean | null)
 }
 
 export async function bulkUpdatePortfolioPhotoDay(ids: string[], isDay: boolean | null) {
+  await requireAdmin();
   if (ids.length === 0) return;
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   const validIds = ids.filter(id => uuidRegex.test(id));
@@ -231,6 +249,7 @@ export async function bulkUpdatePortfolioPhotoDay(ids: string[], isDay: boolean 
 }
 
 export async function updateAlbumPhotoDay(id: string, albumId: string, isDay: boolean | null) {
+  await requireAdmin();
   const supabase = await createClient();
   const { error } = await supabase.from('album_photos').update({ is_day: isDay }).eq('id', id);
   if (error) throw new Error(error.message);
@@ -240,6 +259,7 @@ export async function updateAlbumPhotoDay(id: string, albumId: string, isDay: bo
 // ── UPLOAD ────────────────────────────────────────────────────
 
 export async function uploadFile(bucket: string, file: File): Promise<string> {
+  await requireAdmin();
   const supabase = await createClient();
   const ext      = file.name.split('.').pop();
   const path     = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { Text } from '@react-email/components';
-import { createClient } from '@/utils/supabase/server';
+import { getAdminUser } from '@/lib/server/requireAdmin';
 import { hit } from '@/lib/server/rateLimit';
 import { sendEmail } from '@/lib/server/email/send';
 import { EmailLayout, emailStyles, type EmailLang } from '@/lib/server/email/layout';
@@ -14,8 +14,7 @@ export const runtime = 'nodejs';
  * Body (optional JSON): { "lang": "fr" | "en" }
  */
 export async function POST(request: Request) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getAdminUser();
   if (!user || !user.email) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   }
