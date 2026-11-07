@@ -1,0 +1,114 @@
+[
+ {
+  "page": "stats-content-30d.html",
+  "vp": "mobile",
+  "overflowX": 0,
+  "smallText": [],
+  "smallTap": [],
+  "lowContrast": []
+ },
+ {
+  "page": "stats-content-7d.html",
+  "vp": "mobile",
+  "overflowX": 0,
+  "smallText": [],
+  "smallTap": [],
+  "lowContrast": []
+ },
+ {
+  "page": "stats-content-90d.html",
+  "vp": "mobile",
+  "overflowX": 0,
+  "smallText": [],
+  "smallTap": [],
+  "lowContrast": []
+ },
+ {
+  "page": "stats-content-tables.html",
+  "vp": "mobile",
+  "overflowX": 0,
+  "smallText": [],
+  "smallTap": [],
+  "lowContrast": []
+ },
+ {
+  "page": "stats-empty.html",
+  "vp": "mobile",
+  "overflowX": 0,
+  "smallText": [],
+  "smallTap": [],
+  "lowContrast": []
+ },
+ {
+  "page": "stats-error.html",
+  "vp": "mobile",
+  "overflowX": 0,
+  "smallText": [],
+  "smallTap": [],
+  "lowContrast": []
+ },
+ {
+  "page": "stats-loading.html",
+  "vp": "mobile",
+  "overflowX": 0,
+  "smallText": [],
+  "smallTap": [],
+  "lowContrast": []
+ },
+ {
+  "page": "stats-content-30d.html",
+  "vp": "desktop",
+  "overflowX": 0,
+  "smallText": [],
+  "smallTap": [],
+  "lowContrast": []
+ },
+ {
+  "page": "stats-content-7d.html",
+  "vp": "desktop",
+  "overflowX": 0,
+  "smallText": [],
+  "smallTap": [],
+  "lowContrast": []
+ },
+ {
+  "page": "stats-content-90d.html",
+  "vp": "desktop",
+  "overflowX": 0,
+  "smallText": [],
+  "smallTap": [],
+  "lowContrast": []
+ },
+ {
+  "page": "stats-content-tables.html",
+  "vp": "desktop",
+  "overflowX": 0,
+  "smallText": [],
+  "smallTap": [],
+  "lowContrast": []
+ },
+ {
+  "page": "stats-empty.html",
+  "vp": "desktop",
+  "overflowX": 0,
+  "smallText": [],
+  "smallTap": [],
+  "lowContrast": []
+ },
+ {
+  "page": "stats-error.html",
+  "vp": "desktop",
+  "overflowX": 0,
+  "smallText": [],
+  "smallTap": [],
+  "lowContrast": []
+ },
+ {
+  "page": "stats-loading.html",
+  "vp": "desktop",
+  "overflowX": 0,
+  "smallText": [],
+  "smallTap": [],
+  "lowContrast": []
+ }
+]

@@ -1,0 +1,69 @@
+## series pair views/downloads (adjacent, dark, surface #0e0e0e)
+
+Palette (dark, surface #0e0e0e, categorical): 2 slots
+  [PASS] Lightness band         all 2 inside L 0.48–0.67
+  [PASS] Chroma floor           all 2 >= 0.1
+  [PASS] CVD separation         worst all-pairs #d95926↔#3987e5 ΔE 26.8 (protan) · tritan 32.4
+  [PASS] Normal-vision floor    worst all-pairs #d95926↔#3987e5 ΔE 31.8 (normal)
+  [PASS] Contrast vs surface    all 2 >= 3:1
+
+  → ALL CHECKS PASS  (CVD in the 6–8 floor band is legal ONLY with secondary encoding: direct labels, gaps, or texture)
+  scope: categorical palettes only. For a lone status/text color check text contrast with this script's apca() or contrast(); for a sequential ramp, lightness monotonicity.
+
+## 3 slots devices all-pairs
+
+Palette (dark, surface #0e0e0e, categorical): 3 slots
+  [PASS] Lightness band         all 3 inside L 0.48–0.67
+  [PASS] Chroma floor           all 3 >= 0.1
+  [PASS] CVD separation         worst all-pairs #199e70↔#d95926 ΔE 9.4 (deutan) · tritan 4.0
+  [PASS] Normal-vision floor    worst all-pairs #199e70↔#3987e5 ΔE 20.9 (normal)
+  [PASS] Contrast vs surface    all 3 >= 3:1
+
+  → ALL CHECKS PASS  (CVD in the 6–8 floor band is legal ONLY with secondary encoding: direct labels, gaps, or texture)
+  scope: categorical palettes only. For a lone status/text color check text contrast with this script's apca() or contrast(); for a sequential ramp, lightness monotonicity.
+
+## day/night yellow+violet
+
+Palette (dark, surface #0e0e0e, categorical): 2 slots
+  [PASS] Lightness band         all 2 inside L 0.48–0.67
+  [PASS] Chroma floor           all 2 >= 0.1
+  [PASS] CVD separation         worst all-pairs #9085e9↔#c98500 ΔE 27.3 (protan) · tritan 17.3
+  [PASS] Normal-vision floor    worst all-pairs #9085e9↔#c98500 ΔE 27.5 (normal)
+  [PASS] Contrast vs surface    all 2 >= 3:1
+
+  → ALL CHECKS PASS  (CVD in the 6–8 floor band is legal ONLY with secondary encoding: direct labels, gaps, or texture)
+  scope: categorical palettes only. For a lone status/text color check text contrast with this script's apca() or contrast(); for a sequential ramp, lightness monotonicity.
+
+## devices aqua,magenta,red all-pairs
+
+Palette (dark, surface #0e0e0e, categorical): 3 slots
+  [PASS] Lightness band         all 3 inside L 0.48–0.67
+  [PASS] Chroma floor           all 3 >= 0.1
+  [FAIL] CVD separation         worst all-pairs #d55181↔#199e70 ΔE 1.6 (deutan) · tritan 5.0
+  [FAIL] Normal-vision floor    worst all-pairs #e66767↔#d55181 ΔE 7.8 (normal) — below 15, hard to tell apart even with full color vision
+  [PASS] Contrast vs surface    all 3 >= 3:1
+
+  → FAILED — fix the marked checks  (CVD in the 6–8 floor band is legal ONLY with secondary encoding: direct labels, gaps, or texture)
+
+## devices aqua,magenta,violet
+
+Palette (dark, surface #0e0e0e, categorical): 3 slots
+  [PASS] Lightness band         all 3 inside L 0.48–0.67
+  [PASS] Chroma floor           all 3 >= 0.1
+  [FAIL] CVD separation         worst all-pairs #d55181↔#199e70 ΔE 1.6 (deutan) · tritan 9.4
+  [PASS] Normal-vision floor    worst all-pairs #9085e9↔#d55181 ΔE 19.7 (normal)
+  [PASS] Contrast vs surface    all 3 >= 3:1
+
+  → FAILED — fix the marked checks  (CVD in the 6–8 floor band is legal ONLY with secondary encoding: direct labels, gaps, or texture)
+
+## subscribers aqua vs surface single
+
+Palette (dark, surface #0e0e0e, categorical): 1 slots
+  [PASS] Lightness band         all 1 inside L 0.48–0.67
+  [PASS] Chroma floor           all 1 >= 0.1
+  [PASS] CVD separation         n/a
+  [PASS] Normal-vision floor    n/a
+  [PASS] Contrast vs surface    all 1 >= 3:1
+
+  → ALL CHECKS PASS  (CVD in the 6–8 floor band is legal ONLY with secondary encoding: direct labels, gaps, or texture)
+
