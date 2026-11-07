@@ -1,0 +1,882 @@
+[
+ {
+  "file": "public/confirm-ready-fr-night.html",
+  "vp": "m",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/confirm-ready-fr-day.html",
+  "vp": "m",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/confirm-ready-en-night.html",
+  "vp": "m",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/confirm-ready-en-day.html",
+  "vp": "m",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/confirm-error-fr-night.html",
+  "vp": "m",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/confirm-error-fr-day.html",
+  "vp": "m",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/confirm-error-en-night.html",
+  "vp": "m",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/confirm-error-en-day.html",
+  "vp": "m",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/confirm-confirmed-fr-night.html",
+  "vp": "m",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/confirm-confirmed-fr-day.html",
+  "vp": "m",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/confirm-confirmed-en-night.html",
+  "vp": "m",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/confirm-confirmed-en-day.html",
+  "vp": "m",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/confirm-expired-fr-night.html",
+  "vp": "m",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/confirm-expired-fr-day.html",
+  "vp": "m",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/confirm-expired-en-night.html",
+  "vp": "m",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/confirm-expired-en-day.html",
+  "vp": "m",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/confirm-already-fr-night.html",
+  "vp": "m",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/confirm-already-fr-day.html",
+  "vp": "m",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/confirm-already-en-night.html",
+  "vp": "m",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/confirm-already-en-day.html",
+  "vp": "m",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/unsub-ready-fr-night.html",
+  "vp": "m",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/unsub-ready-fr-day.html",
+  "vp": "m",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/unsub-ready-en-night.html",
+  "vp": "m",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/unsub-ready-en-day.html",
+  "vp": "m",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/unsub-error-fr-night.html",
+  "vp": "m",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/unsub-error-fr-day.html",
+  "vp": "m",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/unsub-error-en-night.html",
+  "vp": "m",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/unsub-error-en-day.html",
+  "vp": "m",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/unsub-confirmed-fr-night.html",
+  "vp": "m",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/unsub-confirmed-fr-day.html",
+  "vp": "m",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/unsub-confirmed-en-night.html",
+  "vp": "m",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/unsub-confirmed-en-day.html",
+  "vp": "m",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/unsub-invalid-fr-night.html",
+  "vp": "m",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/unsub-invalid-fr-day.html",
+  "vp": "m",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/unsub-invalid-en-night.html",
+  "vp": "m",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/unsub-invalid-en-day.html",
+  "vp": "m",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/unsub-already-fr-night.html",
+  "vp": "m",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/unsub-already-fr-day.html",
+  "vp": "m",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/unsub-already-en-night.html",
+  "vp": "m",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/unsub-already-en-day.html",
+  "vp": "m",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "email/confirm-fr-light.html",
+  "vp": "m",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "email/newsletter-footer-fr-light.html",
+  "vp": "m",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "email/confirm-fr-dark.html",
+  "vp": "m",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "email/newsletter-footer-fr-dark.html",
+  "vp": "m",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "email/confirm-en-light.html",
+  "vp": "m",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "email/newsletter-footer-en-light.html",
+  "vp": "m",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "email/confirm-en-dark.html",
+  "vp": "m",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "email/newsletter-footer-en-dark.html",
+  "vp": "m",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "admin/list.html",
+  "vp": "m",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "admin/filter-search.html",
+  "vp": "m",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "admin/delete-confirm.html",
+  "vp": "m",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "admin/deleted.html",
+  "vp": "m",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "admin/exporting.html",
+  "vp": "m",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "admin/noresults.html",
+  "vp": "m",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "admin/empty.html",
+  "vp": "m",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/confirm-ready-fr-night.html",
+  "vp": "d",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/confirm-ready-fr-day.html",
+  "vp": "d",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/confirm-ready-en-night.html",
+  "vp": "d",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/confirm-ready-en-day.html",
+  "vp": "d",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/confirm-error-fr-night.html",
+  "vp": "d",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/confirm-error-fr-day.html",
+  "vp": "d",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/confirm-error-en-night.html",
+  "vp": "d",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/confirm-error-en-day.html",
+  "vp": "d",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/confirm-confirmed-fr-night.html",
+  "vp": "d",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/confirm-confirmed-fr-day.html",
+  "vp": "d",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/confirm-confirmed-en-night.html",
+  "vp": "d",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/confirm-confirmed-en-day.html",
+  "vp": "d",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/confirm-expired-fr-night.html",
+  "vp": "d",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/confirm-expired-fr-day.html",
+  "vp": "d",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/confirm-expired-en-night.html",
+  "vp": "d",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/confirm-expired-en-day.html",
+  "vp": "d",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/confirm-already-fr-night.html",
+  "vp": "d",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/confirm-already-fr-day.html",
+  "vp": "d",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/confirm-already-en-night.html",
+  "vp": "d",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/confirm-already-en-day.html",
+  "vp": "d",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/unsub-ready-fr-night.html",
+  "vp": "d",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/unsub-ready-fr-day.html",
+  "vp": "d",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/unsub-ready-en-night.html",
+  "vp": "d",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/unsub-ready-en-day.html",
+  "vp": "d",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/unsub-error-fr-night.html",
+  "vp": "d",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/unsub-error-fr-day.html",
+  "vp": "d",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/unsub-error-en-night.html",
+  "vp": "d",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/unsub-error-en-day.html",
+  "vp": "d",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/unsub-confirmed-fr-night.html",
+  "vp": "d",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/unsub-confirmed-fr-day.html",
+  "vp": "d",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/unsub-confirmed-en-night.html",
+  "vp": "d",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/unsub-confirmed-en-day.html",
+  "vp": "d",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/unsub-invalid-fr-night.html",
+  "vp": "d",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/unsub-invalid-fr-day.html",
+  "vp": "d",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/unsub-invalid-en-night.html",
+  "vp": "d",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/unsub-invalid-en-day.html",
+  "vp": "d",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/unsub-already-fr-night.html",
+  "vp": "d",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/unsub-already-fr-day.html",
+  "vp": "d",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/unsub-already-en-night.html",
+  "vp": "d",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "public/unsub-already-en-day.html",
+  "vp": "d",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "email/confirm-fr-light.html",
+  "vp": "d",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "email/newsletter-footer-fr-light.html",
+  "vp": "d",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "email/confirm-fr-dark.html",
+  "vp": "d",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "email/newsletter-footer-fr-dark.html",
+  "vp": "d",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "email/confirm-en-light.html",
+  "vp": "d",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "email/newsletter-footer-en-light.html",
+  "vp": "d",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "email/confirm-en-dark.html",
+  "vp": "d",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "email/newsletter-footer-en-dark.html",
+  "vp": "d",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "admin/list.html",
+  "vp": "d",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "admin/filter-search.html",
+  "vp": "d",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "admin/delete-confirm.html",
+  "vp": "d",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "admin/deleted.html",
+  "vp": "d",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "admin/exporting.html",
+  "vp": "d",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "admin/noresults.html",
+  "vp": "d",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ },
+ {
+  "file": "admin/empty.html",
+  "vp": "d",
+  "overflow": null,
+  "small": [],
+  "tap": [],
+  "contrast": []
+ }
+]
