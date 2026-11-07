@@ -8,7 +8,7 @@ import { newToken, hashToken } from '@/lib/server/tokens';
 import { sendEmail } from '@/lib/server/email/send';
 import { siteUrl } from '@/lib/server/email/layout';
 import DownloadLinkEmail, { downloadEmailSubject, downloadEmailText } from '@/lib/server/email/templates/DownloadLinkEmail';
-import { logEvent, visitorHash, deviceClass, countryOf } from '@/lib/server/events';
+import { logEvent, safeVisitorHash, deviceClass, countryOf } from '@/lib/server/events';
 import { CONSENT_TEXT_VERSION } from '@/lib/server/consent';
 import { enqueueConfirmation } from '@/lib/server/newsletterHook';
 import {
@@ -205,7 +205,7 @@ export async function requestDownload(input: RequestInput): Promise<RequestResul
       type: 'request',
       request_id: row.id,
       album_id: requestAlbumId,
-      visitor_hash: visitorHash({ headers: h }),
+      visitor_hash: safeVisitorHash({ headers: h }),
       device: deviceClass({ headers: h }),
       country: countryOf({ headers: h }),
     });
