@@ -33,6 +33,8 @@ type CartCtx = {
 
 const STORAGE_KEY = 'photo-cart-v2';
 const LEGACY_KEY  = 'photo-cart';
+/** Same limit as the server (MAX_PHOTOS_PER_REQUEST in requestGuards): a bigger cart could never be requested. */
+export const MAX_CART_PHOTOS = 200;
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** Keep only well-formed v2 items; anything else (incl. old carts) is dropped silently. */
@@ -45,6 +47,7 @@ function sanitize(raw: unknown): CartPhoto[] {
     if (typeof p.photoId !== 'string' || !UUID_RE.test(p.photoId)) continue;
     if (p.source !== 'album_photos' && p.source !== 'portfolio_photos') continue;
     if (typeof p.src !== 'string') continue;
+    if (out.length >= MAX_CART_PHOTOS) break;
     if (out.some((o) => o.photoId === p.photoId)) continue;
     out.push({
       id: p.photoId,
@@ -80,6 +83,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items,  setItems]  = useState<CartPhoto[]>([]);
   const [open,   setOpen]   = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
 
   // Hydrate from localStorage once (v1 carts are dropped)
   useEffect(() => {
@@ -101,6 +105,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     if (!UUID_RE.test(photo.photoId)) return;
     const next = { ...photo, id: photo.photoId };
     if (items.some((p) => p.id === next.id)) return;
+    if (items.length >= MAX_CART_PHOTOS) {
+      const en = typeof document !== 'undefined' && document.documentElement.lang.toLowerCase().startsWith('en');
+      setNotice(en
+        ? `Your selection is full (${MAX_CART_PHOTOS} photos maximum). Request these first, then start a new selection.`
+        : `Votre sélection est pleine (${MAX_CART_PHOTOS} photos maximum). Demandez celles-ci d'abord, puis recommencez une nouvelle sélection.`);
+      return;
+    }
     setItems((prev) => prev.some((p) => p.id === next.id) ? prev : [...prev, next]);
     trackSelectAdd(next.photoId, next.albumId);
   }, [items]);
@@ -113,9 +124,28 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const has = useCallback((id: string) => items.some((p) => p.id === id), [items]);
 
+  useEffect(() => {
+    if (!notice) return;
+    const t = setTimeout(() => setNotice(null), 6000);
+    return () => clearTimeout(t);
+  }, [notice]);
+
   return (
     <CartContext.Provider value={{ items, add, remove, clear, has, count: items.length, open, setOpen }}>
       {children}
+      {notice && (
+        <div
+          role="status"
+          aria-live="polite"
+          style={{
+            position: 'fixed', left: 16, right: 16, bottom: 24, margin: '0 auto', maxWidth: 420, zIndex: 1000,
+            padding: '12px 16px', borderRadius: 8, background: '#111', color: '#fff', fontSize: 14, lineHeight: 1.4,
+            boxShadow: '0 4px 24px rgba(0,0,0,.35)',
+          }}
+        >
+          {notice}
+        </div>
+      )}
     </CartContext.Provider>
   );
 }
