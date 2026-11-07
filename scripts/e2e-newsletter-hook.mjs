@@ -34,6 +34,21 @@ assert.notEqual(row.confirm_token_hash, firstHash);
 assert.equal(row.lang, 'fr');
 ok('re-enqueue rotates the token hash and updates lang');
 
+// 2b. re-subscription of an unsubscribed row refreshes the consent proof and clears unsubscribed_at
+await db.from('subscribers').update({ status: 'unsubscribed', unsubscribed_at: '2020-01-01T00:00:00Z', consent_at: '2020-01-01T00:00:00Z', consent_text_version: 'v0', source: 'footer' }).eq('email', email);
+await enqueueConfirmation(email, 'fr');
+({ data: row } = await db.from('subscribers').select('*').eq('email', email).single());
+assert.equal(row.status, 'pending');
+assert.equal(row.unsubscribed_at, null);
+assert.equal(row.source, 'download');
+assert.notEqual(row.consent_text_version, 'v0');
+assert.ok(Date.now() - new Date(row.consent_at).getTime() < 120_000, 'consent_at refreshed');
+ok('unsubscribed -> re-subscribe refreshes consent_at/version/source and clears unsubscribed_at');
+
+// reset OUR test address' throttle bucket (3 confirmations / h / address) so step 3 is not vacuous
+const { hashIdentifier } = await import('../src/lib/server/rateLimit.ts');
+await db.from('rate_limits').delete().eq('key', `nl-confirm:${hashIdentifier(email)}`);
+
 // 3. confirmed / suppressed rows are left alone
 await db.from('subscribers').update({ status: 'suppressed', suppressed_reason: 'complaint' }).eq('email', email);
 const h2 = row.confirm_token_hash;

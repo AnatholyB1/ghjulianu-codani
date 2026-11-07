@@ -34,5 +34,5 @@ Other contract checks run in the e2e: AC-01 no overflow (form, key page, 320 px)
 ## Notes for the merge
 - Likely conflict files: `src/lib/server/consent.ts` (P5 file, now derived from `consentCopy.ts`), `src/app/globals.css` (tokens appended at the end), `src/components/Lightbox.tsx` and `AlbumPageClient.tsx` (P8a / P8b), `src/app/admin/actions.ts` (verifyAlbumKey / findAlbumByKey removed), `.env.example`.
 - Phase 8b: remove the LEGACY blocks in `CartDrawer.tsx` (downloadPhoto, handleDownloadAll, donation modal, secondary button) and `PrivateDownloadSection` in `AlbumPageClient.tsx`.
-- Phase 9: fill `enqueueConfirmation` in `src/lib/server/newsletterHook.ts`.
+- Done in audit batch 1: request flow calls `enqueueConfirmation` from `src/lib/server/newsletter.ts` (stub removed).
 - Phase 7 can rely on `download_requests.photos = [{photo_id, source}]`, `album_id` (null when mixed / portfolio), `lang`, `token_hash`, and `email_status`.

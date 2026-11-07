@@ -38,6 +38,24 @@ export function langFromAcceptLanguage(h: string | null | undefined): EmailLang 
 }
 
 /**
+ * Fields written when an address (re)subscribes: a new explicit opt-in, so the consent proof is refreshed
+ * (time, wording version, source) and any earlier unsubscribe is cleared. Used for the insert and for an
+ * `unsubscribed` / stale `pending` row ticking the box again. Pure, unit-tested.
+ */
+export function resubscribePatch(now: Date, lang: EmailLang, source: string) {
+  const iso = now.toISOString();
+  return {
+    status: 'pending' as const,
+    lang,
+    consent_text_version: CONSENT_TEXT_VERSION,
+    consent_at: iso,
+    source,
+    unsubscribed_at: null as string | null,
+    updated_at: iso,
+  };
+}
+
+/**
  * NWS-01 hook, called by the request flow (phase 6) once a visitor ticked the optional newsletter box.
  *
  * - Creates the `pending` subscriber row when it does not exist yet (phase 6 normally does it first).
@@ -49,11 +67,12 @@ export function langFromAcceptLanguage(h: string | null | undefined): EmailLang 
  *   request. Already `confirmed` and `suppressed` rows are left alone (a suppressed address is never
  *   re-enabled by a visitor).
  */
-export async function enqueueConfirmation(email: string, lang: EmailLang): Promise<void> {
+export async function enqueueConfirmation(email: string, lang: EmailLang, opts: { source?: string } = {}): Promise<void> {
   try {
     const addr = (email ?? '').trim().toLowerCase();
     if (addr.length < 3 || addr.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(addr)) return;
     const l = normaliseLang(lang);
+    const source = opts.source ?? 'download';
 
     // At most 3 confirmation emails per address per hour (anti mail-bombing of third parties).
     if (!(await hit(`nl-confirm:${hashIdentifier(addr)}`, 3, 3600))) {
@@ -76,11 +95,9 @@ export async function enqueueConfirmation(email: string, lang: EmailLang): Promi
     const token = newToken();
     const now = new Date();
     const patch = {
-      status: 'pending' as const,
-      lang: l,
+      ...resubscribePatch(now, l, source),
       confirm_token_hash: hashToken(token),
       confirm_expires_at: new Date(now.getTime() + CONFIRM_TTL_MS).toISOString(),
-      updated_at: now.toISOString(),
     };
 
     if (existing) {
@@ -90,13 +107,7 @@ export async function enqueueConfirmation(email: string, lang: EmailLang): Promi
         return;
       }
     } else {
-      const { error } = await db.from('subscribers').insert({
-        email: addr,
-        ...patch,
-        source: 'download',
-        consent_text_version: CONSENT_TEXT_VERSION,
-        consent_at: now.toISOString(),
-      });
+      const { error } = await db.from('subscribers').insert({ email: addr, ...patch });
       if (error) {
         console.warn('[newsletter] insert failed:', error.code ?? error.message);
         return;
