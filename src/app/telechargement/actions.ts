@@ -184,7 +184,8 @@ export async function requestDownload(input: RequestInput): Promise<RequestResul
         timeZone: 'Europe/Paris', dateStyle: 'long', timeStyle: 'short',
       }).format(expiresAt),
       siteUrl: siteUrl(),
-      publisherAddress: process.env.PUBLISHER_ADDRESS?.trim() || null,
+      // LEGAL_POSTAL_ADDRESS is canonical; PUBLISHER_ADDRESS is a deprecated fallback.
+      publisherAddress: process.env.LEGAL_POSTAL_ADDRESS?.trim() || process.env.PUBLISHER_ADDRESS?.trim() || null,
     };
     const sent = await sendEmail({
       to: email,

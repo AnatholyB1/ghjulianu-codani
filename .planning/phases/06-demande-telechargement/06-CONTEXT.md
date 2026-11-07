@@ -8,7 +8,7 @@ Applied from MILESTONE-v1.1-DECISIONS.md: D-01, D-02 (pending only, hook for P9)
 - Order tweak: the IP limiter runs before email validation, the email limiter after (it needs a valid address).
 - `src/lib/server/requestGuards.ts`: pure helpers (email normalise/validate, photo-ref parsing, HMAC form token, HMAC album access cookie, constant-time compare, LIMITS). Unit tested.
 - `src/lib/server/newsletterHook.ts`: `enqueueConfirmation(email, lang)` stub that phase 9 fills. Phase 6 sends no marketing.
-- `src/lib/server/email/templates/DownloadLinkEmail.tsx`: FR/EN, 600 px, light + dark (`prefers-color-scheme`), plain-text part, no remote images, footer with privacy link and optional `PUBLISHER_ADDRESS` (LCEN; line omitted when unset). Does not contain the recipient address.
+- `src/lib/server/email/templates/DownloadLinkEmail.tsx`: FR/EN, 600 px, light + dark (`prefers-color-scheme`), plain-text part, no remote images, footer with privacy link and optional `LEGAL_POSTAL_ADDRESS` (LCEN; `PUBLISHER_ADDRESS` = deprecated alias). Does not contain the recipient address.
 - `POST /api/select-add`: fire-and-forget `select_add` event (uuid-validated, 120/min/IP, always 204). A route instead of a server action so it can never queue in front of `requestDownload`.
 
 ## Private albums (REQ-05)

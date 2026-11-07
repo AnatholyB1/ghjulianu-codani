@@ -26,7 +26,7 @@ Other contract checks run in the e2e: AC-01 no overflow (form, key page, 320 px)
 - Newsletter confirmation email (phase 9) and the download landing page (phase 7) are not part of this phase.
 
 ## Human items
-- Set `PUBLISHER_ADDRESS` (LCEN postal address in the email footer) in production; the line is omitted when unset.
+- Set `LEGAL_POSTAL_ADDRESS` + `LEGAL_SENDER_NAME` (LCEN identity in the email footer) in production (`PUBLISHER_ADDRESS` is a deprecated alias).
 - Owner/lawyer review of the consent wording (`src/lib/consentCopy.ts`; bump `CONSENT_TEXT_VERSION` if changed after launch) and privacy line.
 - Env on Vercel: `DOWNLOAD_TOKEN_SECRET`, `IP_HASH_SALT`, `NEXT_PUBLIC_SITE_URL`, `RESEND_*` (see `.env.example`). `DOWNLOAD_TOKEN_SECRET` is now required by the request form (without it `issueFormToken` returns null and requests fail with `server_error`).
 - Existing private-album visitors lose their old 30-day raw-key cookie (they re-enter the key once).
