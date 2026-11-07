@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Phase 7 gallery</title>
+<style>
+  :root { --bg:#111; --fg:#e8e4dc; --mut:#9a9a93; --line:#333; --acc:#c8a97e; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.5 system-ui,sans-serif; }
+  header { position:sticky; top:0; z-index:5; background:var(--bg); border-bottom:1px solid var(--line); padding:12px 24px; display:flex; flex-wrap:wrap; gap:16px; align-items:center; }
+  header h1 { font-size:16px; font-weight:600; margin-right:auto; }
+  .seg { display:inline-flex; border:1px solid var(--line); }
+  .seg button { background:none; color:var(--mut); border:0; padding:8px 14px; font:inherit; cursor:pointer; min-height:44px; }
+  .seg button[aria-pressed="true"] { background:var(--acc); color:#080808; }
+  main { padding:24px; display:grid; gap:48px; }
+  section h2 { font-size:15px; margin-bottom:4px; } section p { color:var(--mut); font-size:14px; margin-bottom:12px; max-width:70ch; }
+  .row { display:flex; flex-wrap:wrap; gap:24px; align-items:flex-start; }
+  .frame { border:1px solid var(--line); overflow:hidden; position:relative; flex:none; }
+  .frame iframe { border:0; transform-origin:0 0; position:absolute; top:0; left:0; }
+  .m { width:273px; height:591px; } .m iframe { width:390px; height:844px; transform:scale(.7); }
+  .d { width:720px; height:450px; } .d iframe { width:1440px; height:900px; transform:scale(.5); }
+</style>
+</head>
+<body>
+<header>
+  <h1>/telechargement/[token] : design gallery (static prototypes, sample data)</h1>
+  <div class="seg" role="group" aria-label="Language"><button data-lang="fr" aria-pressed="true">FR</button><button data-lang="en" aria-pressed="false">EN</button></div>
+  <div class="seg" role="group" aria-label="Theme"><button data-theme="night" aria-pressed="true">Night</button><button data-theme="day" aria-pressed="false">Day</button></div>
+</header>
+<main id="main"></main>
+<script>
+const S = [
+  ['valid','Valid link, 14 photos','Landing GET: thumbnails (labelled placeholders with ratio), download all (1 ZIP), per photo download, uses left and expiry. Nothing consumed.'],
+  ['parts','Valid link, large selection (3 ZIP parts)','96 photos, 247 MB: parts list, first 12 thumbnails, "show the other 84".'],
+  ['started','Download started (part 1)','Browser-native download: busy button, indeterminate bar, polite status text, uses left decremented optimistically (2 of 3).'],
+  ['last','Last use','1 of 3 left: warning callout, steer to the ZIP.'],
+  ['dlerror','Download refused (rate limit)','Inline alert on the valid page, no use consumed.'],
+  ['expired','Expired','Terminal state, CTA to request again plus back to site.'],
+  ['exhausted','Used up','3 of 3 consumed.'],
+  ['invalid','Invalid or revoked','Same screen for unknown token, malformed token and revoked (no enumeration).'],
+  ['error','Page error (5xx)','GET failed: reassures that nothing was consumed, retry CTA.'],
+];
+const q = new URLSearchParams(location.search);
+let lang = q.get('lang') || 'fr', theme = q.get('theme') || 'night';
+function render() {
+  document.querySelectorAll('[data-lang]').forEach(b => b.setAttribute('aria-pressed', b.dataset.lang === lang));
+  document.querySelectorAll('[data-theme]').forEach(b => b.setAttribute('aria-pressed', b.dataset.theme === theme));
+  const suffix = theme === 'day' ? '?theme=day' : '';
+  document.getElementById('main').innerHTML = S.map(([id, t, d]) => `<section><h2>${t}</h2><p>${d}</p><div class="row">
+    <div class="frame m"><iframe title="${t} mobile" loading="lazy" src="screens/${id}.${lang}.html${suffix}"></iframe></div>
+    <div class="frame d"><iframe title="${t} desktop" loading="lazy" src="screens/${id}.${lang}.html${suffix}"></iframe></div></div></section>`).join('');
+}
+document.querySelectorAll('[data-lang]').forEach(b => b.onclick = () => { lang = b.dataset.lang; render(); });
+document.querySelectorAll('[data-theme]').forEach(b => b.onclick = () => { theme = b.dataset.theme; render(); });
+render();
+</script>
+</body>
+</html>
