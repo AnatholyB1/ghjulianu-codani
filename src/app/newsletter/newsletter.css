@@ -1,0 +1,121 @@
+/* Public newsletter pages (phase 9). Scoped under .nlp. Tokens from the design contract; day mode = .day on <html>. */
+.nlp {
+  --muted-text: #8a8a83;
+  --border-strong: rgba(255, 255, 255, 0.22);
+  --danger: #e69a90;
+  --danger-bg: rgba(230, 154, 144, 0.1);
+  --focus: #c8a97e;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --nl-display: var(--font-cormorant, 'Cormorant Garamond'), Georgia, serif;
+  --nl-sans: var(--font-space, 'Space Grotesk'), system-ui, sans-serif;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--nl-sans);
+  font-size: 16px;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+.day .nlp {
+  --muted-text: #5c5c5c;
+  --border-strong: rgba(0, 0, 0, 0.32);
+  --danger: #9b2c20;
+  --danger-bg: rgba(155, 44, 32, 0.07);
+  --focus: #7a5200;
+}
+.nlp :focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+.nlp-topbar {
+  height: 64px; display: flex; align-items: center; justify-content: space-between;
+  padding: 0 clamp(1rem, 6vw, 4rem); border-bottom: 1px solid var(--border);
+}
+.nlp-wordmark {
+  font-family: var(--nl-display); font-style: italic; font-size: 1.35rem; color: var(--text);
+  text-decoration: none; min-height: 44px; display: inline-flex; align-items: center;
+}
+.nlp-theme-btn {
+  width: 44px; height: 44px; display: inline-grid; place-items: center; background: none;
+  border: 1px solid var(--border-strong); color: var(--text); cursor: pointer; border-radius: 50%;
+  transition: border-color 0.25s var(--ease), transform 0.25s var(--ease);
+}
+.nlp-theme-btn:active { transform: scale(0.96); }
+.nlp-theme-btn svg { width: 20px; height: 20px; }
+.nlp-page {
+  flex: 1; display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: clamp(2rem, 6vw, 6rem); align-items: start;
+  padding: clamp(2.5rem, 8vh, 6rem) clamp(1rem, 6vw, 4rem);
+  max-width: 1280px; width: 100%; margin: 0 auto;
+}
+.nlp-eyebrow {
+  font-size: 0.875rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted-text);
+  display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem;
+}
+.nlp-eyebrow::before { content: ''; width: 28px; height: 1px; background: var(--accent); }
+.nlp-ico {
+  width: 56px; height: 56px; border-radius: 50%; border: 1px solid var(--border-strong);
+  display: grid; place-items: center; margin-bottom: 1.5rem; color: var(--accent-text);
+}
+.nlp-ico svg { width: 26px; height: 26px; }
+.nlp-ico.bad { color: var(--danger); }
+.nlp h1 {
+  font-family: var(--nl-display); font-style: italic; font-weight: 300;
+  font-size: clamp(2.4rem, 5.2vw, 4.25rem); line-height: 1.04; letter-spacing: -0.01em;
+  margin: 0 0 1.5rem; max-width: 16ch; outline: none;
+}
+.nlp-lede { color: var(--text); max-width: 56ch; font-size: 1.0625rem; margin: 0; }
+.nlp-lede + .nlp-lede { margin-top: 1rem; color: var(--muted-text); }
+.nlp-actions { margin-top: 2.25rem; display: flex; flex-wrap: wrap; gap: 0.75rem 1.5rem; align-items: center; }
+.nlp-btn {
+  min-height: 52px; padding: 0 2rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.75rem;
+  background: var(--text); color: var(--bg); border: 1px solid var(--text); cursor: pointer;
+  font: 500 0.875rem/1 var(--nl-sans); letter-spacing: 0.14em; text-transform: uppercase; text-decoration: none;
+  transition: background-color 0.3s var(--ease), color 0.3s var(--ease), transform 0.2s var(--ease);
+}
+.nlp-btn:hover { background: transparent; color: var(--text); }
+.nlp-btn:active { transform: translateY(1px); }
+.nlp-btn.ghost { background: transparent; color: var(--text); border-color: var(--border-strong); }
+.nlp-btn.ghost:hover { border-color: var(--text); }
+.nlp-btn[aria-busy='true'] { opacity: 0.65; cursor: progress; pointer-events: none; }
+.nlp-link {
+  min-height: 44px; display: inline-flex; align-items: center; color: var(--text);
+  text-underline-offset: 4px; text-decoration-thickness: 1px; font-size: 1rem;
+}
+.nlp-link:hover { color: var(--accent-text); }
+.nlp-alert {
+  margin: 0; flex: 1 1 100%; padding: 1rem 1.25rem; border: 1px solid var(--danger); background: var(--danger-bg);
+  color: var(--text); max-width: 56ch; display: flex; gap: 0.75rem; align-items: flex-start;
+}
+.nlp-alert svg { flex: none; width: 22px; height: 22px; margin-top: 2px; color: var(--danger); }
+.nlp-recap { border: 1px solid var(--border); background: var(--surface); padding: 1.75rem; }
+.nlp-recap h2 {
+  font-size: 0.875rem; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--muted-text); margin: 0 0 1.25rem;
+}
+.nlp-recap dl { display: grid; gap: 1.1rem; margin: 0; }
+.nlp-recap dt { font-size: 0.875rem; color: var(--muted-text); }
+.nlp-recap dd { font-size: 1rem; margin: 0.15rem 0 0; }
+.nlp-recap .quote { font-family: var(--nl-display); font-style: italic; font-size: 1.2rem; line-height: 1.45; }
+.nlp-hint { margin: 1.5rem 0 0; padding-top: 1.25rem; border-top: 1px solid var(--border); font-size: 0.9375rem; color: var(--muted-text); max-width: 56ch; }
+.nlp-foot {
+  padding: 1.25rem clamp(1rem, 6vw, 4rem); border-top: 1px solid var(--border);
+  display: flex; flex-wrap: wrap; gap: 0.25rem 1.5rem; align-items: center; font-size: 0.875rem; color: var(--muted-text);
+}
+.nlp-foot a { color: var(--muted-text); min-height: 44px; display: inline-flex; align-items: center; text-underline-offset: 4px; }
+.nlp-foot a:hover { color: var(--text); }
+@keyframes nlp-rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+.nlp-rise > * { animation: nlp-rise 0.6s var(--ease) both; }
+.nlp-rise > *:nth-child(2) { animation-delay: 0.06s; }
+.nlp-rise > *:nth-child(3) { animation-delay: 0.12s; }
+.nlp-rise > *:nth-child(4) { animation-delay: 0.18s; }
+.nlp-rise > *:nth-child(5) { animation-delay: 0.24s; }
+@media (prefers-reduced-motion: reduce) {
+  .nlp *, .nlp *::before, .nlp *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+}
+@media (max-width: 860px) {
+  .nlp-page { grid-template-columns: minmax(0, 1fr); padding-top: 2rem; }
+  .nlp-btn { width: 100%; }
+  .nlp-actions { align-items: stretch; flex-direction: column; }
+  .nlp-actions .nlp-link { justify-content: center; }
+  .nlp h1 { max-width: none; }
+}

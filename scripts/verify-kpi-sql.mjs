@@ -36,6 +36,10 @@ try {
   }
   const t = psql(['-f', 'scripts/kpi-sql-test.sql']);
   console.log(t.stdout); if (t.stderr) console.error(t.stderr);
+  if (process.env.KPI_FIXTURE_OUT) {
+    const dump = psql(['-At', '-c', "SELECT public.kpi_dashboard(7, DATE '2026-03-31')"]);
+    writeFileSync(process.env.KPI_FIXTURE_OUT, dump.stdout.trim());
+  }
   const m = [...t.stdout.matchAll(/^\s*(\d+)\s*\|\s*(\d+)\s*\r?$/gm)].pop();
   code = t.status === 0 && m && Number(m[1]) > 0 && Number(m[2]) === 0 ? 0 : 1;
 } finally {

@@ -13,7 +13,8 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAdmin   = pathname.startsWith('/admin');
 
-  if (isAdmin) {
+  // Admin and the standalone newsletter pages (own top bar / footer) render without the site chrome.
+  if (isAdmin || pathname.startsWith('/newsletter')) {
     return <>{children}</>;
   }
 
