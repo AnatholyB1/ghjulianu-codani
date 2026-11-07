@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS public.download_requests (
   expires_at    timestamptz NOT NULL,
   max_uses      int         NOT NULL DEFAULT 3,
   used_count    int         NOT NULL DEFAULT 0,
+  window_started_at timestamptz,  -- start of the current 15-min download session
   album_id      uuid,
   photos        jsonb       NOT NULL,  -- [{photo_id uuid, source 'album_photos'|'portfolio_photos'}]
   ip_hash       text,
@@ -153,21 +154,34 @@ BEGIN
 END;
 $$;
 
--- Atomically consume one use of a download link; zero rows = refused.
--- remaining = uses left AFTER this consumption.
-CREATE OR REPLACE FUNCTION public.consume_download_use(p_token_hash text)
-RETURNS TABLE (request_id uuid, photos jsonb, email text, remaining int)
+-- A "use" is a download SESSION (default 15 min window), not a single request:
+-- multi-part ZIPs and retries inside an open window do not burn extra uses.
+-- One atomic UPDATE (row lock serialises concurrent calls); zero rows = refused
+-- (unknown token, revoked, expired, or no use left and no open window).
+--   remaining   = max_uses - used_count after this call
+--   window_open = true when this call REUSED an already-open window (no use consumed),
+--                 false when it opened a new window (one use consumed)
+CREATE OR REPLACE FUNCTION public.consume_download_use(p_token_hash text, p_window_minutes int DEFAULT 15)
+RETURNS TABLE (request_id uuid, photos jsonb, email text, remaining int, window_open boolean)
 LANGUAGE sql
 SECURITY DEFINER
 SET search_path = pg_catalog, public
 AS $$
   UPDATE public.download_requests d
-     SET used_count = d.used_count + 1
+     SET used_count = CASE WHEN d.window_started_at IS NOT NULL
+                                AND now() - d.window_started_at <= make_interval(mins => p_window_minutes)
+                           THEN d.used_count ELSE d.used_count + 1 END,
+         window_started_at = CASE WHEN d.window_started_at IS NOT NULL
+                                       AND now() - d.window_started_at <= make_interval(mins => p_window_minutes)
+                                  THEN d.window_started_at ELSE now() END
    WHERE d.token_hash = p_token_hash
      AND d.revoked_at IS NULL
      AND d.expires_at > now()
-     AND d.used_count < d.max_uses
-  RETURNING d.id, d.photos, d.email, (d.max_uses - d.used_count)::int;
+     AND ( (d.window_started_at IS NOT NULL
+            AND now() - d.window_started_at <= make_interval(mins => p_window_minutes))
+           OR d.used_count < d.max_uses )
+  RETURNING d.id, d.photos, d.email, (d.max_uses - d.used_count)::int,
+            (d.window_started_at < now());
 $$;
 
 -- Retention purge for raw events (called by the P10 cron). Returns deleted rows.
@@ -206,8 +220,8 @@ $$;
 
 -- Execute: service_role only (functions default to PUBLIC execute).
 REVOKE ALL ON FUNCTION public.rate_limit_hit(text, int, int) FROM PUBLIC, anon, authenticated;
-REVOKE ALL ON FUNCTION public.consume_download_use(text)     FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.consume_download_use(text, int) FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION public.purge_old_events(int)          FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.rate_limit_hit(text, int, int) TO service_role;
-GRANT EXECUTE ON FUNCTION public.consume_download_use(text)     TO service_role;
+GRANT EXECUTE ON FUNCTION public.consume_download_use(text, int) TO service_role;
 GRANT EXECUTE ON FUNCTION public.purge_old_events(int)          TO service_role;

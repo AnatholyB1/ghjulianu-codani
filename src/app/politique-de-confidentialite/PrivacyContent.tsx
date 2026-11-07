@@ -45,7 +45,7 @@ const FR: Doc = {
     {
       title: '3. Finalités et bases légales',
       body: [
-        '— **Vous envoyer le lien de téléchargement de vos photos** que vous avez demandé : exécution de votre demande (article 6.1.b du RGPD). Ce lien est valable 48 heures et utilisable 3 fois.',
+        '— **Vous envoyer le lien de téléchargement de vos photos** que vous avez demandé : exécution de votre demande (article 6.1.b du RGPD). Ce lien est valable 48 heures et permet 3 sessions de téléchargement de 15 minutes.',
         '— **Vous envoyer la newsletter, si vous cochez la case dédiée :** votre **consentement** (article 6.1.a). Cette case est facultative et décochée par défaut ; le téléchargement ne dépend jamais d’elle. Vous confirmez ensuite votre inscription en cliquant sur un lien reçu par e-mail (double confirmation). Vous pouvez retirer votre consentement à tout moment via le lien de désinscription présent dans chaque e-mail.',
         '— **Répondre à vos demandes de contact ou de devis :** intérêt légitime (article 6.1.f) et mesures précontractuelles (article 6.1.b).',
         '— **Mesurer l’audience de manière anonyme** (photos les plus vues, appareils, pays) afin d’améliorer le site : intérêt légitime (article 6.1.f). Aucune donnée n’est recoupée avec d’autres traitements.',
@@ -131,7 +131,7 @@ const EN: Doc = {
     {
       title: '3. Purposes and legal bases',
       body: [
-        '— **Sending you the download link for the photos you requested:** performance of your request (GDPR article 6.1.b). The link is valid for 48 hours and can be used 3 times.',
+        '— **Sending you the download link for the photos you requested:** performance of your request (GDPR article 6.1.b). The link is valid for 48 hours and allows 3 download sessions of 15 minutes.',
         '— **Sending you the newsletter, if you tick the dedicated box:** your **consent** (article 6.1.a). The box is optional and unticked by default; your download never depends on it. You then confirm your subscription by clicking a link sent by email (double opt-in). You can withdraw your consent at any time using the unsubscribe link included in every email.',
         '— **Answering your contact or quote requests:** legitimate interest (article 6.1.f) and pre-contractual measures (article 6.1.b).',
         '— **Measuring audience anonymously** (most viewed photos, devices, countries) to improve the site: legitimate interest (article 6.1.f). No data is cross-referenced with other processing.',
