@@ -11,7 +11,7 @@ import DownloadLinkEmail, { downloadEmailSubject, downloadEmailText } from '@/li
 import { logEvent, safeVisitorHash, deviceClass, countryOf } from '@/lib/server/events';
 import { enqueueConfirmation } from '@/lib/server/newsletter';
 import {
-  LIMITS, LINK_TTL_HOURS, checkFormToken, normalizeEmail, parsePhotoRefs, signFormToken, verifyAlbumAccess,
+  GLOBAL_EMAIL_KEY, GLOBAL_EMAIL_WINDOW_SECONDS, LIMITS, LINK_TTL_HOURS, downloadEmailDailyCap, checkFormToken, normalizeEmail, parsePhotoRefs, signFormToken, verifyAlbumAccess,
   type PhotoRef,
 } from '@/lib/server/requestGuards';
 
@@ -69,10 +69,13 @@ export async function requestDownload(input: RequestInput): Promise<RequestResul
     // 1. honeypot -> silent
     if (typeof input.website === 'string' && input.website.trim() !== '') return generic();
 
-    // 2. minimum time-to-submit (signed render timestamp) -> silent
+    // 2. signed render timestamp. ONLY the honeypot and "too fast" (< 2 s) are silent (padded to the
+    //    same latency as a real success). A missing / forged / expired token, or a missing
+    //    DOWNLOAD_TOKEN_SECRET (checkFormToken throws -> catch below), is a visible server_error so a
+    //    broken deploy cannot masquerade as success.
     const tokenState = checkFormToken(input.formToken);
-    if (tokenState === 'expired') return { ok: false, code: 'server_error' };
-    if (tokenState !== 'ok') return generic();
+    if (tokenState === 'too_fast') return generic();
+    if (tokenState !== 'ok') return { ok: false, code: 'server_error' };
 
     // 3a. rate limit per hashed IP -> visible `rate_limited` (contract)
     const h = await headers();
@@ -84,11 +87,6 @@ export async function requestDownload(input: RequestInput): Promise<RequestResul
     // 4. validate email (after the IP limiter so the validator cannot be probed for free)
     const email = normalizeEmail(input.email);
     if (!email) return { ok: false, code: 'invalid_email' };
-
-    // 3b. rate limit per hashed email -> silent (never reveals email-specific state)
-    if (!(await hit(`dlreq:email:${hashIdentifier(email)}`, LIMITS.emailPerHour.limit, LIMITS.emailPerHour.windowSeconds))) {
-      return generic();
-    }
 
     // 5. resolve photos FROM THE DB (never trust client URLs)
     const refs = parsePhotoRefs(input.photos);
@@ -138,6 +136,20 @@ export async function requestDownload(input: RequestInput): Promise<RequestResul
       }
       if (albums.length === 1) albumTitle = albums[0].title;
     }
+
+    // 6b. per-email bucket, consumed only now that the request is valid (a bad cart cannot burn a victim's quota) -> silent
+    if (!(await hit(`dlreq:email:${hashIdentifier(email)}`, LIMITS.emailPerHour.limit, LIMITS.emailPerHour.windowSeconds))) {
+      return generic();
+    }
+
+    // 6c. GLOBAL daily cap on download emails (email-relay abuse). Over the cap: generic success,
+    //     nothing stored, nothing sent, loud server warning.
+    const cap = downloadEmailDailyCap();
+    if (!(await hit(GLOBAL_EMAIL_KEY, cap, GLOBAL_EMAIL_WINDOW_SECONDS))) {
+      console.error(`[request] GLOBAL DAILY DOWNLOAD-EMAIL CAP (${cap}) REACHED: request dropped, nothing sent. Possible abuse as email relay, or raise DOWNLOAD_EMAIL_DAILY_CAP.`);
+      return generic();
+    }
+
     const requestAlbumId = distinctAlbumIds.length === 1 && portfolioIds.length === 0 ? distinctAlbumIds[0] : null;
 
     // 7. insert the request (hash only; the raw token exists only in the email)
