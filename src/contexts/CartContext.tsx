@@ -17,7 +17,6 @@ export type CartPhoto = {
   height:        number;
   alt:           string;
   context?:      string; // e.g. album title or 'Portfolio'
-  downloadName?: string; // filename for the legacy direct download e.g. FURTIVE25_001
 };
 
 type CartCtx = {
@@ -56,7 +55,6 @@ function sanitize(raw: unknown): CartPhoto[] {
       height: Number(p.height) || 800,
       alt: typeof p.alt === 'string' ? p.alt : '',
       context: typeof p.context === 'string' ? p.context : undefined,
-      downloadName: typeof p.downloadName === 'string' ? p.downloadName : undefined,
     });
   }
   return out;
@@ -86,6 +84,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     try {
       localStorage.removeItem(LEGACY_KEY);
       const saved = localStorage.getItem(STORAGE_KEY);
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- one-shot hydration from localStorage
       if (saved) setItems(sanitize(JSON.parse(saved)));
     } catch {}
     setLoaded(true);

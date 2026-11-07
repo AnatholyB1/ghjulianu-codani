@@ -42,7 +42,6 @@ const fr = {
   okNl: 'Vous avez demandé la newsletter : un second email vous demandera de confirmer votre inscription.',
   okClose: 'FERMER',
   okOther: 'Utiliser une autre adresse',
-  legacyDownload: 'TÉLÉCHARGER LES PHOTOS',
   // key page
   keyEyebrow: 'ESPACE CLIENT',
   keyTitle: 'Mon album',
@@ -104,7 +103,6 @@ const en: typeof fr = {
   okNl: 'You asked for the newsletter: a second email will ask you to confirm your subscription.',
   okClose: 'CLOSE',
   okOther: 'Use another address',
-  legacyDownload: 'DOWNLOAD THE PHOTOS',
   keyEyebrow: 'CLIENT SPACE',
   keyTitle: 'My album',
   keyDesc: 'Received a personal access key? Enter it below to open your private album.',
