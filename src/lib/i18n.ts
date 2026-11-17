@@ -215,6 +215,19 @@ const translations = {
       donate:  'Faire un don',
       contact: 'CONTACT',
     },
+
+    // ── Portfolio ────────────────────────────────────────────
+    portfolio: {
+      label:         'PHOTOGRAPHIE',
+      title:         'Portfolio',
+      toggleToNight: 'Changer de thème pour voir les photos de nuit',
+      toggleToDay:   'Changer de thème pour voir les photos de jour',
+      switchToDay:   'Activer le mode jour',
+      switchToNight: 'Activer le mode nuit',
+      loading:       'Chargement du contenu...',
+      loaded:        'photos chargées',
+      empty:         "Aucune photo disponible dans ce mode pour l'instant",
+    },
   },
 
   // ─────────────────────────────────────────────────────────
@@ -426,6 +439,18 @@ const translations = {
       enjoy:   'Enjoying my work?',
       donate:  'Make a donation',
       contact: 'CONTACT',
+    },
+
+    portfolio: {
+      label:         'PHOTOGRAPHY',
+      title:         'Portfolio',
+      toggleToNight: 'Switch theme to see the night photos',
+      toggleToDay:   'Switch theme to see the day photos',
+      switchToDay:   'Switch to day mode',
+      switchToNight: 'Switch to night mode',
+      loading:       'Loading content...',
+      loaded:        'photos loaded',
+      empty:         'No photos available in this mode yet',
     },
   },
 } as const;

@@ -6,6 +6,7 @@ import Lightbox from '@/components/Lightbox';
 import type { PortfolioPhoto } from '@/lib/db.types';
 import { createClient } from '@/utils/supabase/client';
 import { useDayNight }  from '@/hooks/useDayNight';
+import { useT }         from '@/hooks/useT';
 
 type LBPhoto = { src: string; width: number; height: number; alt: string; context?: string };
 
@@ -87,6 +88,7 @@ function PhotoCard({
 
 export default function PortfolioGrid() {
   const { mode } = useDayNight();
+  const t = useT();
   const [photos,   setPhotos]   = useState<PortfolioPhoto[]>([]);
   const [lightbox, setLightbox] = useState<number | null>(null);
   const [fading,   setFading]   = useState(false);
@@ -142,12 +144,12 @@ export default function PortfolioGrid() {
             whiteSpace: 'nowrap',
           }}
         >
-          {fading ? 'Chargement du contenu...' : `${photos.length} photos chargées`}
+          {fading ? t.portfolio.loading : `${photos.length} ${t.portfolio.loaded}`}
         </div>
 
         {photos.length === 0 ? (
           <div className="text-center py-8 text-sm opacity-60">
-            No photos available in this mode yet
+            {t.portfolio.empty}
           </div>
         ) : (
           <section style={{ padding: 'clamp(2rem,4vw,4rem) clamp(1rem,3vw,3rem)', columns: '4 180px', columnGap: 'clamp(10px,1.4vmin,20px)' }}>
