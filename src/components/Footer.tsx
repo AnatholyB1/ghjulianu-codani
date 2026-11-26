@@ -69,6 +69,22 @@ export default function Footer() {
         >
           {t.footer.privacy}
         </Link>
+        <a
+          href="https://sevalys.com/services/site-vitrine"
+          style={{
+            fontFamily:    'var(--font-space)',
+            fontSize:      '0.6rem',
+            letterSpacing: '0.1em',
+            color:         'var(--muted)',
+            textDecoration: 'none',
+            textTransform: 'uppercase',
+            transition:    'color 0.2s',
+          }}
+          onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = 'var(--text)')}
+          onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = 'var(--muted)')}
+        >
+          {t.footer.credit}
+        </a>
       </div>
 
       {/* Right — crédit studio */}
