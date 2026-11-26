@@ -206,6 +206,7 @@ const translations = {
       mentions:  'Mentions légales',
       privacy:   'Politique de confidentialité',
       madeBy:    'Site créé par',
+      credit:    'Création de site internet par Sèvalys',
       and:       '&',
     },
 
@@ -432,6 +433,7 @@ const translations = {
       mentions:  'Legal notice',
       privacy:   'Privacy policy',
       madeBy:    'Created by',
+      credit:    'Website creation by Sèvalys',
       and:       '&',
     },
 
